@@ -1,0 +1,37 @@
+{
+  "status": "passed",
+  "version": "postgres (PostgreSQL) 14.20 (Homebrew)",
+  "scope": "Exact database commands from Labs 0–4; isolated Unix socket, no TCP. SSH/sudo/class environment not tested.",
+  "checks": [
+    "plain restore",
+    "custom restore",
+    "schema restore",
+    "identity next ID",
+    "dropped table recovery",
+    "newer order preserved",
+    "globals export without passwords",
+    "read allowed/delete denied"
+  ],
+  "recordedCommandCount": 59,
+  "sourceResultSha256": "2352393937aa4028cf532291943d3203e34e7d257e98883972495761b5a1dc6d",
+  "packageFileHashes": {
+    ".gitignore": "342cfe13b0e86dad9df23765fea79468b7664959bb3458cda95cf924c48de147",
+    "00-start.md": "fbc73b1100f225f07c8513b24bfc4b258088ba2746f1c539597fccc221430b22",
+    "01-plain.md": "4d7bf3246c8dede2338ad15788a18accda6d4189aed25bdd9f34d6a5593633d9",
+    "02-custom.md": "7d8d92f2aedc601883b878ca91a3b705cab3293d989eb3488a0292321fc6387d",
+    "03-table.md": "e79b79fbf2d425386b908029aca515f1e8a5ba55bb95d8602fe4621486a3f3d0",
+    "04-roles.md": "0ed856bf3cb3141347c8f1bee0a4e5cffec06e9bdfc9b54597026f1591a1b091",
+    "05-physical.md": "fb81fff728759a05496719f2ba1df3061217e37615c556b63b664fcc3d849287",
+    "06-pgbackrest-pitr.md": "5ed5b958132569ab428179f9a990289eb4b0db798aa64110d262065580a3453c",
+    "09-drills.md": "f000210f8f4ee512b5887ab12f6918575342771aede0d12f1bcdba6c08ac6796",
+    "EVIDENCE.md": "117b8f308438f7c55423c59d34e9caa432ad914332a2b9793fd4c57dafaf63f7",
+    "INSTRUCTOR.md": "c1e5e32e0b4690a336d6b64694a72e1de0c4511b42a8c1e7e4de27736a70c3a6",
+    "README.md": "5e3dbff44ce9cae4e3023c3f0b9d64069e761b60df56d52a0c501aad621641d7",
+    "SOURCES.md": "8223383429d66456a8a66af0ee323cc7f94f5cece6f281fdf469a8a24e80cc0f",
+    "VALIDATION.md": "dc2d5da4a63aa2ca4dab3d1ee608173aef6ff2c540856c65fcf86d4d80919b49",
+    "WATCH.md": "a1ff38a70f04309408b6f6d22826a8f53de4fa004cd85f86ad160a520c085016",
+    "live-rehearsal.mjs": "a02bba5c67da6bee6629d5d638a865cbb3b51ea2e83bd6f49eb155a5d84c68cc",
+    "rehearse.mjs": "8c60153f91d3d078daa14f4673fd4ed68426b3fc50679ec5609970e0ad8cbd75"
+  },
+  "note": "Hashes identify publication inputs. Live viewer label and documentation were updated after the rehearsal; no tested SQL command changed. Class-host and advanced exercises not qualified."
+}

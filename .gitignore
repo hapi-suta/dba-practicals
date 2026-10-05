@@ -1,0 +1,14 @@
+**/*.dump
+**/*.backup
+**/*.log
+**/*.csv
+**/globals.sql
+**/shop.sql
+**/.env
+**/.env.*
+**/*.pem
+**/data/
+**/repo/
+**/archive/
+node_modules/
+.DS_Store

@@ -1,0 +1,11 @@
+*.dump
+*.backup
+*.mp4
+*.mp3
+globals.sql
+shop.sql
+*.log
+.env
+data/
+repo/
+archive/

@@ -1,0 +1,242 @@
+# Labs 9–11 — return missing data and prove recovery
+
+Lab 9 depends on the successful, paused recovery in Lab 8. Instructor-led and
+not rehearsed on the class host. `/LAB` must be the confirmed working directory.
+
+## Lab 9 — bring back only Maria's missing order
+
+Why: the live lab source has order 1005, which the recovered copy does not.
+Replacing the entire table would lose valid newer work. Real incidents also need
+writer coordination, dependency analysis and business approval; this toy exercise
+has one known order and one item, with its customer still present.
+
+Connect to the recovered copy, not source:
+
+```bash
+psql -X -h /LAB/recovery-socket -p 55433 -d suta_shop
+```
+
+```sql
+SHOW data_directory;
+```
+
+Must be pitr-copy. In psql, export only the identified lost records. `\copy` writes
+client-side files; these contain lab data and must stay OUT of Git.
+
+```psql
+\copy (SELECT order_id, customer_id, status, total FROM shop.orders WHERE order_id = 1001) TO '/LAB/missing-order.csv' WITH CSV HEADER
+```
+
+```psql
+\copy (SELECT item_id, order_id, product, amount FROM shop.order_items WHERE order_id = 1001) TO '/LAB/missing-items.csv' WITH CSV HEADER
+```
+
+Each should report COPY 1 for this fixture. Do not generalize the row filter to
+an entire incident without identifying all affected relationships.
+
+```psql
+\q
+```
+
+Now connect to the **source** using the original shell connection settings:
+
+```bash
+psql -X -d suta_shop
+```
+
+```sql
+SHOW data_directory;
+```
+
+Verify this is source PGDATA. Create temporary staging tables, not live replacements:
+
+```sql
+CREATE TEMP TABLE recovered_orders (order_id integer, customer_id integer, status text, total numeric(10,2));
+```
+
+```sql
+CREATE TEMP TABLE recovered_items (item_id integer, order_id integer, product text, amount numeric(10,2));
+```
+
+```psql
+\copy recovered_orders FROM '/LAB/missing-order.csv' WITH CSV HEADER
+```
+
+```psql
+\copy recovered_items FROM '/LAB/missing-items.csv' WITH CSV HEADER
+```
+
+```sql
+TABLE recovered_orders;
+```
+
+Expected order 1001, customer 1, Shipped, 120.00 from Lab 7.
+
+```sql
+TABLE recovered_items;
+```
+
+Expected item 1, order 1001, Camera, 120.00.
+
+```sql
+SELECT * FROM shop.orders WHERE order_id IN (1001, 1005);
+```
+
+Expect only 1005. Stop if 1001 already exists or if the values differ from the
+incident evidence. Do not overwrite it with ON CONFLICT DO UPDATE.
+
+Start a transaction and briefly exclude competing table writers in this small
+lab. Real systems require a planned locking/window strategy to avoid disruption.
+
+```sql
+BEGIN;
+```
+
+```sql
+SET LOCAL lock_timeout = '5s';
+```
+
+```sql
+LOCK TABLE shop.orders, shop.order_items IN SHARE ROW EXCLUSIVE MODE;
+```
+
+If any statement fails, issue ROLLBACK and investigate; do not commit partial work.
+
+```sql
+SELECT * FROM shop.orders WHERE order_id = 1001;
+```
+
+Still zero rows. The related customer must exist:
+
+```sql
+SELECT * FROM shop.customers WHERE customer_id = 1;
+```
+
+Expect Maria. Insert the parent before its dependent item:
+
+```sql
+INSERT INTO shop.orders OVERRIDING SYSTEM VALUE SELECT * FROM recovered_orders;
+```
+
+Why: preserve the original identity value 1001, rather than generate a new ID.
+
+```sql
+INSERT INTO shop.order_items OVERRIDING SYSTEM VALUE SELECT * FROM recovered_items;
+```
+
+Expect INSERT 0 1 for each. Primary and foreign keys remain active.
+
+```sql
+SELECT count(*), sum(total) FROM shop.orders;
+```
+
+Expected 5 and 250.00; order 1005 is still present. If any check differs, ROLLBACK
+instead of COMMIT and retain your evidence for the instructor.
+
+```sql
+COMMIT;
+```
+
+```sql
+SELECT * FROM shop.orders ORDER BY order_id;
+```
+
+```sql
+SELECT * FROM shop.order_items ORDER BY item_id;
+```
+
+Expect five orders, three items. This fixture deliberately leaves new orders
+1004/1005 without items. A real application's business rules may not allow that.
+The live sequence was never rolled back or replaced: do not reset it downward.
+
+```psql
+\q
+```
+
+After evidence is accepted, shell: stop ONLY the recovered copy, retaining its files:
+
+```bash
+pg_ctl -D pitr-copy -m fast -w stop
+```
+
+## Lab 10 — a whole database is dropped
+
+This independent drill uses the older `shop.dump` from Lab 2. It recovers the
+backup snapshot, not the later PITR state. Shell, original connection:
+
+```bash
+createdb -T template0 suta_drop_drill
+```
+
+```bash
+pg_restore --exit-on-error -d suta_drop_drill shop.dump
+```
+
+Connect, verify the disposable name and its 3 orders, then exit:
+
+```bash
+psql -X -d suta_drop_drill
+```
+
+```sql
+SELECT current_database(), count(*) FROM shop.orders;
+```
+
+```psql
+\q
+```
+
+Instructor confirms the target is the drill just created, with no other users.
+This deliberately destroys that disposable database; recovery will use shop.dump.
+
+```bash
+dropdb suta_drop_drill
+```
+
+```bash
+createdb -T template0 suta_drop_drill
+```
+
+```bash
+pg_restore --exit-on-error -d suta_drop_drill shop.dump
+```
+
+```bash
+psql -X -d suta_drop_drill
+```
+
+```sql
+SELECT count(*), sum(total) FROM shop.orders;
+```
+
+Expect 3 and 195.00, not 5 and 250.00. Explain which later changes this backup
+cannot recover. A physical PITR recovery restores a cluster; extracting only one
+database afterward is a separate logical dump/restore step.
+
+```psql
+\q
+```
+
+## Lab 11 — failures, recovery objectives and runbook
+
+Instructor chooses ONE isolated fault after the successful baseline:
+
+| Fault | Safe exercise boundary | Evidence to collect |
+|---|---|---|
+| Wrong restore database | Use a nonexistent lab target | Exact error, correct connection |
+| Wrong role/ownership | Fresh isolated cluster lacking the lab role | Restore errors and corrected role order |
+| Corrupt archive | A new disposable COPY of shop.dump only | Restore/decode failure, original unchanged |
+| Missing archived WAL | Cloned offline repository and isolated target only | Recovery log cannot reach target |
+| Archive permissions/full disk | Disposable repository or quota-limited test volume only | Failed archive/check, retained WAL risk |
+
+These last three are **instructor-designed extensions**, not provided executable
+fault injections. Never corrupt the only backup, remove live WAL, fill a shared
+disk or change repository permissions serving another cluster.
+
+Record recovery start, service/data verification finish, latest recovered order
+and any missing committed orders. Compare observed data loss with the business
+RPO and elapsed end-to-end recovery with RTO. “Restore command took 2 minutes” is
+not the entire outage. Do not invent performance numbers.
+
+Write a runbook using EVIDENCE.md. Another student should identify the correct
+backup, target and validation checks without relying on your memory.
