@@ -10,7 +10,8 @@ the others and “not measured” for any timing you did not record.
 - PostgreSQL server and client versions:
 - Original database and restored-copy names (leave out private server details):
 - Backup filename / format / completion time:
-- Backup command's exit status (`0` for success, or the error you received):
+- What did the backup command show? Record any error:
+- What restore or data check proved the backup worked?
 - Recovery target (if applicable), time zone and reason:
 - What failure did you simulate?
 - What did you restore, and where?

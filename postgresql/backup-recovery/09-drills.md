@@ -453,7 +453,7 @@ date -Is
 pg_restore --exit-on-error -h /var/run/postgresql -p 5432 -d suta_restore_typo shop.dump
 ```
 
-**Expect:** a nonzero exit and an error saying database `suta_restore_typo` does
+**Expect:** an error saying database `suta_restore_typo` does
 not exist. Record the actual error. This expected failure is the lesson, not a
 reason to add `--clean`, weaken permissions or recreate SOURCE.
 

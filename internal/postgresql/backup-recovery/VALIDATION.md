@@ -260,6 +260,24 @@ The test harness is instructor-only; it intentionally automates a rehearsal.
 Students should follow the separate one-action-at-a-time handouts. Run it only
 where matching PostgreSQL tools are already installed and local test-server
 creation is permitted. It retains evidence and stops only its own new cluster.
+# Remove shell-status lessons from beginner guides — 2026-10-06
+
+- Owner feedback: `echo $?` and numeric status explanations distract students
+  from learning backup and recovery.
+- Removed three standalone `echo $?` blocks from Labs 1 and 5, numeric status
+  wording in Labs 5 and 11, and the exit-status field in the results sheet.
+- Replaced them with error-message stop conditions and visible checks: nonempty
+  backup file, backup verification, restored rows and table rules. A prompt
+  returning or a file existing is explicitly not proof of a usable backup.
+- Simplified the archiver count wording without removing the before/after check.
+- Preserved all database/configuration commands and their order, including
+  `ON_ERROR_STOP`, `--exit-on-error`, target checks and startup safety checks.
+- Added a regression test against exit-code jargon in student pages. Internal
+  automated checks still use process exit codes; this change is student-facing.
+- Validation: 14 guide/report tests passed; fenced-block comparison confirms
+  only the three diagnostic echoes were removed. No database operation changed
+  or new server rehearsal was performed for this instructional cleanup.
+
 # Full student-language review — 2026-10-06
 
 Reviewed all 14 student Markdown files, covering Labs 0–11 and support pages.

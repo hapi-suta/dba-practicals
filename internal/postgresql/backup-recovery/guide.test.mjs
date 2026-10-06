@@ -113,6 +113,16 @@ test('restore startup keeps mandatory preflight before pg_ctl start',()=>{
 
 // These are known student-reported wording defects, not a comprehension score.
 const unclearStudentWording = /\b(?:resume help|resume guide|resume\/error help|stop and investigate|fixture|preparation gate)\b/i;
+test('beginner handouts teach visible results rather than shell exit codes',()=>{
+ for(const file of files){
+  assert.doesNotMatch(read(file),/echo\s+\$\?|exit (?:status|code)|nonzero exit|exit 3/i,file);
+ }
+ const plain=read('01-plain.md');
+ assert.match(plain,/missing\s+or empty/);
+ assert.ok(commands(plain).includes('SELECT count(*), sum(total) FROM shop.orders;'));
+ assert.ok(commands(read('05-physical.md')).includes('pg_verifybackup physical-copy'));
+ assert.match(read('05-physical.md'),/If `pg_basebackup` prints an error, stop/);
+});
 test('student-reported vague wording stays out of handouts',()=>{
  for(const file of files)assert.doesNotMatch(read(file),unclearStudentWording,file);
  for(const phrase of ['use resume help','use the resume guide','stop and investigate','this fixture','preparation gate']){

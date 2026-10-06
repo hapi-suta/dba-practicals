@@ -38,18 +38,18 @@ pg_dump -d suta_shop -f shop.sql
 - This saves one database, not the whole PostgreSQL cluster.
 - You cannot apply WAL (PostgreSQL's record of changes) to this SQL file to recover later changes.
 
-```bash
-echo $?
-```
-
 **Expect:**
 
-- 0 immediately after pg_dump.
-- If it is not `0`, stop. Copy the error printed by `pg_dump` and send it with your lab number to the instructor. Do not try to restore this file yet.
+- Wait for the command to finish and the terminal prompt to return. `pg_dump` may finish without printing a success message.
+- If it prints an error, stop and save that message. Do not try to restore this file yet.
+- The next command checks whether the backup file was created. The restore later in this lab tests whether it can rebuild the data.
 
 ```bash
 ls -lh shop.sql
 ```
+
+**Expect:** `shop.sql` is listed with a size greater than zero. If it is missing
+or empty, stop and show the backup command's output to your instructor.
 
 ```bash
 less shop.sql
@@ -85,14 +85,10 @@ psql -X -v ON_ERROR_STOP=1 -d suta_plain_restore -f shop.sql
 - If it fails, save the first error and keep the partly restored database. Do not run the restore into it again.
 - Ask your instructor to help correct the error and choose a new empty database for the next attempt.
 
-```bash
-echo $?
-```
-
 **Expect:**
 
-- Exit status `0` means the restore command succeeded.
-- Then connect to the restored database:
+- Wait for the SQL commands to finish. If an error appears, stop and follow the instructions above.
+- Then connect to the restored database and check its rows and table rules. These checks show whether the restore produced the expected result:
 
 ```bash
 psql -X -d suta_plain_restore

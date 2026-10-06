@@ -237,7 +237,7 @@ SELECT archived_count, last_archived_wal, last_archived_time, failed_count FROM 
 
 - Archiving runs in the background. Wait for it, then repeat this read-only query.
 - Look for a recent successful archive.
-- `failed_count` includes earlier failures. A nonzero count alone does not prove the current attempt failed.
+- `failed_count` includes earlier failures. A number greater than zero does not by itself mean this attempt failed; compare it with your earlier reading.
 - Record the values before and after the check.
 
 ```psql

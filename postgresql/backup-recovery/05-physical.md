@@ -120,14 +120,11 @@ pg_basebackup -h /var/run/postgresql -p 5432 -D physical-copy -X stream -P
 - Do not add `-R`: we are not creating a standby.
 - PostgreSQL may first write changed data to disk (a checkpoint). This can delay the first progress message. Leave this command running; do not launch a second backup.
 
-```bash
-echo $?
-```
-
 **Expect:**
 
-- `0`.
-- If it is not `0`, stop. Save the `pg_basebackup` error for your instructor. Do not continue to verification or startup.
+- Wait for the backup to finish and the terminal prompt to return.
+- If `pg_basebackup` prints an error, stop and save it for your instructor. Do not continue to verification or startup.
+- Next, check the copied files with `pg_verifybackup`. A progress display alone does not prove the backup is usable.
 
 ```bash
 pg_verifybackup physical-copy
@@ -171,7 +168,7 @@ pg_ctl -D /var/lib/postgresql/suta-backup-lab/physical-copy status
 
 **Expect:**
 
-- `no server running` (exit 3 is normal).
+- `no server running`. This is the expected result: COPY must be stopped before you edit its settings.
 - If the output says `server is running`, stop here. Do not run the configuration-editing commands below.
 - Ask your instructor to help confirm which server is running. Follow [the checks for a running COPY](TROUBLESHOOTING.md#3-copy-is-running-but-the-guides-connection-fails).
 - Do not edit the running COPY or stop SOURCE on port 5432.
