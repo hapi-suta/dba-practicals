@@ -5,6 +5,13 @@ verify the backup, then safely start a separate copy on port 55433.
 **You finish with:** a working copy with 3 orders worth 195.00, while the source
 on port 5432 remains untouched. We stop only the copy at the end.
 
+**Your task:** take and verify a physical backup, isolate its settings, pass
+the preflight checks, start the copy, verify its data, then stop only that copy.
+
+**Pause and discuss before moving on:** show the copy's data directory, port,
+archiving setting and restored totals. Explain how you know it is the COPY,
+not SOURCE, and why you must check that before running commands.
+
 **Goal:** copy the whole cluster, then start the copy without changing the source.
 Use your assigned StepUP lab server, not a company server. Read
 [the class connection map](CLASS-SETUP.md) first. These are the actual class paths.

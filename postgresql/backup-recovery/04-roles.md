@@ -4,6 +4,13 @@
 separately from the database backup, and verify permissions in a restored copy.
 **You finish with:** a reader that can SELECT orders but cannot DELETE them.
 
+**Your task:** create the reporting role, grant read access, save globals and
+the database backup, then test the role in `suta_access_restore`.
+
+**Pause and discuss before moving on:** show SELECT succeeding, DELETE being
+denied and all 3 orders still present. Explain why this expected error is a good
+result, and why role definitions need a separate backup from `pg_dump`.
+
 Dedicated lab cluster only. Roles are cluster-wide, not private to one database.
 Do not run this against a shared class cluster without instructor coordination.
 

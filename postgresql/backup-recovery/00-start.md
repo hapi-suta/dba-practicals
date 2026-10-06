@@ -4,6 +4,13 @@
 We record its starting rows so later we can tell whether a restore is correct.
 **You finish with:** 3 customers, 3 orders worth 195.00, 3 items and 1 delivery note.
 
+**Your task:** sign in to your assigned server, confirm the source connection,
+create the shop once, and record its starting counts.
+
+**Pause and discuss before moving on:** show your database name and counts.
+Explain why we need these starting numbers to check a later restore. If yours
+differ, ask for help before repeating any inserts.
+
 **Goal:** know which server you are changing before taking a backup.
 
 Read [your class connection map](CLASS-SETUP.md). If continuing earlier work,

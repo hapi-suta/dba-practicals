@@ -4,6 +4,13 @@
 rebuild it in a different database. The original stays untouched.
 **You finish with:** `suta_plain_restore`, containing 3 orders worth 195.00.
 
+**Your task:** back up `suta_shop` to `shop.sql`, restore it into
+`suta_plain_restore`, and compare the restored data with your starting counts.
+
+**Pause and discuss before moving on:** show the restored orders and constraints.
+Explain why having `shop.sql` on disk is not enough to prove you can recover.
+Which database did you restore into, and why did we leave the source alone?
+
 Prerequisite: Lab 0. Linux shell, postgres user, inside `suta-backup-lab`.
 Output names are new for this run; do not rerun over previous files.
 

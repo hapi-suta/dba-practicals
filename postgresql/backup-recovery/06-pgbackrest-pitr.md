@@ -20,6 +20,13 @@ to store its backups. A stanza is the named configuration for this cluster.
 **You finish with:** the `shop` stanza pointing at the actual source PGDATA,
 not the backup folder or restored copy.
 
+**Your task:** create the student repository and configuration, check both
+paths, and run `stanza-create` successfully before changing source archiving.
+
+**Pause and discuss:** point to `pg1-path` and `repo1-path` in your file.
+Explain which holds the running cluster and which will hold backups. Do not
+continue to 6B if stanza creation failed.
+
 **Where:** Linux terminal as `postgres`.
 
 ```bash
@@ -91,6 +98,13 @@ The local repository is for teaching, not protection against loss of this host/d
 check that archiving works. WAL is needed to recover changes after a backup.
 **You finish with:** a successful archive check; then take a new full backup
 in Lab 7 so this repository has a usable starting point.
+
+**Your task:** verify the source connection, change its archive command to the
+student repository, reload and check the effective setting, then prove archiving.
+
+**Pause and discuss:** show the effective archive command and a successful
+`pgbackrest check`. Explain why changing a configuration file is not the same
+as proving PostgreSQL is successfully archiving WAL.
 
 **Where:** Linux terminal as `postgres`. Connect explicitly to SOURCE:
 
@@ -183,6 +197,13 @@ make another change and take a differential. Inspect their dependencies.
 **You finish with:** a verified backup inventory and the differential label
 you will select for recovery. pgBackRest resolves the required backup files.
 
+**Your task:** follow the full → change → incremental → change → differential
+sequence below. Save the completed backup labels from `pgbackrest info`.
+
+**Pause and discuss:** show your backup inventory and identify the differential
+you will use. Explain which earlier backup it depends on. Do not begin the
+incident drill until the backups have completed successfully.
+
 **Where:** Linux terminal as `postgres`, with the two Lab 6 exports still set.
 The failed/nonexistent-stanza error is a stop sign, not a reason to switch configs.
 Run each backup once and wait for it to finish before moving on.
@@ -257,6 +278,13 @@ full-then-incremental-then-differential command sequence.
 delete an older order and add a newer one in this disposable lab.
 **You finish with:** a known mistake and evidence of which orders recovery
 must retrieve—and which newer order must survive on the source.
+
+**Your task:** run the incident sequence once, record the safe restore point
+and order IDs, and confirm the required WAL was archived.
+
+**Pause and discuss:** explain which order was deleted, which order existed
+before the safe point, and which arrived afterward. Predict what should be in
+the recovery copy before starting Lab 8B.
 
 **Run this incident sequence ONCE.** No other lab writes should run. If you are
 resuming, inspect existing rows and your recorded restore point first. Reusing a
@@ -343,6 +371,13 @@ Require success and the needed archived history before recovery.
 replay archived WAL to the safe point before the deletion. Do not rewind source.
 **You finish with:** a paused recovery copy containing orders 1001–1004,
 worth 235.00, with logs confirming the intended recovery point.
+
+**Your task:** restore the selected differential into `pitr-copy`, isolate it,
+pass preflight, start recovery and verify that replay paused at your safe point.
+
+**Pause and discuss:** show the target-reached log entry, paused state and
+orders 1001–1004. Explain how order 1004 returned even though it was created
+after the differential backup. Keep the copy paused for Lab 9.
 
 **Where:** Linux terminal as `postgres`. Keep SOURCE running; the Lab 5 copy must
 be stopped. Use a new, absent `pitr-copy` directory. Replace **only `DIFF_LABEL`**

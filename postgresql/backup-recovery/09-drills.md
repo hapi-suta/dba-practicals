@@ -12,6 +12,13 @@ copy, inspect them in temporary staging tables, then return only those rows.
 **You finish with:** 5 orders worth 250.00 and 3 items on source. The newer
 order 1005 survives; the live table is not replaced.
 
+**Your task:** export order 1001 and its item from the paused copy, inspect them
+in source-side staging tables, then merge only those verified missing rows.
+
+**Pause and discuss:** show orders 1001 and 1005 together on source, with the
+expected totals and items. Explain why replacing the live table with the
+recovered version would lose valid newer work.
+
 Why: the live lab source has order 1005, which the recovered copy does not.
 Replacing the entire table would lose valid newer work. Real incidents also need
 writer coordination, dependency analysis and business approval; this toy exercise
@@ -173,6 +180,12 @@ then rebuild it from the earlier logical backup.
 **You finish with:** 3 orders worth 195.00. You can explain why this older
 backup cannot contain the changes made after it was taken.
 
+**Your task:** create and verify `suta_drop_drill`, get the instructor's target
+confirmation, drop only that drill database, then restore and verify it again.
+
+**Pause and discuss:** show 3 orders / 195.00 in the drill database. Explain why
+that is correct here even though source reached 5 / 250.00 in Lab 9.
+
 This independent drill uses the older `shop.dump` from Lab 2. It recovers the
 backup snapshot, not the later PITR state. Shell, original connection:
 
@@ -235,6 +248,13 @@ database afterward is a separate logical dump/restore step.
 record recovery time and data loss, and write steps someone else can follow.
 **You finish with:** evidence and a usable recovery runbook—not just a backup
 file. The instructor must prepare any fault-injection environment first.
+
+**Your task:** investigate one safely prepared fault with your instructor,
+record the evidence and recovery timings, and complete your recovery runbook.
+
+**Pause and discuss:** explain the fault, the evidence behind your diagnosis,
+what you recovered and any remaining data loss. Let a classmate read your
+runbook and identify the safe target and checks without guessing.
 
 Instructor chooses ONE isolated fault after the successful baseline:
 

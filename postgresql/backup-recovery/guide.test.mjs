@@ -8,10 +8,12 @@ const files=fs.readdirSync(root).filter(f=>f.endsWith('.md'));
 test('all twelve labs have a purpose and outcome',()=>{
  for(const file of ['00-start.md','01-plain.md','02-custom.md','03-table.md','04-roles.md','05-physical.md']){
    const s=fs.readFileSync(path.join(root,file),'utf8');assert.match(s,/What we’re doing:/,file);assert.match(s,/You finish with:/,file);
+   assert.match(s,/Your task:/,file);assert.match(s,/Pause and discuss/,file);
  }
  for(const file of ['06-pgbackrest-pitr.md','09-drills.md']){
    for(const section of fs.readFileSync(path.join(root,file),'utf8').split(/^## Lab /m).slice(1)){
      assert.match(section,/What we’re doing:/);assert.match(section,/You finish with:/);
+     assert.match(section,/Your task:/);assert.match(section,/Pause and discuss/);
    }
  }
 });

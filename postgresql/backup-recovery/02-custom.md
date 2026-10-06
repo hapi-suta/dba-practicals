@@ -5,6 +5,13 @@ it with `pg_restore`. Then practise selecting one schema or one table to back up
 **You finish with:** restored copies, a working order-number sequence and a
 delivery-note backup ready for Lab 3.
 
+**Your task:** inspect and restore a custom archive, test its order-number
+sequence once, then make the schema and delivery-note backups shown below.
+
+**Pause and discuss before moving on:** show 4 orders / 205.00 in the custom
+copy and 3 / 195.00 in the schema copy. Explain why those totals differ and
+identify the file you will use to recover the delivery-note table in Lab 3.
+
 Linux shell in the same folder and connection as Lab 1. Keep all previous files.
 
 ## Custom archive

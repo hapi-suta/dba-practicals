@@ -5,6 +5,13 @@ copy, then recover only that table. We check that a newer order is not lost.
 **You finish with:** the note and its constraints back, with all 4 orders worth
 205.00 still present in `suta_custom_restore`.
 
+**Your task:** confirm you are in `suta_custom_restore`, drop only its
+delivery-note table, restore `notes.dump`, and check both notes and orders.
+
+**Pause and discuss before moving on:** show the recovered note, its primary key
+and the newer order. Explain what could be lost if you replaced the whole
+database with the older backup instead of recovering just the missing table.
+
 Prerequisite: Lab 2, including `notes.dump` and the restored custom database.
 We damage ONLY `suta_custom_restore`, never the source shop.
 
