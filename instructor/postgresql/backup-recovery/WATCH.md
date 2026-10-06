@@ -20,7 +20,7 @@ production credentials are needed. Do not run on a production host.
 From the repository root, in a terminal:
 
 ```bash
-cd postgresql/backup-recovery
+cd internal/postgresql/backup-recovery
 ```
 
 ```bash
@@ -51,4 +51,4 @@ For a fast, nonvisual instructor rehearsal instead:
 node rehearse.mjs
 ```
 
-See [VALIDATION.md](VALIDATION.md) for what was tested and the advanced-lab limits.
+See [VALIDATION.md](../../../internal/postgresql/backup-recovery/VALIDATION.md) for what was tested and the advanced-lab limits.

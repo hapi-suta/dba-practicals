@@ -7,7 +7,7 @@ each step matters, and checks that show whether the result is correct.
 
 ## PostgreSQL Backup & Recovery
 
-**Teaching today? Start with [Lab 0 — connect and prepare the shop](postgresql/backup-recovery/00-start.md).**
+**Students: [open the Backup & Recovery course](postgresql/backup-recovery/README.md).**
 
 | Path | What you will practice | Readiness |
 |---|---|---|
@@ -21,26 +21,18 @@ each step matters, and checks that show whether the result is correct.
 | [6–8 · WAL and PITR](postgresql/backup-recovery/06-pgbackrest-pitr.md) | pgBackRest backup chains and recovery before a delete | Instructor setup/rehearsal required |
 | [9–11 · Incident drills](postgresql/backup-recovery/09-drills.md) | Return missing rows, recover a database, measure recovery | Advanced procedures; host rehearsal required |
 
-## See the tests run
-
-The [live rehearsal viewer](postgresql/backup-recovery/WATCH.md) displays **real
-PostgreSQL commands and results** in a clear dark layout. It runs locally on your
-machine, not on GitHub, and tests only Labs 0–4 in a private temporary cluster.
-
 ## For instructors
 
-- [Preparation and teaching notes](postgresql/backup-recovery/INSTRUCTOR.md)
-- [Student evidence worksheet](postgresql/backup-recovery/EVIDENCE.md)
-- [Validation and known limits](postgresql/backup-recovery/VALIDATION.md)
-- [Official documentation references](postgresql/backup-recovery/SOURCES.md)
-- [Machine-readable core test summary](postgresql/backup-recovery/evidence/core-rehearsal.json)
+- [Class preparation and instructor resources](instructor/README.md)
+- [Internal testing tools and verification records](internal/README.md) — not student assignments.
 
 > **Lab systems only.** Never run incident simulations against production.
 > Do not commit passwords, dumps, globals files, server data, or customer records.
-> Advanced procedures contain instructor-filled paths and must not be pasted unchanged.
+> Use only your assigned class server and connection map. Advanced labs are instructor-led.
 
-The core database exercises were rehearsed on PostgreSQL 14.20/macOS. This is not
-proof that a student's Linux login, paths, version or pgBackRest installation is
-ready. Check the instructor worksheet before class.
+The student course is in `postgresql/`. Preparation notes are in `instructor/`;
+development tools and test evidence are in `internal/`. Students do not need to
+read or run those development tools. These are navigation boundaries, not private
+access controls; credentials and personal connection sheets stay outside this public repo.
 
 [StepUP Tech Academy](https://www.stepuptechacademy.co)

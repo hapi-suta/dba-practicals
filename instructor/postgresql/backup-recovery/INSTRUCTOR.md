@@ -2,7 +2,7 @@
 
 ## Today: teach the rehearsed core first
 
-Open README.md and follow Labs 0–4. Allow roughly 80–90 minutes including setup,
+Open the [student course](../../../postgresql/backup-recovery/README.md) and follow Labs 0–4. Allow roughly 80–90 minutes including setup,
 questions and verification. If time is shorter, finish 0–3 and assign 4 afterward.
 Do not spend class time configuring PITR before students can restore a dump.
 
@@ -16,14 +16,14 @@ Before distributing commands, confirm:
 - No application, other student's work or production data uses these targets.
 
 Lab 0 uses the prepared StepUP server values. Give students the
-[lab overview](LAB-OVERVIEW.md) and [connection map](CLASS-SETUP.md) first.
+[lab overview](../../../postgresql/backup-recovery/LAB-OVERVIEW.md) and [connection map](../../../postgresql/backup-recovery/CLASS-SETUP.md) first.
 Use [the private connection sheet](CONNECTION-SHEET.md) for individual logins.
 On another environment, prepare and test a separate edition; do not ask students
 to guess paths or weaken pg_hba.conf. Local tests do not prove current SSH access.
 
 ## Advanced-lab readiness gate — do not skip
 
-Labs 5–11 remain instructor-led. Read [the exact tested scope](VALIDATION.md),
+Labs 5–11 remain instructor-led. Read [the exact tested scope](../../../internal/postgresql/backup-recovery/VALIDATION.md),
 then verify this worksheet against the host before students run commands:
 
 | Setting | Instructor-confirmed value |
@@ -51,7 +51,7 @@ The class edition uses `/var/lib/postgresql/16/lab` as SOURCE and
 55433 and the private recovery socket. There are no `/LAB` or `/SOURCE_PGDATA`
 values to fill in. Only the personal login and generated backup label vary.
 Do not use the old frozen `/opt/suta/dba-practicals` checkout for new instructions.
-Use the updated checkout described in [CHECKS.md](CHECKS.md).
+Use the updated checkout described in [CHECKS.md](../../../postgresql/backup-recovery/CHECKS.md).
 
 Before starting a copy, require the relevant `preflight` checks to pass. A failure
 is a stop sign, not a prompt to disable the check. After startup require identity,
@@ -72,7 +72,7 @@ the expected result. For other errors, stop; don't keep executing later steps.
 
 ## Resume and assess without changing student work
 
-Use [the read-only checker](CHECKS.md) and [teacher snapshot](TEACHER-DASHBOARD.md).
+Use [the read-only checker](../../../postgresql/backup-recovery/CHECKS.md) and [teacher snapshot](TEACHER-DASHBOARD.md).
 A backup file existing is not completion. Assess the student's explanation and
 restored data, constraints and permissions. For duplicates, inspect IDs/items;
 do not delete rows or reset sequences simply to match the guide.

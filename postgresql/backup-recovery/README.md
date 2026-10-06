@@ -43,16 +43,14 @@ prompt itself. A query returning the expected result is evidence; a file merely
 existing is not proof of recoverability. Expected results below are predictions,
 not fabricated captures from your machine.
 
-**Version and rehearsal:** see [VALIDATION.md](VALIDATION.md). The class server's
-version, OS and pgBackRest configuration must be confirmed before teaching.
-Logical steps use features available in PostgreSQL 14–18. Physical recovery must
-use compatible binaries/extensions and matching major versions.
+## Help and what to submit
 
-Sources and limits: [SOURCES.md](SOURCES.md). Instructor setup and delivery:
-[INSTRUCTOR.md](INSTRUCTOR.md). Submit [your evidence](EVIDENCE.md), not passwords
-or backup files. Do not commit database dumps to this repository.
+- [Connection map](CLASS-SETUP.md) — which server, database and port to use.
+- [Troubleshooting and resuming](TROUBLESHOOTING.md) — keep your existing work safe.
+- [Check your progress](CHECKS.md) — a read-only command; no need to read its code.
+- [Evidence sheet](EVIDENCE.md) — record what you did and how you proved it worked.
 
-## Instructor demonstration
+Submit evidence, not passwords or backup files. Your instructor confirms the
+server setup before class. No database server runs on GitHub.
 
-[Open the live-rehearsal instructions](WATCH.md) to run the same real core tests
-with a readable dark command/output viewer. No database server runs on GitHub.
+**Teaching this course?** Use the separate [instructor area](../../instructor/README.md).

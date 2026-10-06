@@ -3,7 +3,8 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 import {fileURLToPath} from 'node:url';
-const root=path.dirname(fileURLToPath(import.meta.url));
+const repository=fileURLToPath(new URL('../../../',import.meta.url));
+const root=path.join(repository,'postgresql/backup-recovery');
 const files=fs.readdirSync(root).filter(f=>f.endsWith('.md'));
 const read=name=>fs.readFileSync(path.join(root,name),'utf8');
 const commands=text=>[...text.matchAll(/```(?:bash|sql|psql)\n([\s\S]*?)\n```/g)].map(m=>m[1].trim());
@@ -80,14 +81,26 @@ test('student executable blocks use class paths, not retired placeholders',()=>{
   }
  }
 });
-test('relative markdown file links resolve',()=>{
- for(const file of files){
-   const text=fs.readFileSync(path.join(root,file),'utf8');
+test('relative markdown file links resolve across student, instructor and internal areas',()=>{
+ const walk=dir=>fs.readdirSync(dir,{withFileTypes:true}).flatMap(e=>e.name==='.git'?[]:e.isDirectory()?walk(path.join(dir,e.name)):e.name.endsWith('.md')?[path.join(dir,e.name)]:[]);
+ for(const file of walk(repository)){
+   const text=fs.readFileSync(file,'utf8');
    for(const m of text.matchAll(/\]\(([^\s)]+)\)/g)){
      const target=m[1].split('#')[0];
      if(!target||/^[a-z]+:|^\//i.test(target))continue;
-     assert.ok(fs.existsSync(path.resolve(root,decodeURIComponent(target))),file+' -> '+target);
+     assert.ok(fs.existsSync(path.resolve(path.dirname(file),decodeURIComponent(target))),file+' -> '+target);
    }
+ }
+});
+test('student folder contains only handouts; maintained tools are outside it',()=>{
+ const allowed=new Set(['README.md','00-start.md','01-plain.md','02-custom.md','03-table.md','04-roles.md','05-physical.md','06-pgbackrest-pitr.md','09-drills.md','LAB-OVERVIEW.md','CLASS-SETUP.md','CHECKS.md','EVIDENCE.md','TROUBLESHOOTING.md']);
+ for(const entry of fs.readdirSync(root,{withFileTypes:true})){
+  if(entry.isDirectory()&&fs.readdirSync(path.join(root,entry.name)).length===0)continue;
+  assert.ok(entry.isFile()&&allowed.has(entry.name),'Student clutter: '+entry.name);
+ }
+ for(const file of files){
+  const text=read(file);
+  for(const m of text.matchAll(/\/var\/lib\/postgresql\/dba-practicals\/([^\s`]+\.mjs)/g))assert.ok(fs.existsSync(path.join(repository,m[1])),file+' stale command '+m[1]);
  }
 });
 test('restore startup keeps mandatory preflight before pg_ctl start',()=>{

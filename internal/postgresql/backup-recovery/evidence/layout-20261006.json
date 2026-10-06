@@ -1,0 +1,100 @@
+{
+  "date": "2026-10-06T15:08:07.163Z",
+  "postgres": "postgres (PostgreSQL) 16.13 (Debian 16.13-1.pgdg13+1)",
+  "pgbackrest": "pgBackRest 2.59.3",
+  "results": [
+    "Exact Labs 0–4 SQL rehearsal",
+    "Absent copy never marked passed",
+    "Unavailable source never marked passed",
+    "Checker detour returns to the existing lab folder",
+    "Progress positive baseline",
+    "Backup file existence is not a restore pass",
+    "Repeated test insert detected",
+    "Duplicate fixture detected",
+    "Physical integrity before edits",
+    "Physical preflight passes exact guide settings",
+    "Literal placeholder detected",
+    "Later duplicate archive override detected",
+    "Unsupported auto.conf directory setting detected",
+    "Source directory redirection detected",
+    "Physical startup uses guide command and correct log despite checker detour",
+    "Physical copy live identity / isolation / data",
+    "Physical copy includes every source database, not just the shop",
+    "Running copy blocked from editing",
+    "Prepared-to-student repository transition",
+    "Full incremental differential chain",
+    "Exact Lab 8A SQL produces the documented incident",
+    "PITR preflight preserves generated recovery settings",
+    "PITR target / paused / expected rows / current log",
+    "Same row count does not hide different IDs; source remains unchanged",
+    "Guide Lab 9 selective merge preserves newer order",
+    "Guide Lab 10 drop / restore disposable database",
+    "Lab 10 older snapshot IDs verified; repaired source preserved",
+    "Lab 10 ignores wrong inherited port and uses an absolute backup path",
+    "Exact Lab 11 wrong-target failure and corrected restore; source and backup unchanged"
+  ],
+  "scenario": [
+    {
+      "stage": "source-after-differential",
+      "ids": [
+        1001,
+        1002,
+        1003
+      ],
+      "count": 3,
+      "total": 195
+    },
+    {
+      "stage": "source-after-committed-delete-and-new-order",
+      "ids": [
+        1002,
+        1003,
+        1004,
+        1005
+      ],
+      "count": 4,
+      "total": 130
+    },
+    {
+      "stage": "paused-recovery-copy",
+      "ids": [
+        1001,
+        1002,
+        1003,
+        1004
+      ],
+      "count": 4,
+      "total": 235
+    },
+    {
+      "stage": "source-after-selective-merge",
+      "ids": [
+        1001,
+        1002,
+        1003,
+        1004,
+        1005
+      ],
+      "count": 5,
+      "total": 250
+    },
+    {
+      "stage": "lab11-corrected-target",
+      "ids": [
+        1001,
+        1002,
+        1003
+      ],
+      "count": 3,
+      "total": 195
+    }
+  ],
+  "scope": "Local isolated container; no student servers restarted or changed. Labs 0–4, Lab 8A SQL, Lab 9 SQL/psql, Lab 10 and Lab 11 core commands read from handouts. Fast checkpoints and programmatic configuration used; interactive nano/SSH and advanced Lab 11 faults not replayed.",
+  "layout": "Student handouts: postgresql/backup-recovery; instructor notes: instructor/postgresql/backup-recovery; code and evidence: internal/postgresql/backup-recovery.",
+  "container": "dba-practicals-layout-20261006-v1",
+  "documentationTests": {
+    "passed": 11,
+    "failed": 0
+  },
+  "preservation": "Numbered-lab executable blocks equal 9c10298 except checker relocation; five historical evidence files byte-identical."
+}

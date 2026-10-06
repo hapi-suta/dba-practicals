@@ -4,7 +4,7 @@
 
 - Use only your assigned class server, never a company database.
 - Finish Lab 5 and stop its COPY. Keep SOURCE running.
-- Read [the connection map](CLASS-SETUP.md) and [what has been tested](VALIDATION.md).
+- Read [the connection map](CLASS-SETUP.md) and [what has been tested](../../internal/postgresql/backup-recovery/VALIDATION.md).
 - The paths below are the actual class paths.
 
 **What changes in this lab?**
@@ -605,7 +605,7 @@ ssl = off
 Save and exit. The private recovery-socket directory from Lab 5 must still exist.
 
 ```bash
-node /var/lib/postgresql/dba-practicals/postgresql/backup-recovery/check-lab.mjs preflight pitr
+node /var/lib/postgresql/dba-practicals/internal/postgresql/backup-recovery/check-lab.mjs preflight pitr
 ```
 
 **Expect:**
@@ -673,7 +673,7 @@ production primary/promotion/cutover is a separate decision, not required here.
 **Back in the Linux terminal:**
 
 ```bash
-node /var/lib/postgresql/dba-practicals/postgresql/backup-recovery/check-lab.mjs recovery pitr
+node /var/lib/postgresql/dba-practicals/internal/postgresql/backup-recovery/check-lab.mjs recovery pitr
 ```
 
 **Expect:**

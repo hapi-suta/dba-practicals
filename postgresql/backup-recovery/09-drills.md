@@ -1,7 +1,7 @@
 # Labs 9–11 — return missing data and prove recovery
 
 Lab 9 depends on verified, paused recovery in Lab 8. Instructor-led; see
-[validation scope](VALIDATION.md). Paths below are the actual class paths.
+[validation scope](../../internal/postgresql/backup-recovery/VALIDATION.md). Paths below are the actual class paths.
 SOURCE is port 5432; recovered COPY is port 55433. Do not repeat the merge if
 order 1001 already exists on SOURCE. Investigate existing work before continuing.
 

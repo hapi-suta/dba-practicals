@@ -6,6 +6,10 @@ performed an earlier action. Node.js is already installed on the class servers.
 
 ## Get the updated checker once
 
+The checker is a maintained tool, not code you need to study or edit. Update
+the repository before using the commands below; its implementation now lives
+in `internal/`, separate from your lab handouts.
+
 **Where:** assigned server Linux terminal. If `whoami` already says `postgres`,
 skip the account switch below. Otherwise, run it from your `student` account:
 
@@ -54,7 +58,7 @@ the [session restart steps](TROUBLESHOOTING.md#returning-after-a-disconnect-or-a
 ## Check Labs 0–4
 
 ```bash
-node /var/lib/postgresql/dba-practicals/postgresql/backup-recovery/check-lab.mjs progress
+node /var/lib/postgresql/dba-practicals/internal/postgresql/backup-recovery/check-lab.mjs progress
 ```
 
 | Result | Meaning / next action |
@@ -74,13 +78,13 @@ Table presence cannot prove a previous DROP. This is not an automatic grade.
 Lab 5:
 
 ```bash
-node /var/lib/postgresql/dba-practicals/postgresql/backup-recovery/check-lab.mjs preflight physical
+node /var/lib/postgresql/dba-practicals/internal/postgresql/backup-recovery/check-lab.mjs preflight physical
 ```
 
 Lab 8:
 
 ```bash
-node /var/lib/postgresql/dba-practicals/postgresql/backup-recovery/check-lab.mjs preflight pitr
+node /var/lib/postgresql/dba-practicals/internal/postgresql/backup-recovery/check-lab.mjs preflight pitr
 ```
 
 All safety checks must PASS. UNKNOWN/MISMATCH/NOT_STARTED means stop. This does
@@ -91,13 +95,13 @@ not replace backup integrity verification or configuration review.
 Lab 5:
 
 ```bash
-node /var/lib/postgresql/dba-practicals/postgresql/backup-recovery/check-lab.mjs recovery physical
+node /var/lib/postgresql/dba-practicals/internal/postgresql/backup-recovery/check-lab.mjs recovery physical
 ```
 
 Lab 8:
 
 ```bash
-node /var/lib/postgresql/dba-practicals/postgresql/backup-recovery/check-lab.mjs recovery pitr
+node /var/lib/postgresql/dba-practicals/internal/postgresql/backup-recovery/check-lab.mjs recovery pitr
 ```
 
 PITR checks include target name, paused state, order IDs and the current startup

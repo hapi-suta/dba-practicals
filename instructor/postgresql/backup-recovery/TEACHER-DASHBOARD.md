@@ -33,10 +33,10 @@ Keep inventory/key access restricted to the instructor.
 
 ## Take one snapshot
 
-Where: instructor terminal in this guide folder. Use absolute private paths:
+Where: instructor terminal at the repository root. Use absolute private paths:
 
 ```bash
-node class-report.mjs /absolute/private/class-inventory.json /absolute/private/class-progress-01.html
+node internal/postgresql/backup-recovery/class-report.mjs /absolute/private/class-inventory.json /absolute/private/class-progress-01.html
 ```
 
 Why: collect at most three simultaneous read-only probes. The remote command

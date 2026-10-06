@@ -1,5 +1,30 @@
 # Qualification — honest scope
 
+## Student/instructor/internal separation — 2026-10-06
+
+Student handouts remain at their existing `postgresql/backup-recovery` URLs.
+Instructor notes now live under `instructor/postgresql/backup-recovery`; code,
+tests, Dockerfile, references and qualification evidence are under
+`internal/postgresql/backup-recovery`. This is organization, not access control.
+The public repository contains no new credentials or private student records.
+
+- Eleven documentation/report/layout checks pass, including links across all
+  three areas, student-folder contents and documented checker entry paths.
+- A fresh isolated run of the relocated harness passed all 29 integration checks.
+  Evidence: [layout rehearsal](evidence/layout-20261006.json).
+- Every numbered-lab executable block matches 9c10298 except the checker path.
+  Five historical evidence files were moved byte-for-byte; historical recorded
+  paths remain historical, not instructions for the current checkout.
+- The first layout check caught the leftover course-level `.gitignore`. Its
+  exclusions were preserved in the root ignore file; the duplicate was removed.
+- The test container `dba-practicals-layout-20261006-v1` and its clusters were
+  stopped, data retained. No student servers were accessed.
+- Tested PostgreSQL 16.13 / pgBackRest 2.59.3, not student hosts' 16.15 / 2.50.
+  Interactive SSH/editor steps and advanced failure extensions remain untested.
+- Students must pull the updated repository before using the relocated checker.
+  The old implementation path is no longer maintained; no duplicate shim is left
+  in the student folder. SQL/data/backup paths on their servers did not change.
+
 ## Student walkthrough fixes — 2026-10-06
 
 The author re-read the student path separately from the test harness, corrected
@@ -184,13 +209,15 @@ its retired-placeholder rule was corrected and all six tests rerun.
 ## Reproduce locally — instructor only
 
 From the repository root, build the Dockerfile, start a new isolated container
-with this guide mounted read-only at `/guide`, then run as the postgres OS user:
+with the whole repository mounted read-only at `/course`. Documentation tests
+run from the repository root:
 
 ```bash
-node --test postgresql/backup-recovery/guide.test.mjs postgresql/backup-recovery/report.test.mjs
+node --test internal/postgresql/backup-recovery/guide.test.mjs internal/postgresql/backup-recovery/report.test.mjs
 ```
 
 The separate `qualify.mjs` entry requires both a Docker container and the explicit
+`/course/internal/postgresql/backup-recovery/qualify.mjs` path, run as `postgres`, with
 `SUTA_DISPOSABLE_QA=yes` environment flag. It refuses an existing source PG_VERSION.
 Never run it on students' machines. It creates synthetic data, performs destructive
 drills on that data and retains evidence; it is not the read-only checker.

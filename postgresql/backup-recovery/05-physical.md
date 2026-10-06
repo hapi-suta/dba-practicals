@@ -217,7 +217,7 @@ cd /var/lib/postgresql/suta-backup-lab
 ```
 
 ```bash
-node /var/lib/postgresql/dba-practicals/postgresql/backup-recovery/check-lab.mjs preflight physical
+node /var/lib/postgresql/dba-practicals/internal/postgresql/backup-recovery/check-lab.mjs preflight physical
 ```
 
 **Expect:**
@@ -296,7 +296,7 @@ SELECT count(*), sum(total) FROM shop.orders;
 **Back in the Linux terminal:**
 
 ```bash
-node /var/lib/postgresql/dba-practicals/postgresql/backup-recovery/check-lab.mjs recovery physical
+node /var/lib/postgresql/dba-practicals/internal/postgresql/backup-recovery/check-lab.mjs recovery physical
 ```
 
 **Expect:**

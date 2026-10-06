@@ -6,7 +6,7 @@ import {join,dirname} from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {execFileSync} from 'node:child_process';
 import assert from 'node:assert/strict';
-const here=dirname(fileURLToPath(import.meta.url));
+const here=fileURLToPath(new URL('../../../postgresql/backup-recovery/',import.meta.url));
 const root=mkdtempSync('/tmp/suta-backup-qa-');chmodSync(root,0o700);
 const data=join(root,'data'),socket=join(root,'socket'),work=join(root,'work');
 mkdirSync(socket);mkdirSync(work);

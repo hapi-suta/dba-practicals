@@ -22,5 +22,5 @@ through your agreed private channel, separately from the public guide.
 Only SSH uses the server IP. The database commands in this course use local Unix
 sockets after login. Do not expose PostgreSQL to the Internet for these labs.
 
-Start with [the overview](LAB-OVERVIEW.md). Resume with [the checker](CHECKS.md),
+Start with [the overview](../../../postgresql/backup-recovery/LAB-OVERVIEW.md). Resume with [the checker](../../../postgresql/backup-recovery/CHECKS.md),
 not by rerunning all inserts. Keep completed work until the instructor reviews it.
