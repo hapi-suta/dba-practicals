@@ -1,15 +1,23 @@
 # Lab 4 — recovered data needs the right access
 
-**What we’re doing:** give a reporting role read-only access, save role definitions
-separately from the database backup, and verify permissions in a restored copy.
-**You finish with:** a reader that can SELECT orders but cannot DELETE them.
+**What we’re doing:**
 
-**Your task:** create the reporting role, grant read access, save globals and
-the database backup, then test the role in `suta_access_restore`.
+- Give a reporting role read-only access, save role definitions separately from the database backup, and verify permissions in a restored copy.
 
-**Pause and discuss before moving on:** show SELECT succeeding, DELETE being
-denied and all 3 orders still present. Explain why this expected error is a good
-result, and why role definitions need a separate backup from `pg_dump`.
+**You finish with:**
+
+- A reader that can SELECT orders but cannot DELETE them.
+
+**Your task:**
+
+- Create the reporting role and give it read access.
+- Save the shared role definitions and the database in separate backups.
+- Restore the database into `suta_access_restore`, then test the reader's permissions.
+
+**Pause and discuss before moving on:**
+
+- Show SELECT succeeding, DELETE being denied and all 3 orders still present.
+- Explain why this expected error is a good result, and why role definitions need a separate backup from `pg_dump`.
 
 Dedicated lab cluster only. Roles are cluster-wide, not private to one database.
 Do not run this against a shared class cluster without instructor coordination.
@@ -24,8 +32,11 @@ psql -X -d suta_shop
 CREATE ROLE suta_report_reader NOLOGIN;
 ```
 
-Why: this group role represents read-only reporting access; no password is needed.
-If it exists, stop and inspect it rather than replacing it.
+**Why:**
+
+- This role groups the permissions we want a report reader to have.
+- `NOLOGIN` means the role cannot sign in directly, so no password is needed.
+- If it exists, stop and inspect it rather than replacing it.
 
 ```sql
 GRANT USAGE ON SCHEMA shop TO suta_report_reader;
@@ -48,8 +59,12 @@ grant write access or privileges on all future tables.
 pg_dumpall --globals-only --no-role-passwords -f globals.sql
 ```
 
-Why: pg_dump does not save cluster-wide role definitions. Password verifiers are
-omitted deliberately; login credentials need separate secure provisioning.
+**Why:**
+
+- `pg_dump` does not save the roles shared by all databases in the cluster.
+- `pg_dumpall --globals-only` saves those role definitions and other shared objects.
+- `--no-role-passwords` leaves out saved password hashes.
+- Any login passwords must be set up separately and securely.
 
 ```bash
 less globals.sql
@@ -89,14 +104,19 @@ SET ROLE suta_report_reader;
 SELECT count(*) FROM shop.orders;
 ```
 
-Expect 3.
+**Expect:**
+
+- 3.
 
 ```sql
 DELETE FROM shop.orders WHERE order_id = 1001;
 ```
 
-Expect **permission denied**, with no deletion. This is an intentional negative
-test in the disposable restore. If it succeeds, stop: access is too broad.
+**Expect:**
+
+- **permission denied**, with no rows deleted.
+- This error is the result we want: the reader must not be allowed to delete orders.
+- If deletion succeeds, stop and ask the instructor to check the permissions.
 
 ```sql
 RESET ROLE;
@@ -106,7 +126,11 @@ RESET ROLE;
 SELECT count(*) FROM shop.orders;
 ```
 
-Expect 3. SET ROLE tests authorization, not network authentication or a password.
+**Expect:**
+
+- 3.
+- `SET ROLE` tests what this role is allowed to do.
+- It does not test signing in over the network or using a password.
 
 ```psql
 \q

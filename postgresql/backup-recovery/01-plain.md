@@ -1,18 +1,31 @@
 # Lab 1 — restore a plain SQL backup
 
-**What we’re doing:** save the shop as a readable SQL file, then use that file to
-rebuild it in a different database. The original stays untouched.
-**You finish with:** `suta_plain_restore`, containing 3 orders worth 195.00.
+**What we’re doing:**
 
-**Your task:** back up `suta_shop` to `shop.sql`, restore it into
-`suta_plain_restore`, and compare the restored data with your starting counts.
+- Save the shop as a readable SQL file, then use that file to rebuild it in a different database.
+- The original stays untouched.
 
-**Pause and discuss before moving on:** show the restored orders and constraints.
-Explain why having `shop.sql` on disk is not enough to prove you can recover.
-Which database did you restore into, and why did we leave the source alone?
+**You finish with:**
 
-Prerequisite: Lab 0. Linux shell, postgres user, inside `suta-backup-lab`.
-Output names are new for this run; do not rerun over previous files.
+- `suta_plain_restore`, containing 3 orders worth 195.00.
+
+**Your task:**
+
+- Back up `suta_shop` to `shop.sql`.
+- Restore that file into `suta_plain_restore`.
+- Compare the restored rows and totals with your starting counts.
+
+**Pause and discuss before moving on:**
+
+- Show the restored orders and constraints.
+- Explain why having `shop.sql` on disk is not enough to prove you can recover.
+- Which database did you restore into, and why did we leave the source alone?
+
+**Before you start:**
+
+- Finish Lab 0.
+- Use the Linux terminal as `postgres`, inside `suta-backup-lab`.
+- Use new output files. Do not overwrite an earlier backup.
 
 ## Take the backup
 
@@ -20,14 +33,21 @@ Output names are new for this run; do not rerun over previous files.
 pg_dump -d suta_shop -f shop.sql
 ```
 
-Why: save SQL that can rebuild this database. `-f` names the file. This is not
-a physical cluster backup and cannot be replayed forward with archived WAL.
+**Why:**
+
+- Save SQL commands that can rebuild this database.
+- `-f` names the backup file.
+- This saves one database, not the whole PostgreSQL cluster.
+- You cannot apply WAL (PostgreSQL's record of changes) to this SQL file to recover later changes.
 
 ```bash
 echo $?
 ```
 
-Expect 0 immediately after pg_dump. A different value means stop and inspect errors.
+**Expect:**
+
+- 0 immediately after pg_dump.
+- A different value means stop and inspect errors.
 
 ```bash
 ls -lh shop.sql
@@ -37,8 +57,12 @@ ls -lh shop.sql
 less shop.sql
 ```
 
-Inspect CREATE TABLE, COPY and constraint entries. Press `q` to exit less.
-Only restore trusted dumps: they execute SQL on the destination.
+- `CREATE TABLE` rebuilds tables.
+- `COPY` loads their rows.
+- Constraints are rules for the data, such as unique IDs.
+- Press `q` to close the file viewer.
+
+**Safety:** restore only trusted backups. Their SQL commands run in the target database.
 
 ## Restore into a separate database
 
@@ -46,21 +70,31 @@ Only restore trusted dumps: they execute SQL on the destination.
 createdb -T template0 suta_plain_restore
 ```
 
-Why: leave the source untouched. Do not add `--clean` or drop the source.
+**Why:**
+
+- Leave the source untouched.
+- Do not add `--clean` or drop the source.
 
 ```bash
 psql -X -v ON_ERROR_STOP=1 -d suta_plain_restore -f shop.sql
 ```
 
-Why: psql reads plain SQL; `ON_ERROR_STOP=1` stops at the first error. This is
-not automatically atomic: if it fails, keep the partial target for investigation
-and use a new empty target after fixing the cause.
+**Why:**
+
+- `psql` runs the SQL in this file.
+- `ON_ERROR_STOP=1` stops at the first error.
+- Earlier commands may already have changed the restore database.
+- If it fails, keep that partly restored database so you can investigate.
+- After fixing the cause, use a new empty database.
 
 ```bash
 echo $?
 ```
 
-Expect 0. Then connect to the restored database:
+**Expect:**
+
+- 0.
+- Then connect to the restored database:
 
 ```bash
 psql -X -d suta_plain_restore
@@ -74,27 +108,39 @@ SELECT current_database();
 SELECT count(*), sum(total) FROM shop.orders;
 ```
 
-Expect `suta_plain_restore`, then 3 and 195.00.
+**Expect:**
+
+- `suta_plain_restore`, then 3 and 195.00.
 
 ```sql
 SELECT * FROM shop.order_items ORDER BY item_id;
 ```
 
-Expect three items linked to the original order IDs.
+**Expect:**
+
+- Three items linked to the original order IDs.
 
 ```sql
 ANALYZE;
 ```
 
-Why: refresh optimizer statistics after loading data.
+**Why:**
+
+- Collect table information that PostgreSQL uses to choose how to run queries.
 
 ```psql
 \q
 ```
 
-**Check your understanding:** if a fourth order arrives after pg_dump's snapshot,
-should this restored copy contain it? No—this file represents the earlier snapshot.
+**Check your understanding:** if a fourth order arrives after the backup's view of the data was taken,
+should this restored copy contain it?
 
-Trouble: `database already exists` → do not overwrite; `permission denied` →
-check role/file directory; `role does not exist` → see Lab 4, not `--no-owner` as
-an unexplained workaround. Source: [SQL dump](https://www.postgresql.org/docs/18/backup-dump.html).
+- **Answer:** no. The backup only contains data visible at that earlier point.
+
+### If something goes wrong
+
+- `database already exists`: stop. Do not overwrite previous work.
+- `permission denied`: check the database role and file/folder permissions.
+- `role does not exist`: follow Lab 4. Do not add `--no-owner` without understanding what it changes.
+
+Source: [SQL dump](https://www.postgresql.org/docs/18/backup-dump.html).

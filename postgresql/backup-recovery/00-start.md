@@ -1,15 +1,25 @@
 # Lab 0 — connect and prepare known data
 
-**What we’re doing:** connect to your assigned server and create Bob’s small shop.
-We record its starting rows so later we can tell whether a restore is correct.
-**You finish with:** 3 customers, 3 orders worth 195.00, 3 items and 1 delivery note.
+**What we’re doing:**
 
-**Your task:** sign in to your assigned server, confirm the source connection,
-create the shop once, and record its starting counts.
+- Connect to your assigned server and create Bob’s small shop.
+- We record its starting rows so later we can tell whether a restore is correct.
 
-**Pause and discuss before moving on:** show your database name and counts.
-Explain why we need these starting numbers to check a later restore. If yours
-differ, ask for help before repeating any inserts.
+**You finish with:**
+
+- 3 customers, 3 orders worth 195.00, 3 items and 1 delivery note.
+
+**Your task:**
+
+- Sign in to your assigned server.
+- Check that you are connected to the original database server (SOURCE).
+- Create the shop once, then record the starting row counts.
+
+**Pause and discuss before moving on:**
+
+- Show your database name and counts.
+- Explain why we need these starting numbers to check a later restore.
+- If yours differ, ask for help before repeating any inserts.
 
 **Goal:** know which server you are changing before taking a backup.
 
@@ -24,8 +34,12 @@ On your laptop, replace the two placeholders with the instructor's values:
 ssh STUDENT_USER@LAB_HOST
 ```
 
-Why: this opens the lab server's shell. Use only your assigned host. In SutaBot's
-already-connected terminal, skip SSH. Do not share keys or passwords in Git.
+**Why:**
+
+- This opens the lab server's shell.
+- Use only your assigned host.
+- In SutaBot's already-connected terminal, skip SSH.
+- Do not share keys or passwords in Git.
 
 On a dedicated Linux VM, if the instructor authorizes this account switch:
 
@@ -33,15 +47,20 @@ On a dedicated Linux VM, if the instructor authorizes this account switch:
 sudo -iu postgres
 ```
 
-Why: the PostgreSQL service account can use the lab's local authentication.
-If sudo is unavailable, ask for the assigned database login; do not change HBA.
+**Why:**
+
+- The `postgres` Linux account can connect to PostgreSQL locally in this lab.
+- If sudo is unavailable, ask for the assigned database login; do not change HBA.
 
 ```bash
 whoami
 ```
 
-Expect `postgres`. The following values are for the assigned StepUP class source.
-On another environment, stop and get an instructor-approved connection map:
+**Expect:**
+
+- `postgres`.
+- The following values are for the assigned StepUP class source.
+- On another environment, stop and get an instructor-approved connection map:
 
 ```bash
 export PGHOST=/var/run/postgresql
@@ -95,7 +114,9 @@ Linux terminal, still as postgres:
 umask 077
 ```
 
-Why: new backup files should not be readable by other OS users.
+**Why:**
+
+- New backup files should not be readable by other OS users.
 
 ```bash
 mkdir suta-backup-lab
@@ -121,7 +142,10 @@ Instructor confirms space. This same-disk folder is for practice, not disaster p
 createdb -T template0 suta_shop
 ```
 
-Why: create an empty lab database. If it exists, stop rather than drop it.
+**Why:**
+
+- Create an empty lab database.
+- If it exists, stop rather than drop it.
 
 ```bash
 psql -X -d suta_shop
@@ -151,7 +175,8 @@ CREATE TABLE shop.orders (
 );
 ```
 
-The identity generates IDs; the foreign key prevents an order for an unknown customer.
+- **Identity:** gives each new order an ID automatically.
+- **Foreign key:** stops an order from referring to a customer who does not exist.
 
 ```sql
 CREATE TABLE shop.order_items (
@@ -184,37 +209,50 @@ CREATE TABLE shop.delivery_notes (note_id integer PRIMARY KEY, message text NOT 
 INSERT INTO shop.delivery_notes VALUES (1, 'Leave at reception');
 ```
 
-## 4. Record the baseline
+## 4. Record the starting counts
 
 ```sql
 SELECT * FROM shop.orders ORDER BY order_id;
 ```
 
-Expect IDs 1001, 1002, 1003 and totals 120, 50, 25.
+**Expect:**
+
+- IDs 1001, 1002, 1003 and totals 120, 50, 25.
 
 ```sql
 SELECT count(*), sum(total) FROM shop.orders;
 ```
 
-Expect 3 and 195.00. Write this into your evidence sheet.
+**Expect:**
+
+- 3 and 195.00.
+- Write this into your evidence sheet.
 
 ```sql
 SELECT count(*) FROM shop.customers;
 ```
 
-**Expect:** 3.
+**Expect:**
+
+- 3.
 
 ```sql
 SELECT count(*) FROM shop.order_items;
 ```
 
-**Expect:** 3, not 6. Stop and inspect duplicates if different.
+**Expect:**
+
+- 3, not 6.
+- Stop and inspect duplicates if different.
 
 ```sql
 SELECT count(*) FROM shop.delivery_notes;
 ```
 
-**Expect:** 1. These baselines help separate a backup issue from repeated setup.
+**Expect:**
+
+- 1.
+- These starting counts help you spot missing data or accidentally repeated inserts.
 
 ```psql
 \q

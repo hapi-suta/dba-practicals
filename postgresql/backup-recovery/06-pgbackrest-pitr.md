@@ -1,39 +1,65 @@
 # Labs 6–8 — pgBackRest, WAL and point-in-time recovery
 
-**Instructor-led.** Use only your assigned class server. Complete Lab 5 first,
-stop its COPY, and keep SOURCE running. Read [the connection map](CLASS-SETUP.md)
-and [validation scope](VALIDATION.md). Every path below is an actual class path.
-No command here authorizes changing a company database.
+**Before you start — instructor-led:**
 
-**What changes in this lab?** Your source already archives into an instructor
-repository. You will create a different student repository and point SOURCE at
-it. Keep the old repository/configuration. A new full backup is required in the
-student repository; the instructor backup is not part of your new backup chain.
+- Use only your assigned class server, never a company database.
+- Finish Lab 5 and stop its COPY. Keep SOURCE running.
+- Read [the connection map](CLASS-SETUP.md) and [what has been tested](VALIDATION.md).
+- The paths below are the actual class paths.
+
+**What changes in this lab?**
+
+- SOURCE already saves archived WAL in the instructor's backup folder (repository).
+- You will create your own repository and tell SOURCE to use it.
+- Keep the instructor's repository and configuration unchanged.
+- Take a new full backup in your repository. The instructor's backup is not part of your new backup set.
 
 **Returning after a disconnect?** Use [resume help](TROUBLESHOOTING.md). Exports
 below must be set again in a new shell. Do not repeat inserts or incident deletes.
 
+### Terms used below
+
+- **pgBackRest:** the tool we use to back up and recover PostgreSQL.
+- **Repository:** the place where pgBackRest stores backups and archived WAL.
+- **WAL:** PostgreSQL's record of changes. Recovery replays it to recover changes made after a backup.
+- **PITR (point-in-time recovery):** recover to a chosen safe point using a physical backup and the required WAL.
+- **Stanza:** a named set of pgBackRest settings for one PostgreSQL cluster.
+
 ## Lab 6A — configure the repository
 
-**What we’re doing:** tell pgBackRest where the source cluster lives and where
-to store its backups. A stanza is the named configuration for this cluster.
-**You finish with:** the `shop` stanza pointing at the actual source PGDATA,
-not the backup folder or restored copy.
+**What we’re doing:**
 
-**Your task:** create the student repository and configuration, check both
-paths, and run `stanza-create` successfully before changing source archiving.
+- Tell pgBackRest where the source cluster lives and where to store its backups.
+- A stanza is the named configuration for this cluster.
 
-**Pause and discuss:** point to `pg1-path` and `repo1-path` in your file.
-Explain which holds the running cluster and which will hold backups. Do not
-continue to 6B if stanza creation failed.
+**You finish with:**
 
-**Where:** Linux terminal as `postgres`.
+- The `shop` stanza pointing at the actual source PGDATA, not the backup folder or restored copy.
+
+**Your task:**
+
+- Create the student backup folder and configuration file.
+- Check the source path and backup path carefully.
+- Run `stanza-create`. It must succeed before you change source archiving.
+
+**Pause and discuss:**
+
+- Point to `pg1-path` and `repo1-path` in your file.
+- Explain which holds the running cluster and which will hold backups.
+- Do not continue to 6B if stanza creation failed.
+
+**Where:**
+
+- Linux terminal as `postgres`.
 
 ```bash
 cd /var/lib/postgresql/suta-backup-lab
 ```
 
-**Expect:** your existing Lab 0 folder. If absent, stop and locate your work.
+**Expect:**
+
+- Your existing Lab 0 folder.
+- If absent, stop and locate your work.
 
 ```bash
 pgbackrest version
@@ -68,9 +94,11 @@ pg1-port=5432
 pg1-socket-path=/var/run/postgresql
 ```
 
-**Important:** `pg1-path=/var/lib/postgresql/16/lab` is SOURCE's data directory.
-It is not `physical-copy`, `pitr-copy`, the repository, or a placeholder.
-`repo1-path` is where backups are stored. Do not swap these two paths.
+**Important — these paths have different jobs:**
+
+- `pg1-path=/var/lib/postgresql/16/lab`: the running SOURCE cluster's data files.
+- `repo1-path=/var/lib/postgresql/suta-backup-lab/repo`: the folder for backups.
+- Do not swap them. Never use `physical-copy`, `pitr-copy` or a placeholder for SOURCE's path.
 
 Save with Ctrl+O, Enter; exit with Ctrl+X. Back in the Linux terminal:
 
@@ -82,31 +110,48 @@ export PGBACKREST_CONFIG=/var/lib/postgresql/suta-backup-lab/pgbackrest.conf
 export PGBACKREST_STANZA=shop
 ```
 
-Why: these set the configuration/stanza for short interactive commands. PostgreSQL's
-service does not necessarily inherit them; archive_command uses explicit options.
+**Why:**
+
+- These tell commands in this terminal which configuration and stanza to use.
+- The PostgreSQL service may not receive these terminal settings.
+- Its `archive_command` therefore includes the full configuration options.
 
 ```bash
 pgbackrest stanza-create
 ```
 
-Expect success. If paths or permissions are wrong, stop and correct the worksheet.
-The local repository is for teaching, not protection against loss of this host/disk.
+**Expect:**
+
+- Success.
+- If paths or permissions are wrong, stop and correct the paths or permissions in your setup.
+- The local repository is for teaching, not protection against loss of this host/disk.
 
 ## Lab 6B — enable and prove archiving
 
-**What we’re doing:** send completed WAL segments to the student repository and
-check that archiving works. WAL is needed to recover changes after a backup.
-**You finish with:** a successful archive check; then take a new full backup
-in Lab 7 so this repository has a usable starting point.
+**What we’re doing:**
 
-**Your task:** verify the source connection, change its archive command to the
-student repository, reload and check the effective setting, then prove archiving.
+- Send completed WAL segments to the student repository and check that archiving works.
+- WAL is needed to recover changes after a backup.
 
-**Pause and discuss:** show the effective archive command and a successful
-`pgbackrest check`. Explain why changing a configuration file is not the same
-as proving PostgreSQL is successfully archiving WAL.
+**You finish with:**
 
-**Where:** Linux terminal as `postgres`. Connect explicitly to SOURCE:
+- A successful archive check; then take a new full backup in Lab 7 so this repository has a usable starting point.
+
+**Your task:**
+
+- Check that you are connected to SOURCE.
+- Change its archive command to use the student backup folder.
+- Reload the settings, check the command in use, then test archiving.
+
+**Pause and discuss:**
+
+- Show the effective archive command and a successful `pgbackrest check`.
+- Explain why changing a configuration file is not the same as proving PostgreSQL is successfully archiving WAL.
+
+**Where:**
+
+- Linux terminal as `postgres`.
+- Connect explicitly to SOURCE:
 
 ```bash
 psql -X -h /var/run/postgresql -p 5432 -d suta_shop
@@ -118,21 +163,29 @@ psql -X -h /var/run/postgresql -p 5432 -d suta_shop
 SHOW data_directory;
 ```
 
-**Expect:** `/var/lib/postgresql/16/lab`. If it says `physical-copy` or `pitr-copy`,
-exit and use the correct connection. Do not change that copy's archiving.
+**Expect:**
+
+- `/var/lib/postgresql/16/lab`.
+- If it says `physical-copy` or `pitr-copy`, exit and use the correct connection.
+- Do not change that copy's archiving.
 
 ```sql
 SHOW wal_level;
 ```
 
-**Expect:** `replica` on the prepared class source.
+**Expect:**
+
+- `replica` on the prepared class source.
 
 ```sql
 SHOW archive_mode;
 ```
 
-**Expect:** `on` on the prepared source. If off, stop for instructor preparation:
-enabling it needs a source restart. Do not improvise a restart during class.
+**Expect:**
+
+- `on` on the prepared source.
+- If off, stop for instructor preparation: enabling it needs a source restart.
+- Do not improvise a restart during class.
 
 ```sql
 SHOW archive_command;
@@ -145,38 +198,48 @@ Record the previous command. On these class servers it initially references
 ALTER SYSTEM SET archive_command = '/usr/bin/pgbackrest --config=/var/lib/postgresql/suta-backup-lab/pgbackrest.conf --stanza=shop archive-push %p';
 ```
 
-**Why:** move SOURCE archiving to the student repository. ALTER SYSTEM writes the
-effective override; editing postgresql.conf alone may be overridden by an earlier
-postgresql.auto.conf setting. This change is authorized only on your disposable source.
+**Why:**
+
+- Move SOURCE archiving to the student repository.
+- ALTER SYSTEM writes the effective override; editing postgresql.conf alone may be overridden by an earlier postgresql.auto.conf setting.
+- This change is authorized only on your disposable source.
 
 ```sql
 SELECT pg_reload_conf();
 ```
 
-**Expect:** `true` means the reload was requested, not that every setting applied.
-Because archive_mode is already on, changing archive_command needs a reload,
-not a restart. Recheck:
+**Expect:**
+
+- `true` means the reload was requested, not that every setting applied.
+- Because archive_mode is already on, changing archive_command needs a reload, not a restart.
+- Recheck:
 
 ```sql
 SHOW archive_command;
 ```
 
-**Expect:** the command above, pointing to your student config. If it still names
-the instructor config, stop and inspect effective settings; do not take a backup yet.
+**Expect:**
+
+- The command above, pointing to your student config.
+- If it still names the instructor config, stop and inspect effective settings; do not take a backup yet.
 
 ```sql
 SELECT pg_switch_wal();
 ```
 
-Why: request a segment switch so completed WAL can be archived. Permission is required.
+**Why:**
+
+- Request a segment switch so completed WAL can be archived.
+- Permission is required.
 
 ```sql
 SELECT archived_count, last_archived_wal, last_archived_time, failed_count FROM pg_stat_archiver;
 ```
 
-Archiving is asynchronous: allow it to complete and repeat this read-only query.
-Look for a recent successful archive; historical failed_count alone does not
-mean the current attempt failed. Record before/after values.
+- Archiving runs in the background. Wait for it, then repeat this read-only query.
+- Look for a recent successful archive.
+- `failed_count` includes earlier failures. A nonzero count alone does not prove the current attempt failed.
+- Record the values before and after the check.
 
 ```psql
 \q
@@ -188,31 +251,50 @@ Shell:
 pgbackrest check
 ```
 
-Expect success. Investigate errors before backup. This check still does not replace a restore.
+**Expect:**
+
+- Success.
+- Investigate errors before backup.
+- This check still does not replace a restore.
 
 ## Lab 7 — create and inspect the backup chain
 
-**What we’re doing:** take a full backup, make a change, take an incremental,
-make another change and take a differential. Inspect their dependencies.
-**You finish with:** a verified backup inventory and the differential label
-you will select for recovery. pgBackRest resolves the required backup files.
+**What we’re doing:**
 
-**Your task:** follow the full → change → incremental → change → differential
-sequence below. Save the completed backup labels from `pgbackrest info`.
+- Take a full backup, make a change, take an incremental, make another change and take a differential.
+- Inspect their dependencies.
 
-**Pause and discuss:** show your backup inventory and identify the differential
-you will use. Explain which earlier backup it depends on. Do not begin the
-incident drill until the backups have completed successfully.
+**You finish with:**
 
-**Where:** Linux terminal as `postgres`, with the two Lab 6 exports still set.
-The failed/nonexistent-stanza error is a stop sign, not a reason to switch configs.
-Run each backup once and wait for it to finish before moving on.
+- A verified backup inventory and the differential label you will select for recovery. pgBackRest resolves the required backup files.
+
+**Your task:**
+
+- Take a full backup.
+- Change an order, then take an incremental backup.
+- Change another order, then take a differential backup.
+- Save the completed backup labels shown by `pgbackrest info`.
+
+**Pause and discuss:**
+
+- Show your backup inventory and identify the differential you will use.
+- Explain which earlier backup it depends on.
+- Do not begin the incident drill until the backups have completed successfully.
+
+**Where:**
+
+- Linux terminal as `postgres`, with the two Lab 6 exports still set.
+- The failed/nonexistent-stanza error is a stop sign, not a reason to switch configs.
+- Run each backup once and wait for it to finish before moving on.
 
 ```bash
 pgbackrest --type=full backup
 ```
 
-Why: establish the complete backup basis. Wait for successful completion.
+**Why:**
+
+- Take the full backup that later incremental and differential backups will depend on.
+- Wait for successful completion.
 
 ```bash
 pgbackrest info
@@ -232,7 +314,9 @@ UPDATE shop.orders SET status = 'Shipped' WHERE order_id = 1001;
 SELECT order_id, status FROM shop.orders WHERE order_id = 1001;
 ```
 
-Expect Shipped.
+**Expect:**
+
+- Shipped.
 
 ```psql
 \q
@@ -260,9 +344,9 @@ UPDATE shop.orders SET status = 'Shipped' WHERE order_id = 1002;
 pgbackrest --type=diff backup
 ```
 
-A differential covers changes since its full backup. The earlier incremental is
-not an extra restore dependency for this differential. These are pgBackRest types,
-not PostgreSQL's newer native incremental feature.
+- A **differential** backup covers changes since the full backup.
+- To restore this differential, pgBackRest needs it and the full backup—not the earlier incremental.
+- These are pgBackRest backup types, not PostgreSQL's separate native incremental feature.
 
 ```bash
 pgbackrest info
@@ -274,22 +358,32 @@ full-then-incremental-then-differential command sequence.
 
 ## Lab 8A — create an incident with a known safe boundary
 
-**What we’re doing:** add an order, mark a safe recovery point, then deliberately
-delete an older order and add a newer one in this disposable lab.
-**You finish with:** a known mistake and evidence of which orders recovery
-must retrieve—and which newer order must survive on the source.
+**What we’re doing:**
 
-**Your task:** run the incident sequence once, record the safe restore point
-and order IDs, and confirm the required WAL was archived.
+- Add an order, mark a safe recovery point, then deliberately delete an older order and add a newer one in this disposable lab.
 
-**Pause and discuss:** explain which order was deleted, which order existed
-before the safe point, and which arrived afterward. Predict what should be in
-the recovery copy before starting Lab 8B.
+**You finish with:**
+
+- A known mistake and evidence of which orders recovery must retrieve—and which newer order must survive on the source.
+
+**Your task:**
+
+- Run the practice incident once.
+- Record the safe restore-point name and the order IDs.
+- Check that the required WAL has been archived.
+
+**Pause and discuss:**
+
+- Explain which order was deleted, which order existed before the safe point, and which arrived afterward.
+- Predict what should be in the recovery copy before starting Lab 8B.
 
 **Run this incident sequence ONCE.** No other lab writes should run. If you are
 resuming, inspect existing rows and your recorded restore point first. Reusing a
 restore-point name or repeating an insert makes the evidence ambiguous.
-**Where:** Linux terminal as `postgres`; connect to SOURCE explicitly:
+
+**Where:**
+
+- Linux terminal as `postgres`; connect to SOURCE explicitly:
 
 ```bash
 psql -X -h /var/run/postgresql -p 5432 -d suta_shop
@@ -299,16 +393,21 @@ psql -X -h /var/run/postgresql -p 5432 -d suta_shop
 INSERT INTO shop.orders (customer_id, status, total) VALUES (3, 'New', 40) RETURNING order_id;
 ```
 
-Expected 1004 if the source was unchanged. Record the actual ID. This order is
-AFTER the differential and demonstrates why file restore alone is insufficient.
+**Expect:**
+
+- 1004 if the source was unchanged.
+- Record the actual ID.
+- This order is AFTER the differential and demonstrates why file restore alone is insufficient.
 
 ```sql
 SELECT pg_create_restore_point('suta_before_delete');
 ```
 
-Why: mark a reproducible safe WAL boundary after the committed insert, before
-the damage. This lab uses a named target; it avoids pretending a statement log
-timestamp is necessarily the transaction's commit timestamp.
+**Why:**
+
+- Mark a named safe point after the new order was saved, but before the delete.
+- We will tell recovery to stop at this name.
+- A query's timestamp in a log is not always the time its transaction committed.
 
 ```sql
 SELECT clock_timestamp(), current_setting('TimeZone');
@@ -343,13 +442,19 @@ COMMIT;
 SELECT * FROM shop.orders WHERE order_id = 1001;
 ```
 
-Expect zero rows. Now prove we must preserve newer valid work:
+**Expect:**
+
+- Zero rows.
+- Now prove we must preserve newer valid work:
 
 ```sql
 INSERT INTO shop.orders (customer_id, status, total) VALUES (2, 'New', 15) RETURNING order_id;
 ```
 
-Expected 1005. Record the actual value.
+**Expect:**
+
+- 1005.
+- Record the actual value.
 
 ```sql
 SELECT pg_switch_wal();
@@ -367,22 +472,35 @@ Require success and the needed archived history before recovery.
 
 ## Lab 8B — restore files, then replay WAL
 
-**What we’re doing:** restore a separate cluster from the selected backup, then
-replay archived WAL to the safe point before the deletion. Do not rewind source.
-**You finish with:** a paused recovery copy containing orders 1001–1004,
-worth 235.00, with logs confirming the intended recovery point.
+**What we’re doing:**
 
-**Your task:** restore the selected differential into `pitr-copy`, isolate it,
-pass preflight, start recovery and verify that replay paused at your safe point.
+- Restore a separate cluster from the selected backup, then replay archived WAL to the safe point before the deletion.
+- Do not rewind source.
 
-**Pause and discuss:** show the target-reached log entry, paused state and
-orders 1001–1004. Explain how order 1004 returned even though it was created
-after the differential backup. Keep the copy paused for Lab 9.
+**You finish with:**
 
-**Where:** Linux terminal as `postgres`. Keep SOURCE running; the Lab 5 copy must
-be stopped. Use a new, absent `pitr-copy` directory. Replace **only `DIFF_LABEL`**
-below with the exact completed differential label from your own `pgbackrest info`.
-Unlike the paths, that label is unique to your backup and cannot be prefilled.
+- A paused recovery copy containing orders 1001–1004, worth 235.00, with logs confirming the intended recovery point.
+
+**Your task:**
+
+- Restore the selected differential backup into `pitr-copy`.
+- Set up the copy's separate connections and pass the safety checks.
+- Start recovery and check that it pauses at the safe point.
+- Check the recovered orders. Keep the copy paused for Lab 9.
+
+**Pause and discuss:**
+
+- Show the target-reached log entry, paused state and orders 1001–1004.
+- Explain how order 1004 returned even though it was created after the differential backup.
+- Keep the copy paused for Lab 9.
+
+**Where:**
+
+- Linux terminal as `postgres`.
+- Keep SOURCE running; the Lab 5 copy must be stopped.
+- Use a new, absent `pitr-copy` directory.
+- Replace **only `DIFF_LABEL`** below with the exact completed differential label from your own `pgbackrest info`.
+- Unlike the paths, that label is unique to your backup and cannot be prefilled.
 
 ```bash
 pgbackrest --pg1-path=/var/lib/postgresql/suta-backup-lab/pitr-copy --set=DIFF_LABEL --type=name --target=suta_before_delete --target-action=pause restore
@@ -428,7 +546,10 @@ Save and exit. The private recovery-socket directory from Lab 5 must still exist
 node /var/lib/postgresql/dba-practicals/postgresql/backup-recovery/check-lab.mjs preflight pitr
 ```
 
-**Expect:** all safety checks PASS. Otherwise stop; do not start the copy.
+**Expect:**
+
+- All safety checks PASS.
+- Otherwise stop; do not start the copy.
 
 ```bash
 pg_ctl -D /var/lib/postgresql/suta-backup-lab/pitr-copy -l pitr-recovery.log -w start
@@ -458,20 +579,26 @@ Must be pitr-copy.
 SELECT pg_is_in_recovery(), pg_is_wal_replay_paused();
 ```
 
-Expect true / true at the requested pause; also inspect the target log entry.
+**Expect:**
+
+- True / true at the requested pause; also inspect the target log entry.
 
 ```sql
 SELECT * FROM shop.orders ORDER BY order_id;
 ```
 
-Expected: Maria 1001 exists; pre-incident 1004 exists; later 1005 does NOT.
-This proves replay added data created after the differential but excluded later work.
+**Expect:**
+
+- Maria 1001 exists; pre-incident 1004 exists; later 1005 does NOT.
+- This proves replay added data created after the differential but excluded later work.
 
 ```sql
 SELECT count(*), sum(total) FROM shop.orders;
 ```
 
-Expected 4 and 235.00 with this exact fixture.
+**Expect:**
+
+- 4 orders worth 235.00 with this lab's data.
 
 Do not resume replay before inspection. For this selective-recovery exercise,
 keep the recovered cluster read-only/paused and export from it in Lab 9. A new
@@ -487,8 +614,11 @@ production primary/promotion/cutover is a separate decision, not required here.
 node /var/lib/postgresql/dba-practicals/postgresql/backup-recovery/check-lab.mjs recovery pitr
 ```
 
-**Expect:** target/paused-state/data checks PASS. Keep the logs and check output.
-Do not resume recovery or promote this copy; Lab 9 exports from the paused copy.
+**Expect:**
+
+- Target/paused-state/data checks PASS.
+- Keep the logs and check output.
+- Do not resume recovery or promote this copy; Lab 9 exports from the paused copy.
 
 **Reflection:** restore places backup files; recovery replays WAL. Why would the
 differential alone miss order 1004? Why must we NOT replace the source with this copy?

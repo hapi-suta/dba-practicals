@@ -1,16 +1,24 @@
 # Lab 3 — someone dropped a table
 
-**What we’re doing:** deliberately drop the delivery-note table in the disposable
-copy, then recover only that table. We check that a newer order is not lost.
-**You finish with:** the note and its constraints back, with all 4 orders worth
-205.00 still present in `suta_custom_restore`.
+**What we’re doing:**
 
-**Your task:** confirm you are in `suta_custom_restore`, drop only its
-delivery-note table, restore `notes.dump`, and check both notes and orders.
+- Deliberately drop the delivery-note table in the practice copy, then recover only that table.
+- We check that a newer order is not lost.
 
-**Pause and discuss before moving on:** show the recovered note, its primary key
-and the newer order. Explain what could be lost if you replaced the whole
-database with the older backup instead of recovering just the missing table.
+**You finish with:**
+
+- The note and its constraints back, with all 4 orders worth 205.00 still present in `suta_custom_restore`.
+
+**Your task:**
+
+- Check that you are in `suta_custom_restore`.
+- Drop only its delivery-note table.
+- Restore `notes.dump`, then check the notes and orders.
+
+**Pause and discuss before moving on:**
+
+- Show the recovered note, its primary key and the newer order.
+- Explain what could be lost if you replaced the whole database with the older backup instead of recovering just the missing table.
 
 Prerequisite: Lab 2, including `notes.dump` and the restored custom database.
 We damage ONLY `suta_custom_restore`, never the source shop.
@@ -33,19 +41,25 @@ Must say `suta_custom_restore`. Otherwise STOP.
 SELECT * FROM shop.delivery_notes;
 ```
 
-Expect note 1. Confirm `notes.dump` was created successfully in Lab 2.
+**Expect:**
+
+- Note 1.
+- Confirm `notes.dump` was created successfully in Lab 2.
 
 ```sql
 DROP TABLE shop.delivery_notes;
 ```
 
-This is intentional loss of the disposable copy, not production. Do not add CASCADE.
+**Safety:** delete this table only in the practice copy, never in production.
+Do not add `CASCADE`; it can remove other objects that depend on the table.
 
 ```sql
 SELECT to_regclass('shop.delivery_notes');
 ```
 
-Expect NULL: that table no longer exists.
+**Expect:**
+
+- NULL: that table no longer exists.
 
 ```psql
 \q
@@ -59,8 +73,10 @@ Linux shell:
 pg_restore --exit-on-error -d suta_custom_restore notes.dump
 ```
 
-Why: restore the complete table-only archive into the lab database where the
-table is absent and the schema exists. The good orders table is not replaced.
+**Why:**
+
+- Restore the complete table-only archive into the lab database where the table is absent and the schema exists.
+- The good orders table is not replaced.
 
 ```bash
 psql -X -d suta_custom_restore
@@ -70,21 +86,27 @@ psql -X -d suta_custom_restore
 SELECT * FROM shop.delivery_notes;
 ```
 
-Expect note 1, “Leave at reception”.
+**Expect:**
+
+- Note 1, “Leave at reception”.
 
 ```psql
 \d shop.delivery_notes
 ```
 
-Expect its primary key and NOT NULL constraints.
+**Expect:**
+
+- Its primary key (unique ID) and NOT NULL rules (required values).
 
 ```sql
 SELECT count(*), sum(total) FROM shop.orders;
 ```
 
-Expect 4 and 205.00: the later order from Lab 2 survived. A whole-database
-replacement would have lost it. In a real incident, rehearse restoration in a
-separate recovery target before writing to the live system.
+**Expect:**
+
+- 4 and 205.00: the later order from Lab 2 survived.
+- A whole-database replacement would have lost it.
+- In a real incident, rehearse restoration in a separate recovery target before writing to the live system.
 
 ```psql
 \q

@@ -7,22 +7,34 @@ order 1001 already exists on SOURCE. Investigate existing work before continuing
 
 ## Lab 9 — bring back only Maria's missing order
 
-**What we’re doing:** export the missing order and its item from the recovery
-copy, inspect them in temporary staging tables, then return only those rows.
-**You finish with:** 5 orders worth 250.00 and 3 items on source. The newer
-order 1005 survives; the live table is not replaced.
+**What we’re doing:**
 
-**Your task:** export order 1001 and its item from the paused copy, inspect them
-in source-side staging tables, then merge only those verified missing rows.
+- Export the missing order and its item from the recovery copy, inspect them in temporary tables, then return only those rows.
+- These staging tables hold the recovered rows while we check them.
 
-**Pause and discuss:** show orders 1001 and 1005 together on source, with the
-expected totals and items. Explain why replacing the live table with the
-recovered version would lose valid newer work.
+**You finish with:**
 
-Why: the live lab source has order 1005, which the recovered copy does not.
-Replacing the entire table would lose valid newer work. Real incidents also need
-writer coordination, dependency analysis and business approval; this toy exercise
-has one known order and one item, with its customer still present.
+- 5 orders worth 250.00 and 3 items on source.
+- The newer order 1005 survives; the live table is not replaced.
+
+**Your task:**
+
+- Export order 1001 and its item from the paused recovery copy.
+- Load them into temporary staging tables on SOURCE and check their values.
+- Return only the rows you have verified are missing.
+
+**Pause and discuss:**
+
+- Show orders 1001 and 1005 together on source, with the expected totals and items.
+- Explain why replacing the live table with the recovered version would lose valid newer work.
+
+**Why:**
+
+- The live lab source has order 1005, which the recovered copy does not.
+- Replacing the entire table would lose valid newer work.
+- Real incidents also need control over other writes, checks for related data and business approval.
+- This small lab has one missing order and one item.
+- Its customer still exists.
 
 Connect to the recovered copy, not source:
 
@@ -84,20 +96,27 @@ CREATE TEMP TABLE recovered_items (item_id integer, order_id integer, product te
 TABLE recovered_orders;
 ```
 
-Expected order 1001, customer 1, Shipped, 120.00 from Lab 7.
+**Expect:**
+
+- Order 1001, customer 1, Shipped, 120.00 from Lab 7.
 
 ```sql
 TABLE recovered_items;
 ```
 
-Expected item 1, order 1001, Camera, 120.00.
+**Expect:**
+
+- Item 1, order 1001, Camera, 120.00.
 
 ```sql
 SELECT * FROM shop.orders WHERE order_id IN (1001, 1005);
 ```
 
-Expect only 1005. Stop if 1001 already exists or if the values differ from the
-incident evidence. Do not overwrite it with ON CONFLICT DO UPDATE.
+**Expect:**
+
+- Only 1005.
+- Stop if 1001 already exists or if the values differ from the incident evidence.
+- Do not overwrite it with ON CONFLICT DO UPDATE.
 
 Start a transaction and briefly exclude competing table writers in this small
 lab. Real systems require a planned locking/window strategy to avoid disruption.
@@ -126,26 +145,37 @@ Still zero rows. The related customer must exist:
 SELECT * FROM shop.customers WHERE customer_id = 1;
 ```
 
-Expect Maria. Insert the parent before its dependent item:
+**Expect:**
+
+- Maria.
+- Insert the order first, then its item.
+- The item needs an existing order:
 
 ```sql
 INSERT INTO shop.orders OVERRIDING SYSTEM VALUE SELECT * FROM recovered_orders;
 ```
 
-Why: preserve the original identity value 1001, rather than generate a new ID.
+**Why:**
+
+- Preserve the original identity value 1001, rather than generate a new ID.
 
 ```sql
 INSERT INTO shop.order_items OVERRIDING SYSTEM VALUE SELECT * FROM recovered_items;
 ```
 
-Expect INSERT 0 1 for each. Primary and foreign keys remain active.
+**Expect:**
+
+- INSERT 0 1 for each.
+- Primary and foreign keys remain active.
 
 ```sql
 SELECT count(*), sum(total) FROM shop.orders;
 ```
 
-Expected 5 and 250.00; order 1005 is still present. If any check differs, ROLLBACK
-instead of COMMIT and retain your evidence for the instructor.
+**Expect:**
+
+- 5 and 250.00; order 1005 is still present.
+- If any check differs, ROLLBACK instead of COMMIT and retain your evidence for the instructor.
 
 ```sql
 COMMIT;
@@ -159,9 +189,12 @@ SELECT * FROM shop.orders ORDER BY order_id;
 SELECT * FROM shop.order_items ORDER BY item_id;
 ```
 
-Expect five orders, three items. This fixture deliberately leaves new orders
-1004/1005 without items. A real application's business rules may not allow that.
-The live sequence was never rolled back or replaced: do not reset it downward.
+**Expect:**
+
+- Five orders, three items.
+- This lab deliberately leaves new orders 1004/1005 without items.
+- A real application's business rules may not allow that.
+- The live sequence was never rolled back or replaced: do not reset it downward.
 
 ```psql
 \q
@@ -175,16 +208,25 @@ pg_ctl -D /var/lib/postgresql/suta-backup-lab/pitr-copy -m fast -w stop
 
 ## Lab 10 — a whole database is dropped
 
-**What we’re doing:** create a separate drill database, drop only that database,
-then rebuild it from the earlier logical backup.
-**You finish with:** 3 orders worth 195.00. You can explain why this older
-backup cannot contain the changes made after it was taken.
+**What we’re doing:**
 
-**Your task:** create and verify `suta_drop_drill`, get the instructor's target
-confirmation, drop only that drill database, then restore and verify it again.
+- Create a separate drill database, drop only that database, then rebuild it from the earlier logical backup.
 
-**Pause and discuss:** show 3 orders / 195.00 in the drill database. Explain why
-that is correct here even though source reached 5 / 250.00 in Lab 9.
+**You finish with:**
+
+- 3 orders worth 195.00.
+- You can explain why this older backup cannot contain the changes made after it was taken.
+
+**Your task:**
+
+- Create `suta_drop_drill` and check its data.
+- Ask the instructor to confirm that this is the database to drop.
+- Drop only that practice database, then restore and check it again.
+
+**Pause and discuss:**
+
+- Show 3 orders / 195.00 in the drill database.
+- Explain why that is correct here even though source reached 5 / 250.00 in Lab 9.
 
 This independent drill uses the older `shop.dump` from Lab 2. It recovers the
 backup snapshot, not the later PITR state. Shell, original connection:
@@ -234,9 +276,11 @@ psql -X -d suta_drop_drill
 SELECT count(*), sum(total) FROM shop.orders;
 ```
 
-Expect 3 and 195.00, not 5 and 250.00. Explain which later changes this backup
-cannot recover. A physical PITR recovery restores a cluster; extracting only one
-database afterward is a separate logical dump/restore step.
+**Expect:**
+
+- 3 and 195.00, not 5 and 250.00.
+- Explain which later changes this backup cannot recover.
+- A physical PITR recovery restores a cluster; extracting only one database afterward is a separate logical dump/restore step.
 
 ```psql
 \q
@@ -244,17 +288,25 @@ database afterward is a separate logical dump/restore step.
 
 ## Lab 11 — failures, recovery objectives and runbook
 
-**What we’re doing:** investigate one instructor-approved failure in isolation,
-record recovery time and data loss, and write steps someone else can follow.
-**You finish with:** evidence and a usable recovery runbook—not just a backup
-file. The instructor must prepare any fault-injection environment first.
+**What we’re doing:**
 
-**Your task:** investigate one safely prepared fault with your instructor,
-record the evidence and recovery timings, and complete your recovery runbook.
+- Investigate one instructor-approved failure in isolation, record recovery time and data loss, and write steps someone else can follow.
 
-**Pause and discuss:** explain the fault, the evidence behind your diagnosis,
-what you recovered and any remaining data loss. Let a classmate read your
-runbook and identify the safe target and checks without guessing.
+**You finish with:**
+
+- Evidence and step-by-step recovery instructions (a runbook), not just a backup file.
+- The instructor must prepare a separate test environment for the failure first.
+
+**Your task:**
+
+- Investigate one failure prepared safely by the instructor.
+- Record the errors, checks, recovery time and any missing data.
+- Write recovery steps that another student can follow.
+
+**Pause and discuss:**
+
+- Explain the fault, the evidence behind your diagnosis, what you recovered and any remaining data loss.
+- Let a classmate read your runbook and identify the safe target and checks without guessing.
 
 Instructor chooses ONE isolated fault after the successful baseline:
 
@@ -270,10 +322,13 @@ These last three are **instructor-designed extensions**, not provided executable
 fault injections. Never corrupt the only backup, remove live WAL, fill a shared
 disk or change repository permissions serving another cluster.
 
-Record recovery start, service/data verification finish, latest recovered order
-and any missing committed orders. Compare observed data loss with the business
-RPO and elapsed end-to-end recovery with RTO. “Restore command took 2 minutes” is
-not the entire outage. Do not invent performance numbers.
+Record what actually happened:
+
+- When recovery started and when service and data checks finished.
+- The latest recovered order and any saved orders still missing.
+- **RPO:** how much data loss the business can accept. Compare this with what was lost.
+- **RTO:** how long the business can wait for service to return. Compare this with the full recovery time.
+- Time the whole outage, not just the restore command. Do not invent timings.
 
 Write a runbook using EVIDENCE.md. Another student should identify the correct
 backup, target and validation checks without relying on your memory.

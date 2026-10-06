@@ -17,6 +17,17 @@ test('all twelve labs have a purpose and outcome',()=>{
    }
  }
 });
+test('student summaries and tasks use separated bullet lists',()=>{
+ for(const file of ['00-start.md','01-plain.md','02-custom.md','03-table.md','04-roles.md','05-physical.md','06-pgbackrest-pitr.md','09-drills.md']){
+  const text=fs.readFileSync(path.join(root,file),'utf8');
+  for(const label of ['What we’re doing','You finish with','Your task','Pause and discuss']){
+   const headings=[...text.matchAll(new RegExp('\\*\\*'+label+'(?: before moving on)?:\\*\\*([^]*?)(?=\\n\\n)','g'))];
+   assert.ok(headings.length>0,file+' missing '+label);
+   assert.ok(headings.every(m=>m[1]===''),file+' should put '+label+' on its own line');
+   assert.match(text,new RegExp('\\*\\*'+label+'(?: before moving on)?:\\*\\*\\n\\n- '),file+' needs bullets under '+label);
+  }
+ }
+});
 test('student executable blocks use class paths, not retired placeholders',()=>{
  for(const file of files){
   const text=fs.readFileSync(path.join(root,file),'utf8');

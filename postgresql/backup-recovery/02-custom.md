@@ -1,16 +1,24 @@
 # Lab 2 — archives, schemas and tables
 
-**What we’re doing:** take a custom-format backup, inspect its contents and restore
-it with `pg_restore`. Then practise selecting one schema or one table to back up.
-**You finish with:** restored copies, a working order-number sequence and a
-delivery-note backup ready for Lab 3.
+**What we’re doing:**
 
-**Your task:** inspect and restore a custom archive, test its order-number
-sequence once, then make the schema and delivery-note backups shown below.
+- Take a custom-format backup, inspect its contents and restore it with `pg_restore`.
+- Then practise selecting one schema or one table to back up.
 
-**Pause and discuss before moving on:** show 4 orders / 205.00 in the custom
-copy and 3 / 195.00 in the schema copy. Explain why those totals differ and
-identify the file you will use to recover the delivery-note table in Lab 3.
+**You finish with:**
+
+- Restored copies, a working order-number sequence and a delivery-note backup ready for Lab 3.
+
+**Your task:**
+
+- List what is in the custom backup, then restore it.
+- Add the test order once to check that order IDs still work.
+- Make the schema backup and delivery-note backup for the next lab.
+
+**Pause and discuss before moving on:**
+
+- Show 4 orders / 205.00 in the custom copy and 3 / 195.00 in the schema copy.
+- Explain why those totals differ and identify the file you will use to recover the delivery-note table in Lab 3.
 
 Linux shell in the same folder and connection as Lab 1. Keep all previous files.
 
@@ -20,14 +28,19 @@ Linux shell in the same folder and connection as Lab 1. Keep all previous files.
 pg_dump -Fc -d suta_shop -f shop.dump
 ```
 
-Why: `-Fc` creates a custom archive for pg_restore, not a SQL text file.
+**Why:**
+
+- `-Fc` creates a custom archive for pg_restore, not a SQL text file.
 
 ```bash
 pg_restore -l shop.dump
 ```
 
-Why: list the archive's table of contents. Find the schema, tables, data,
-sequences, primary keys and foreign keys. Listing alone does not prove restore.
+**Why:**
+
+- List the archive's table of contents.
+- Find the schema, tables, data, sequences, primary keys and foreign keys.
+- Listing alone does not prove restore.
 
 ```bash
 createdb -T template0 suta_custom_restore
@@ -37,7 +50,10 @@ createdb -T template0 suta_custom_restore
 pg_restore --exit-on-error -d suta_custom_restore shop.dump
 ```
 
-Why: reconstruct all archive objects in an empty target and stop on error.
+**Why:**
+
+- Rebuild the tables, data and other saved objects in an empty database.
+- Stop if an error occurs.
 
 ```bash
 psql -X -d suta_custom_restore
@@ -47,13 +63,19 @@ psql -X -d suta_custom_restore
 SELECT count(*), sum(total) FROM shop.orders;
 ```
 
-Expect 3 and 195.00.
+**Expect:**
+
+- 3 and 195.00.
 
 ```psql
 \d shop.orders
 ```
 
-Check the identity, primary key and customer foreign key, not only row count.
+Check more than the number of rows:
+
+- **Identity:** generates the next order ID.
+- **Primary key:** keeps each order ID unique.
+- **Foreign key:** links each order to an existing customer.
 
 **Run once only.** If you already added order 1004, skip this INSERT and inspect
 the existing rows using the query below. Do not add another test order.
@@ -70,14 +92,18 @@ first instead of repeating the INSERT:
 SELECT order_id, status, total FROM shop.orders WHERE order_id >= 1004 ORDER BY order_id;
 ```
 
-**Expect after the one-time insert:** one row, 1004 / New / 10.00.
+**Expect after the one-time insert:**
+
+- One row, 1004 / New / 10.00.
 
 ```sql
 SELECT count(*), sum(total) FROM shop.orders;
 ```
 
-**Expect:** 4 / 205.00. If 5 / 215.00, investigate with the instructor; do not
-delete an order or reset the sequence to make the numbers match.
+**Expect:**
+
+- 4 / 205.00.
+- If 5 / 215.00, investigate with the instructor; do not delete an order or reset the sequence to make the numbers match.
 
 ```psql
 \q
@@ -89,8 +115,10 @@ delete an order or reset the sequence to make the numbers match.
 pg_dump -Fc -n shop -d suta_shop -f shop-schema.dump
 ```
 
-`-n shop` selects the schema and its contents, including data. It does NOT mean
-“definitions only”; that is `--schema-only`. Dependencies outside it may be absent.
+- A **schema** groups related tables and other objects under a name, here `shop`.
+- `-n shop` saves that schema and its contents, including rows.
+- `--schema-only` means definitions without rows. It is a different option.
+- Objects needed from outside `shop` may not be included.
 
 ```bash
 createdb -T template0 suta_schema_restore
@@ -108,7 +136,9 @@ psql -X -d suta_schema_restore
 SELECT count(*), sum(total) FROM shop.orders;
 ```
 
-Expect 3 and 195.00, not the extra order inserted into the other copy.
+**Expect:**
+
+- 3 and 195.00, not the extra order inserted into the other copy.
 
 ```psql
 \q
