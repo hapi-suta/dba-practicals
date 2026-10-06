@@ -1,5 +1,9 @@
 # Lab 4 — recovered data needs the right access
 
+**The task:** the report reader must read orders but must not delete them after
+a restore. A successful SELECT is only half the proof: DELETE must be refused.
+We test permissions in `suta_access_restore`, not by deleting from SOURCE.
+
 **What we’re doing:**
 
 - Give a reporting role read-only access, save role definitions separately from the database backup, and verify permissions in a restored copy.
@@ -106,7 +110,7 @@ SELECT count(*) FROM shop.orders;
 
 **Expect:**
 
-- 3.
+- Three orders are readable.
 
 ```sql
 DELETE FROM shop.orders WHERE order_id = 1001;
@@ -128,7 +132,7 @@ SELECT count(*) FROM shop.orders;
 
 **Expect:**
 
-- 3.
+- All three orders remain; the denied deletion changed nothing.
 - `SET ROLE` tests what this role is allowed to do.
 - It does not test signing in over the network or using a password.
 

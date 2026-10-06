@@ -1,5 +1,14 @@
 # Lab 2 — archives, schemas and tables
 
+**Keep the copies straight:**
+
+- SOURCE `suta_shop` keeps orders 1001–1003, totaling 195.00.
+- `shop.dump` is taken from SOURCE before the test insert.
+- Only `suta_custom_restore` gets order 1004 / 10.00, reaching 4 / 205.00.
+- The schema copy is restored from SOURCE's data, so it stays at 3 / 195.00.
+- `notes.dump` contains the independent delivery-note table for Lab 3; it does
+  not contain the orders table. Keep all these files.
+
 **What we’re doing:**
 
 - Take a custom-format backup, inspect its contents and restore it with `pg_restore`.

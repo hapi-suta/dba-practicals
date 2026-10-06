@@ -1,5 +1,9 @@
 # Lab 1 — restore a plain SQL backup
 
+**The task:** prove that Bob's saved SQL file can rebuild his shop in a separate
+database. There is no deletion in this lab. SOURCE stays intact; the restore
+should show the same three orders and values saved by the backup.
+
 **What we’re doing:**
 
 - Save the shop as a readable SQL file, then use that file to rebuild it in a different database.
@@ -93,7 +97,7 @@ echo $?
 
 **Expect:**
 
-- 0.
+- Exit status `0` means the restore command succeeded.
 - Then connect to the restored database:
 
 ```bash

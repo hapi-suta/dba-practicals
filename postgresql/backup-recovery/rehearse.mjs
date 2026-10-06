@@ -57,6 +57,7 @@ try{
     assert.equal(result,`${count}|${sum}.00`);
   }
   const notes=run('psql',['-X','-At','-d','suta_custom_restore','-c','SELECT message FROM shop.delivery_notes WHERE note_id=1;']).trim();assert.equal(notes,'Leave at reception');
+  const newer=run('psql',['-XAt','-d','suta_custom_restore','-c',"SELECT order_id, total FROM shop.orders WHERE order_id=1004"]).trim();assert.equal(newer,'1004|10.00');
   const globals=readFileSync(join(work,'globals.sql'),'utf8');assert.match(globals,/CREATE ROLE suta_report_reader/);assert.doesNotMatch(globals,/PASSWORD '/);
   writeFileSync(join(root,'result.json'),JSON.stringify({status:'passed',version:run('postgres',['--version']).trim(),scope:'Exact database commands from Labs 0–4; isolated Unix socket, no TCP. SSH/sudo/class environment not tested.',checks:['plain restore','custom restore','schema restore','identity next ID','dropped table recovery','newer order preserved','globals export without passwords','read allowed/delete denied'],log},null,2));
   console.log(JSON.stringify({status:'passed',evidence:join(root,'result.json'),temporaryDataPreserved:root}));

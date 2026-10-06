@@ -1,5 +1,48 @@
 # Qualification — honest scope
 
+## Scenario-led labs and troubleshooting rehearsal — 2026-10-06
+
+Labs 3, 5, 7, 9, 10 and 11 now start with a concrete scenario, what must stay
+safe, the expected result and where the exercise ends. Smaller introductions
+clarify Labs 0–2, 4 and 6. Lab 8's existing incident timeline is preserved.
+
+**Passed: 26 integration checks and eight guide/report tests.** A fresh isolated
+Linux container ran PostgreSQL 16.13 and pgBackRest 2.59.3 using the existing
+test image. No external network, published ports, cloud credentials or student
+data were available. The test clusters and container are stopped; their files
+are retained in `dba-practicals-scenarios-20261006-v1`.
+
+- The physical copy contained every source database, not only the shop.
+- Lab 3 retained its newer test order; differential-backup checks verified both
+  earlier status changes, not only an unchanged row count.
+- Lab 8 recovered IDs 1001–1004; the live source still had IDs 1002–1005.
+- Lab 9 restored only missing data, leaving five orders worth 250.00 and retaining
+  newer order 1005. Lab 10's separate older snapshot did not change that source.
+- Lab 11's commands were read from the guide. A nonexistent destination produced
+  the expected error; the corrected new destination held IDs 1001–1003, worth
+  195.00. The original dump's SHA-256 and repaired source data were unchanged.
+- The local `suta-lab-builder` skill, template and verification guidance now
+  require this scenario-to-evidence approach. Skill structure validation passed;
+  this is not a claim that every future authored lab is automatically correct.
+- Evidence and exact tested input hashes:
+  [scenario qualification record](evidence/lab-scenarios-20261006.json).
+- After testing, five bare numeric expectation bullets were clarified to avoid
+  accidental nested lists. No executable block changed. A regression test checks
+  for this formatting error. Node syntax and Git diff checks also passed.
+
+**Limits:** student Ubuntu 24.04 / PostgreSQL 16.15 / pgBackRest 2.50 hosts were
+untouched. This is not a version-identical host rehearsal. Fast checkpoints and
+programmatic configuration were used; interactive nano and SSH were not replayed.
+The corrupted-backup, missing-WAL and disk-full Lab 11 extensions still require
+separate instructor preparation and testing. Named-target PITR was tested, not
+timestamp-target recovery. Historical results below apply to their own snapshots.
+
+**Official references checked:** [PostgreSQL 16 pg_restore](https://www.postgresql.org/docs/16/app-pgrestore.html),
+[pg_basebackup](https://www.postgresql.org/docs/16/app-pgbasebackup.html), and the
+[pgBackRest 2.50 guide](https://pgbackrest.org/prior/2.50/user-guide.html).
+The measured row states and failure/correction results above come from the server
+rehearsal, not invented example output.
+
 ## Lab 8 scenario rehearsal — 2026-10-06
 
 The scenario is now explained before commands: completed backup → order 1004 →

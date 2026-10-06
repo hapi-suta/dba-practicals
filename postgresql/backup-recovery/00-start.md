@@ -1,5 +1,9 @@
 # Lab 0 — connect and prepare known data
 
+**Why start here?** We need known data before we can prove a restore is correct.
+This is setup, not a recovery exercise. Keep the original `suta_shop` for later
+labs; restored databases will have different names.
+
 **What we’re doing:**
 
 - Connect to your assigned server and create Bob’s small shop.
@@ -234,7 +238,7 @@ SELECT count(*) FROM shop.customers;
 
 **Expect:**
 
-- 3.
+- Three customers.
 
 ```sql
 SELECT count(*) FROM shop.order_items;
@@ -251,7 +255,7 @@ SELECT count(*) FROM shop.delivery_notes;
 
 **Expect:**
 
-- 1.
+- One delivery note.
 - These starting counts help you spot missing data or accidentally repeated inserts.
 
 ```psql

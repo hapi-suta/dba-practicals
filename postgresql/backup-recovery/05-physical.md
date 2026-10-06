@@ -1,5 +1,29 @@
 # Lab 5 — start a separate physical copy
 
+## The task — prove the whole cluster can start elsewhere
+
+Bob asks, “We have a backup, but can we actually start PostgreSQL from it?”
+You will make a physical backup and start a separate copy on the same lab server.
+There is no simulated disk failure here; SOURCE must stay running.
+
+- **Start:** SOURCE runs on port 5432. Its `suta_shop` has orders 1001–1003,
+  totaling 195.00. It also contains the practice databases from earlier labs.
+- **Copy:** `pg_basebackup` copies the whole cluster, not just `suta_shop`.
+- **Check files:** `pg_verifybackup` checks the backup before you change its settings.
+- **Start separately:** COPY uses its own data directory, private socket and port 55433.
+- **Prove it works:** check COPY's identity and data. File verification alone
+  does not show that a server starts or that the expected data is usable.
+- **Finish:** stop only COPY and retain its files. SOURCE remains on port 5432.
+
+**By the end, you will be able to:**
+
+- Create and verify a physical backup.
+- Explain why a recovery copy needs separate storage and connection settings.
+- Start, inspect and stop the copy without changing the original server.
+
+**Practice limitation:** both copies are on one lab server. This demonstrates
+restoration, not protection against losing that server or its disk.
+
 **What we’re doing:**
 
 - Copy the whole PostgreSQL cluster with `pg_basebackup`, verify the backup, then safely start a separate copy on port 55433.

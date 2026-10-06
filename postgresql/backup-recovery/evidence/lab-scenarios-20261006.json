@@ -1,0 +1,104 @@
+{
+  "date": "2026-10-06T12:54:53.980Z",
+  "postgres": "postgres (PostgreSQL) 16.13 (Debian 16.13-1.pgdg13+1)",
+  "pgbackrest": "pgBackRest 2.59.3",
+  "results": [
+    "Exact Labs 0–4 SQL rehearsal",
+    "Absent copy never marked passed",
+    "Unavailable source never marked passed",
+    "Progress positive baseline",
+    "Backup file existence is not a restore pass",
+    "Repeated test insert detected",
+    "Duplicate fixture detected",
+    "Physical integrity before edits",
+    "Physical preflight passes exact guide settings",
+    "Literal placeholder detected",
+    "Later duplicate archive override detected",
+    "Unsupported auto.conf directory setting detected",
+    "Source directory redirection detected",
+    "Physical copy live identity / isolation / data",
+    "Physical copy includes every source database, not just the shop",
+    "Running copy blocked from editing",
+    "Prepared-to-student repository transition",
+    "Full incremental differential chain",
+    "Exact Lab 8A SQL produces the documented incident",
+    "PITR preflight preserves generated recovery settings",
+    "PITR target / paused / expected rows / current log",
+    "Same row count does not hide different IDs; source remains unchanged",
+    "Guide Lab 9 selective merge preserves newer order",
+    "Guide Lab 10 drop / restore disposable database",
+    "Lab 10 older snapshot IDs verified; repaired source preserved",
+    "Exact Lab 11 wrong-target failure and corrected restore; source and backup unchanged"
+  ],
+  "scenario": [
+    {
+      "stage": "source-after-differential",
+      "ids": [
+        1001,
+        1002,
+        1003
+      ],
+      "count": 3,
+      "total": 195
+    },
+    {
+      "stage": "source-after-committed-delete-and-new-order",
+      "ids": [
+        1002,
+        1003,
+        1004,
+        1005
+      ],
+      "count": 4,
+      "total": 130
+    },
+    {
+      "stage": "paused-recovery-copy",
+      "ids": [
+        1001,
+        1002,
+        1003,
+        1004
+      ],
+      "count": 4,
+      "total": 235
+    },
+    {
+      "stage": "source-after-selective-merge",
+      "ids": [
+        1001,
+        1002,
+        1003,
+        1004,
+        1005
+      ],
+      "count": 5,
+      "total": 250
+    },
+    {
+      "stage": "lab11-corrected-target",
+      "ids": [
+        1001,
+        1002,
+        1003
+      ],
+      "count": 3,
+      "total": 195
+    }
+  ],
+  "scope": "Local isolated container; no student servers restarted or changed. Labs 0–4, Lab 8A SQL, Lab 9 SQL/psql, Lab 10 and Lab 11 core commands read from handouts. Fast checkpoints and programmatic configuration used; interactive nano/SSH and advanced Lab 11 faults not replayed.",
+  "container": "dba-practicals-scenarios-20261006-v1",
+  "inputSha256": {
+    "00-start.md": "b6369e62d4a47f3bfe7f617f7d13e15c0af0cd3b85f0e6983528116e9780e121",
+    "01-plain.md": "893a853883cc19c5beb97ec4fa5cb3ba7278ccd76e08f76b856e33a6a86c7af0",
+    "02-custom.md": "a1c9aa45e1404b3f2138227e21ee98ebf4511aa497edd9dedadf126828e5bfcd",
+    "03-table.md": "ce78e91be406d289dbe009b61cdb5009166fcfb123fb1c37614bbaf3107d45b3",
+    "04-roles.md": "8ff934db591aef20f48aad974bae75522e209c1bab0b971a71513efca3327fac",
+    "05-physical.md": "59f83347a6a69ac8277c3d1a242774cac77499936c3f62b97886156fe2ef5d75",
+    "06-pgbackrest-pitr.md": "2dd8c8ab4ad5412d1effa8bbdf015ecbe11a5552464447ba8ee029c9edcdbb7d",
+    "09-drills.md": "30b8e769baad76d94573590e8358c0e2ca2659aa146497cf648a1860e05fb2f7",
+    "qualify.mjs": "cf89dfee27a78c2f88a4f4d2a61c6ea8c8fc40b4a83080b5b5433b7ed6543795",
+    "rehearse.mjs": "9e2cc1c42eb36030a614da7c4266c0c24c5a352ec488e59c66e08b13e688f88e"
+  },
+  "formattingNote": "After the server rehearsal, bare numeric expectation bullets in Labs 0, 1 and 4 were rewritten as words/code to avoid nested-list rendering. Executable blocks unchanged."
+}

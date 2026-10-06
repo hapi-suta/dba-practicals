@@ -27,6 +27,10 @@ below must be set again in a new shell. Do not repeat inserts or incident delete
 
 ## Lab 6A — configure the repository
 
+**The task:** connect two different places in the configuration: SOURCE's data
+directory is what we protect; the repository is where backups and archived WAL
+will be stored. Creating the stanza prepares this setup—it does not take a backup.
+
 **What we’re doing:**
 
 - Tell pgBackRest where the source cluster lives and where to store its backups.
@@ -127,6 +131,10 @@ pgbackrest stanza-create
 - The local repository is for teaching, not protection against loss of this host/disk.
 
 ## Lab 6B — enable and prove archiving
+
+**The task:** prove PostgreSQL can send completed WAL files to the student
+repository. Keep the instructor repository intact. A successful check here is
+not a completed recovery: Lab 7 takes backups and Lab 8 tests recovery from them.
 
 **What we’re doing:**
 
@@ -258,6 +266,29 @@ pgbackrest check
 - This check still does not replace a restore.
 
 ## Lab 7 — create and inspect the backup chain
+
+### The task — track changes through three backup types
+
+The shop still has orders 1001–1003, totaling 195.00. We will change shipping
+statuses, not add orders. That lets us see what changed without changing the total.
+
+| Stage | Change on SOURCE | Backup taken afterward |
+|---|---|---|
+| Starting shop | Original order statuses | Full: the starting backup for this set |
+| First change | Order 1001 becomes Shipped | Incremental: changes since the preceding backup |
+| Second change | Order 1002 becomes Shipped | Differential: changes since the full backup |
+
+**By the end, you will be able to:**
+
+- Match each completed backup label to the changes made before it.
+- Explain why the differential includes both shipping-status changes.
+- Explain why restoring this differential needs its full backup, but not the earlier incremental.
+
+**Keep safe:** do not remove any backup or archived WAL to prove a dependency.
+Inspect `pgbackrest info`; let pgBackRest select required files during restoration.
+
+**This lab ends** with successful backups and the saved differential label.
+It does not prove recovery yet. Lab 8 restores that backup and replays later WAL.
 
 **What we’re doing:**
 

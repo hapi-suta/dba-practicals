@@ -2,6 +2,7 @@
 // Refuses ordinary hosts. Never run on student machines.
 import fs from 'node:fs';
 import assert from 'node:assert/strict';
+import {createHash} from 'node:crypto';
 import {execFileSync} from 'node:child_process';
 import {observer,defaults as c} from './check-lab.mjs';
 if(process.env.SUTA_DISPOSABLE_QA!=='yes'||!fs.existsSync('/.dockerenv'))throw Error('Dedicated disposable QA container required');
@@ -66,6 +67,9 @@ try{
  fs.writeFileSync(physical+'/postgresql.conf',mainConfig);
  run('pg_ctl',['-D',physical,'-l',c.root+'/physical-recovery.log','-w','start']);physicalStarted=true;
  report('Physical copy live identity / isolation / data',inspect('recovery','physical'));
+ const databases="SELECT string_agg(datname,',' ORDER BY datname) FROM pg_database WHERE NOT datistemplate";
+ assert.equal(run('psql',['-XAt','-h',c.root+'/recovery-socket','-p',c.recoveryPort,'-d','postgres','-c',databases]),sql(databases,'postgres'));
+ results.push('Physical copy includes every source database, not just the shop');
  expectFail('Running copy blocked from editing','physical','copy-stopped');
  run('pg_ctl',['-D',physical,'-m','fast','-w','stop']);physicalStarted=false;
  // New student repository: exact published INI, not the instructor repo.
@@ -82,6 +86,7 @@ try{
  run('pgbackrest',['--type=incr','--start-fast','backup']);
  sql("UPDATE shop.orders SET status='Shipped' WHERE order_id=1002");
  run('pgbackrest',['--type=diff','--start-fast','backup']);
+ assert.equal(sql("SELECT string_agg(order_id::text||':'||status,',' ORDER BY order_id) FROM shop.orders WHERE order_id IN (1001,1002)"),'1001:Shipped,1002:Shipped');
  const info=JSON.parse(run('pgbackrest',['--output=json','info']));
  const diff=info[0].backup.findLast?info[0].backup.findLast(b=>b.type==='diff'):info[0].backup.filter(b=>b.type==='diff').at(-1);
  assert.ok(diff);results.push('Full incremental differential chain');
@@ -139,7 +144,30 @@ try{
    }
  }
  assert.equal(sql("SELECT count(*)||'|'||sum(total) FROM shop.orders",'suta_drop_drill'),'3|195.00');results.push('Guide Lab 10 drop / restore disposable database');
- const evidence={date:new Date().toISOString(),postgres:run('postgres',['--version']),pgbackrest:run('pgbackrest',['version']),results,scenario,scope:'Local isolated container; no student servers restarted or changed. Lab 8A SQL and Lab 9 SQL/psql read directly from handouts. Fast checkpoints and programmatic configuration used; interactive nano/SSH not replayed.'};
+ assert.equal(sql("SELECT string_agg(order_id::text,',' ORDER BY order_id) FROM shop.orders",'suta_drop_drill'),'1001,1002,1003');
+ assert.deepEqual(JSON.parse(sql(stateQuery)),mergedState);
+ results.push('Lab 10 older snapshot IDs verified; repaired source preserved');
+ // Execute the new student troubleshooting drill; exactly one failure is intended.
+ const lab11=fs.readFileSync('/guide/09-drills.md','utf8').split('### 11A')[1].split('### Instructor-prepared extensions')[0];
+ const backupHash=()=>createHash('sha256').update(fs.readFileSync(c.root+'/shop.dump')).digest('hex');
+ const beforeHash=backupHash();let intendedFailures=0;
+ assert.equal(sql("SELECT count(*) FROM pg_database WHERE datname IN ('suta_restore_typo','suta_fault_restore')",'postgres'),'0');
+ for(const m of lab11.matchAll(/```bash\n([\s\S]*?)\n```/g)){
+   const command=m[1].trim();
+   if(command.startsWith('pg_restore ')&&command.includes('-d suta_restore_typo ')){
+     let failure;
+     try{run('bash',['-eu','-c',`cd ${c.root}\n${command}`]);}catch(error){failure=error;}
+     assert.ok(failure,'Wrong-target restore must fail');
+     assert.match(String(failure.stderr),/database "suta_restore_typo" does not exist/);
+     intendedFailures++;
+   }else run('bash',['-eu','-c',`cd ${c.root}\n${command}`]);
+ }
+ assert.equal(intendedFailures,1);
+ assert.deepEqual(JSON.parse(sql(stateQuery,'suta_fault_restore')),{ids:[1001,1002,1003],count:3,total:195});
+ assert.deepEqual(JSON.parse(sql(stateQuery)),mergedState);assert.equal(backupHash(),beforeHash);
+ results.push('Exact Lab 11 wrong-target failure and corrected restore; source and backup unchanged');
+ scenario.push({stage:'lab11-corrected-target',...JSON.parse(sql(stateQuery,'suta_fault_restore'))});
+ const evidence={date:new Date().toISOString(),postgres:run('postgres',['--version']),pgbackrest:run('pgbackrest',['version']),results,scenario,scope:'Local isolated container; no student servers restarted or changed. Labs 0–4, Lab 8A SQL, Lab 9 SQL/psql, Lab 10 and Lab 11 core commands read from handouts. Fast checkpoints and programmatic configuration used; interactive nano/SSH and advanced Lab 11 faults not replayed.'};
  fs.writeFileSync('/var/lib/postgresql/qualification.json',JSON.stringify(evidence,null,2));console.log(JSON.stringify(evidence,null,2));
 }finally{
  for(const [started,dir]of[[pitrStarted,pitr],[physicalStarted,physical],[sourceStarted,c.source]])if(started)run('pg_ctl',['-D',dir,'-m','fast','-w','stop']);

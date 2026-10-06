@@ -7,6 +7,35 @@ order 1001 already exists on SOURCE. Investigate existing work before continuing
 
 ## Lab 9 — bring back only Maria's missing order
 
+### The incident continues — the recovered copy is not the live answer
+
+Lab 8 recovered an older, safe version of the shop. Maria's order 1001 is there,
+but newer order 1005 exists only on SOURCE. We need data from both points in time.
+
+| Place | Orders before this lab | What we do here |
+|---|---|---|
+| SOURCE, port 5432 | 1002, 1003, 1004, 1005; total 130.00 | Add only missing order 1001 and its item. |
+| Paused COPY, port 55433 | 1001, 1002, 1003, 1004; total 235.00 | Read and export order 1001 and its item. Do not change the copy. |
+| Temporary staging tables on SOURCE | Not created yet | Load the exported rows and check them before inserting into the shop tables. |
+
+**The recovery path:**
+
+1. Export only Maria's missing order and item from COPY.
+2. Load them into temporary staging tables on SOURCE.
+3. Compare IDs and values; confirm the customer exists and the order is still missing.
+4. Insert the order first, then its item, in the same transaction.
+5. Verify results before committing; if a check fails, roll back and investigate.
+
+**By the end, you will be able to:**
+
+- Explain why you cannot replace SOURCE with the recovered copy.
+- Inspect recovered rows before returning them to the original tables.
+- Return related rows together without overwriting valid newer work.
+
+**Success:** SOURCE has orders 1001–1005, totaling 250.00, and three items.
+Order 1001 is Shipped / 120.00; newer order 1005 is still New / 15.00.
+This completes the missing-data recovery begun in Lab 8. Do not repeat the merge.
+
 **What we’re doing:**
 
 - Export the missing order and its item from the recovery copy, inspect them in temporary tables, then return only those rows.
@@ -208,6 +237,28 @@ pg_ctl -D /var/lib/postgresql/suta-backup-lab/pitr-copy -m fast -w stop
 
 ## Lab 10 — a whole database is dropped
 
+### A separate incident — recover only what the older backup contains
+
+This is a new practice database, not the SOURCE repaired in Lab 9.
+We build `suta_drop_drill` from Lab 2's `shop.dump`, drop that practice database,
+then rebuild it from the same saved file.
+
+| Stage | `suta_drop_drill` | SOURCE `suta_shop` |
+|---|---|---|
+| Before DROP | Orders 1001–1003; 3 / 195.00 | Orders 1001–1005; 5 / 250.00 after Lab 9 |
+| After DROP | Database missing | Unchanged |
+| After restore | Orders 1001–1003; 3 / 195.00 | Unchanged |
+
+**By the end, you will be able to:**
+
+- Confirm exactly which database is safe to drop.
+- Re-create and restore that database from a custom-format backup.
+- Explain why a successful restore of an old dump does not include later orders.
+
+**Do not confuse this with PITR:** `shop.dump` is an older logical backup.
+We are not applying WAL to it. This exercise restores what was saved in that file;
+orders 1004 and 1005 remain safely in SOURCE, not in this older practice copy.
+
 **What we’re doing:**
 
 - Create a separate drill database, drop only that database, then rebuild it from the earlier logical backup.
@@ -288,18 +339,36 @@ SELECT count(*), sum(total) FROM shop.orders;
 
 ## Lab 11 — failures, recovery objectives and runbook
 
+### The scenario — a restore points at the wrong database
+
+An operator has a valid `shop.dump` but types a database name that does not exist.
+The restore fails before loading data. Your job is to read the error, confirm
+the target, then restore into a new empty practice database—not overwrite SOURCE.
+
+**By the end, you will be able to:**
+
+- Tell a connection/target error from evidence of a damaged backup.
+- Correct the destination without changing the backup or original database.
+- Record the failure, correction and verified result in a short runbook.
+
+| Stage | Expected result |
+|---|---|
+| Wrong target `suta_restore_typo` | Connection fails because the database does not exist. |
+| Correct new target `suta_fault_restore` | Restore succeeds: orders 1001–1003, total 195.00. |
+| Protected SOURCE after Lab 9 | Still orders 1001–1005, total 250.00. |
+
 **What we’re doing:**
 
-- Investigate one instructor-approved failure in isolation, record recovery time and data loss, and write steps someone else can follow.
+- Investigate the wrong-target restore error below, correct it and write steps someone else can follow.
 
 **You finish with:**
 
-- Evidence and step-by-step recovery instructions (a runbook), not just a backup file.
-- The instructor must prepare a separate test environment for the failure first.
+- A verified `suta_fault_restore` and a runbook describing the failure and correction.
+- The advanced faults listed afterward need separate instructor preparation.
 
 **Your task:**
 
-- Investigate one failure prepared safely by the instructor.
+- Follow the wrong-target drill below with your instructor.
 - Record the errors, checks, recovery time and any missing data.
 - Write recovery steps that another student can follow.
 
@@ -308,19 +377,105 @@ SELECT count(*), sum(total) FROM shop.orders;
 - Explain the fault, the evidence behind your diagnosis, what you recovered and any remaining data loss.
 - Let a classmate read your runbook and identify the safe target and checks without guessing.
 
-Instructor chooses ONE isolated fault after the successful baseline:
+### 11A — check the target before trying the restore
+
+**Where:** Linux terminal as `postgres`, on your assigned practice server.
+
+```bash
+cd /var/lib/postgresql/suta-backup-lab
+```
+
+```bash
+psql -X -h /var/run/postgresql -p 5432 -d postgres -Atc "SHOW data_directory"
+```
+
+**Expect:** `/var/lib/postgresql/16/lab`. Stop if it is a recovery copy or another server.
+
+```bash
+psql -X -h /var/run/postgresql -p 5432 -d postgres -Atc "SELECT datname FROM pg_database WHERE datname IN ('suta_restore_typo', 'suta_fault_restore')"
+```
+
+**Expect:** no rows. Both names must be unused. If either exists, inspect previous
+work with the instructor. Do not drop it or rerun a restore over it.
+
+```bash
+pg_restore -l shop.dump
+```
+
+**Why:** check that the saved archive can be opened and listed. A listing alone
+does not prove that all its data can be restored. If this fails, stop: that is
+not the connection failure this exercise is designed to demonstrate.
+
+### 11B — observe the intended error
+
+**Where:** the same Linux terminal. This command is deliberately aimed at an
+absent database. Do not substitute `suta_shop` or another existing database.
+
+```bash
+pg_restore --exit-on-error -h /var/run/postgresql -p 5432 -d suta_restore_typo shop.dump
+```
+
+**Expect:** a nonzero exit and an error saying database `suta_restore_typo` does
+not exist. Record the actual error. This expected failure is the lesson, not a
+reason to add `--clean`, weaken permissions or recreate SOURCE.
+
+**If different:** an authentication error, missing file or unreachable server is
+a different problem. Stop and diagnose it before continuing. If the command
+succeeds, stop: the supposedly absent target was not absent.
+
+### 11C — correct the destination and prove recovery
+
+**Where:** the same Linux terminal. Run creation and restoration once.
+
+```bash
+createdb -h /var/run/postgresql -p 5432 -T template0 suta_fault_restore
+```
+
+**Why:** create a new empty destination. If creation fails, do not run the restore.
+
+```bash
+pg_restore --exit-on-error -h /var/run/postgresql -p 5432 -d suta_fault_restore shop.dump
+```
+
+**Expect:** successful completion. On failure, keep the partial target and error
+for investigation; do not blindly retry into it.
+
+```bash
+psql -X -h /var/run/postgresql -p 5432 -d suta_fault_restore -c "SELECT current_database(), count(*), sum(total) FROM shop.orders"
+```
+
+```bash
+psql -X -h /var/run/postgresql -p 5432 -d suta_fault_restore -c "SELECT order_id, total FROM shop.orders ORDER BY order_id"
+```
+
+**Expect:** `suta_fault_restore`, three orders totaling 195.00; IDs 1001, 1002
+and 1003 with values 120.00, 50.00 and 25.00.
+
+```bash
+psql -X -h /var/run/postgresql -p 5432 -d suta_shop -c "SELECT order_id, total FROM shop.orders ORDER BY order_id"
+```
+
+**Expect after Lab 9:** SOURCE still has 1001–1005 with values 120.00, 50.00,
+25.00, 40.00 and 15.00. If different, stop and investigate; do not overwrite it.
+Keep the new practice database and backup for review. No cleanup is required.
+
+### Instructor-prepared extensions — not part of the tested drill above
+
+These are separate scenarios, not ready-to-run commands. Each requires an
+isolated setup, a rehearsed failure and correction, and its own evidence before
+students attempt it. Do not treat completion of 11A–11C as completion of these.
 
 | Fault | Safe exercise boundary | Evidence to collect |
 |---|---|---|
-| Wrong restore database | Use a nonexistent lab target | Exact error, correct connection |
 | Wrong role/ownership | Fresh isolated cluster lacking the lab role | Restore errors and corrected role order |
 | Corrupt archive | A new disposable COPY of shop.dump only | Restore/decode failure, original unchanged |
 | Missing archived WAL | Cloned offline repository and isolated target only | Recovery log cannot reach target |
 | Archive permissions/full disk | Disposable repository or quota-limited test volume only | Failed archive/check, retained WAL risk |
 
-These last three are **instructor-designed extensions**, not provided executable
-fault injections. Never corrupt the only backup, remove live WAL, fill a shared
-disk or change repository permissions serving another cluster.
+Never corrupt the only backup, remove live WAL, fill a shared disk or change
+repository permissions serving another cluster.
+
+### Record what you learned
 
 Record what actually happened:
 
@@ -332,3 +487,9 @@ Record what actually happened:
 
 Write a runbook using EVIDENCE.md. Another student should identify the correct
 backup, target and validation checks without relying on your memory.
+
+**Timing limit:** this drill measures your diagnosis and restore exercise, not
+a real application outage. The older dump restores only its saved data; do not
+claim zero production data loss or an achieved business RPO/RTO from this test.
+
+Source: [PostgreSQL 16 pg_restore — destination and error behavior](https://www.postgresql.org/docs/16/app-pgrestore.html).

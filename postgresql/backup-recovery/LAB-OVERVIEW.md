@@ -23,7 +23,7 @@ data and access came back. Each lab starts with a short summary and end result.
 | [8 — PITR](06-pgbackrest-pitr.md#lab-8a--create-an-incident-with-a-known-safe-boundary) | Simulate a deletion; recover a copy to a named safe point using WAL. | Restoring files is not enough to recover changes after a backup. |
 | [9 — Return missing rows](09-drills.md#lab-9--bring-back-only-marias-missing-order) | Stage and return only the verified lost order and item. | Preserve valid newer data on source. |
 | [10 — Dropped database](09-drills.md#lab-10--a-whole-database-is-dropped) | Drop a separate drill database and restore an older dump. | Recognize the limits of a backup snapshot. |
-| [11 — Prove recovery](09-drills.md#lab-11--failures-recovery-objectives-and-runbook) | Investigate a prepared fault and record results in a runbook. | Measure actual recovery time/data loss and explain the evidence. |
+| [11 — Prove recovery](09-drills.md#lab-11--failures-recovery-objectives-and-runbook) | Diagnose a wrong database name, restore into a new target and record the result. | Explain the error and prove SOURCE was untouched; advanced faults need separate preparation. |
 
 ## Before every step
 

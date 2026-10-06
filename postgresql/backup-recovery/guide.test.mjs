@@ -5,6 +5,11 @@ import path from 'node:path';
 import {fileURLToPath} from 'node:url';
 const root=path.dirname(fileURLToPath(import.meta.url));
 const files=fs.readdirSync(root).filter(f=>f.endsWith('.md'));
+test('bare numeric bullets cannot become accidental nested numbered lists',()=>{
+ for(const file of files){
+  assert.doesNotMatch(fs.readFileSync(path.join(root,file),'utf8'),/^- \d+\.$/m,file);
+ }
+});
 test('all twelve labs have a purpose and outcome',()=>{
  for(const file of ['00-start.md','01-plain.md','02-custom.md','03-table.md','04-roles.md','05-physical.md']){
    const s=fs.readFileSync(path.join(root,file),'utf8');assert.match(s,/What we’re doing:/,file);assert.match(s,/You finish with:/,file);
