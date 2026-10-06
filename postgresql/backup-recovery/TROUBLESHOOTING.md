@@ -30,6 +30,14 @@ export PGHOST=/var/run/postgresql PGPORT=5432 PGUSER=postgres
 psql -X -h /var/run/postgresql -p 5432 -U postgres -d postgres -c "SHOW data_directory"
 ```
 
+**Options:**
+
+- `-X`: skip psql startup files so custom settings do not affect this check.
+- `-h` and `-p`: choose SOURCE's socket folder and port.
+- `-U postgres`: connect as the database user `postgres`.
+- `-d postgres`: select the database named `postgres`.
+- `-c`: run the quoted SQL and return to the Linux terminal.
+
 **Expect:** `/var/lib/postgresql/16/lab`. Otherwise stop; you have not confirmed
 SOURCE. These terminal settings select SOURCE; they do not start or change it.
 For COPY, use the lab's explicit private socket and port 55433 instead.
@@ -39,6 +47,8 @@ For COPY, use the lab's explicit private socket and port 55433 instead.
 ```bash
 ls -l /var/lib/postgresql/suta-backup-lab/pgbackrest.conf
 ```
+
+`ls -l` lists the file with its owner, permissions and size.
 
 If absent, return to Lab 6A with the instructor. Do not switch to the instructor
 config. If present, restore the two terminal settings:
@@ -104,6 +114,8 @@ Check the COPY's status before changing its file:
 pg_ctl -D /var/lib/postgresql/suta-backup-lab/physical-copy status
 ```
 
+`-D` selects the COPY's data directory. `status` checks whether that server is running.
+
 If it reports `no server running`, follow [Lab 5, step 3](05-physical.md#3-isolate-the-stopped-copy)
 and then step 4: save the old settings, edit COPY's file and run the safety
 checks before startup. Do not create a `/LAB` folder to match the old placeholder.
@@ -123,6 +135,9 @@ postgres -D /var/lib/postgresql/suta-backup-lab/physical-copy -C port
 These read disk settings, not necessarily settings loaded by an already-running
 server. They do not start or change PostgreSQL.
 
+For `postgres`, `-D` selects the data directory and `-C` prints the named setting.
+These options belong to the `postgres` program, not the psql client.
+
 - Expected socket folder: `/var/lib/postgresql/suta-backup-lab/recovery-socket`.
 - Expected port: `55433`.
 - Save both results. Ask the instructor to confirm the running server's connection and run `SHOW data_directory;` there.
@@ -135,6 +150,9 @@ return to the Linux terminal as `postgres` and stop it using its exact path:
 ```bash
 pg_ctl -D /var/lib/postgresql/suta-backup-lab/physical-copy -m fast -w stop
 ```
+
+`-D` selects only this COPY. `-m fast` disconnects its sessions and rolls back
+unfinished transactions. `-w` waits for shutdown to finish.
 
 This disconnects COPY sessions. Follow [Lab 5, step 3](05-physical.md#3-isolate-the-stopped-copy),
 then complete steps 4–5 before checking its data. No new backup is needed to

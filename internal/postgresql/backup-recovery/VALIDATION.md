@@ -260,6 +260,25 @@ The test harness is instructor-only; it intentionally automates a rehearsal.
 Students should follow the separate one-action-at-a-time handouts. Run it only
 where matching PostgreSQL tools are already installed and local test-server
 creation is permitted. It retains evidence and stops only its own new cluster.
+# Explain command options beside their use — 2026-10-06
+
+- Added psql `-X` explanations to every student page that uses it, with reminders
+  in the combined labs. It skips startup files, not server configuration.
+- Distinguished `pg_basebackup -X stream` (WAL streaming) from `psql -X`.
+- Explained connection, backup, restore and server-control options beside their
+  first relevant command, including the combined psql `-Atc` options in Lab 11.
+- Added short explanations for the shell/Git options used in setup and checks.
+- Checked PostgreSQL 16 option meanings against the official psql, pg_basebackup,
+  pg_ctl and createdb manuals on 2026-10-06. References:
+  [psql](https://www.postgresql.org/docs/16/app-psql.html),
+  [pg_basebackup](https://www.postgresql.org/docs/16/app-pgbasebackup.html),
+  [pg_ctl](https://www.postgresql.org/docs/16/app-pg-ctl.html),
+  [createdb](https://www.postgresql.org/docs/16/app-createdb.html).
+- Validation: 15 guide/report tests passed; all fenced commands and settings
+  unchanged. No new database rehearsal for these explanatory additions.
+- Future authoring: explain an option's meaning and purpose for the named tool
+  at first use in a lab. The same letter can mean different things in other tools.
+
 # Remove shell-status lessons from beginner guides — 2026-10-06
 
 - Owner feedback: `echo $?` and numeric status explanations distract students

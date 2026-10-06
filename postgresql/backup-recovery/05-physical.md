@@ -70,6 +70,13 @@ cd /var/lib/postgresql/suta-backup-lab
 psql -X -h /var/run/postgresql -p 5432 -d suta_shop
 ```
 
+**What the connection options mean:**
+
+- `-X`: skip psql startup files so custom settings do not affect the lab.
+- `-h /var/run/postgresql`: use SOURCE's local socket folder.
+- `-p 5432`: connect on SOURCE's port.
+- `-d suta_shop`: open the shop database.
+
 **Now inside psql on SOURCE:**
 
 ```sql
@@ -116,6 +123,10 @@ pg_basebackup -h /var/run/postgresql -p 5432 -D physical-copy -X stream -P
 **Why:**
 
 - Copy the whole SOURCE cluster and stream the WAL needed for consistency.
+- `-h` and `-p`: choose SOURCE's socket folder and port.
+- `-D physical-copy`: put the backup files in this separate folder. Uppercase `-D` means a directory, not a database name.
+- `-X stream`: stream the required WAL while copying the data. This is a `pg_basebackup` option; it does not mean the same thing as `psql -X`.
+- `-P`: show backup progress.
 - The destination must be new.
 - Do not add `-R`: we are not creating a standby.
 - PostgreSQL may first write changed data to disk (a checkpoint). This can delay the first progress message. Leave this command running; do not launch a second backup.
@@ -165,6 +176,9 @@ chmod 700 recovery-socket
 ```bash
 pg_ctl -D /var/lib/postgresql/suta-backup-lab/physical-copy status
 ```
+
+`pg_ctl` controls a PostgreSQL server. `-D` selects its data directory, and
+`status` checks whether that server is running without starting or stopping it.
 
 **Expect:**
 
@@ -242,6 +256,7 @@ postgres -D /var/lib/postgresql/suta-backup-lab/physical-copy -C archive_mode
 
 - `off`.
 - `-C` reads the effective setting without starting the server.
+- `-D` selects the COPY configuration to read.
 - If it says `on`, return to step 3 while COPY is still stopped. Set `archive_mode = off` in COPY's file, save it and repeat all of step 4. Do not change SOURCE.
 
 ## 5. Start and verify the COPY
@@ -251,6 +266,9 @@ postgres -D /var/lib/postgresql/suta-backup-lab/physical-copy -C archive_mode
 ```bash
 pg_ctl -D /var/lib/postgresql/suta-backup-lab/physical-copy -l /var/lib/postgresql/suta-backup-lab/physical-recovery.log -w start
 ```
+
+**Options:** `-D` selects COPY's data directory, `-l` saves server messages to
+the named log file, and `-w` waits for startup to finish or report a failure.
 
 **Expect:**
 
@@ -262,6 +280,9 @@ pg_ctl -D /var/lib/postgresql/suta-backup-lab/physical-copy -l /var/lib/postgres
 ```bash
 psql -X -h /var/lib/postgresql/suta-backup-lab/recovery-socket -p 55433 -d suta_shop
 ```
+
+The psql options are the same as in step 1. This time `-h` and `-p` select
+COPY's socket folder and port `55433`, not SOURCE.
 
 **Now inside psql on COPY:**
 
@@ -324,6 +345,9 @@ session with `\q`. Use the exact data-directory path below; do not substitute SO
 ```bash
 pg_ctl -D /var/lib/postgresql/suta-backup-lab/physical-copy -m fast -w stop
 ```
+
+**Options:** `-D` selects only this COPY. `-m fast` disconnects its sessions and
+rolls back unfinished transactions before shutdown. `-w` waits for shutdown to finish.
 
 **Expect:**
 

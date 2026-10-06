@@ -20,6 +20,8 @@ skip the account switch below. Otherwise, run it from your `student` account:
 sudo -iu postgres
 ```
 
+`-u postgres` selects the Linux user; `-i` opens that user's login environment.
+
 ```bash
 cd /var/lib/postgresql
 ```
@@ -35,12 +37,17 @@ do not delete it or clone again. Use the next command to check for local edits:
 git -C /var/lib/postgresql/dba-practicals status --short
 ```
 
+`-C` tells Git which folder to use. `--short` shows a compact list of local changes.
+
 If filenames appear, there are local edits: show the output to the instructor
 before updating. If there is no output, continue with the update:
 
 ```bash
 git -C /var/lib/postgresql/dba-practicals pull --ff-only
 ```
+
+`--ff-only` allows a straightforward update but refuses to merge different
+local and remote histories automatically.
 
 This updates guides, not databases. If Git says it cannot fast-forward, stop
 and share the message with your instructor; do not force the update. The older

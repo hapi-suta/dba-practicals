@@ -34,6 +34,7 @@ pg_dump -d suta_shop -f shop.sql
 **Why:**
 
 - Save SQL commands that can rebuild this database.
+- `-d suta_shop`: select the database to back up.
 - `-f` names the backup file.
 - This saves one database, not the whole PostgreSQL cluster.
 - You cannot apply WAL (PostgreSQL's record of changes) to this SQL file to recover later changes.
@@ -47,6 +48,8 @@ pg_dump -d suta_shop -f shop.sql
 ```bash
 ls -lh shop.sql
 ```
+
+`-l` shows file details; `-h` makes the file size easier to read, using units such as KB or MB.
 
 **Expect:** `shop.sql` is listed with a size greater than zero. If it is missing
 or empty, stop and show the backup command's output to your instructor.
@@ -71,6 +74,7 @@ createdb -T template0 suta_plain_restore
 **Why:**
 
 - Leave the source untouched.
+- `-T template0`: create the restore database from PostgreSQL's clean starting template.
 - Do not add `--clean` or drop the source.
 
 ```bash
@@ -80,7 +84,10 @@ psql -X -v ON_ERROR_STOP=1 -d suta_plain_restore -f shop.sql
 **Why:**
 
 - `psql` runs the SQL in this file.
-- `ON_ERROR_STOP=1` stops at the first error.
+- `-X`: skip psql startup files so saved custom settings do not affect this restore.
+- `-v ON_ERROR_STOP=1`: set psql to stop at the first error.
+- `-d suta_plain_restore`: select the restore database, not SOURCE.
+- `-f shop.sql`: read and run the SQL commands saved in this file.
 - Earlier commands may already have changed the restore database.
 - If it fails, save the first error and keep the partly restored database. Do not run the restore into it again.
 - Ask your instructor to help correct the error and choose a new empty database for the next attempt.

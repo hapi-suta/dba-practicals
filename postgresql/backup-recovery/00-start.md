@@ -48,6 +48,7 @@ sudo -iu postgres
 **Why:**
 
 - The `postgres` Linux account can connect to PostgreSQL locally in this lab.
+- In `sudo -iu postgres`, `-u postgres` chooses that Linux user and `-i` loads its login environment, including its home folder.
 - If `sudo` is refused, send that error to your instructor for the correct login. Do not edit `pg_hba.conf`, the file that controls database connections.
 
 ```bash
@@ -79,7 +80,10 @@ them to production. Confirm the supplied host/port before continuing.
 psql -X -d postgres
 ```
 
-`-X` ignores personal psql startup settings; `-d` selects the database.
+**What the options mean:**
+
+- `-X`: skip psql startup files, including `.psqlrc`. This prevents saved custom settings from changing how the lab commands run. It does not change the database server's configuration.
+- `-d postgres`: connect to the database named `postgres`.
 
 ```psql
 \conninfo
@@ -138,6 +142,9 @@ pwd
 df -h .
 ```
 
+`df` shows disk space. `-h` uses readable units such as GB, and `.` means the
+disk containing your current folder.
+
 The `Avail` column shows free disk space. Show this result to your instructor
 before taking backups. This practice folder is on the same disk as the database;
 losing that disk could lose both.
@@ -149,6 +156,7 @@ createdb -T template0 suta_shop
 **Why:**
 
 - Create an empty lab database.
+- `-T template0`: use PostgreSQL's clean starting template rather than a template that may have been customized.
 - If it exists, stop rather than drop it.
 
 ```bash

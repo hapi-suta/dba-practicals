@@ -29,6 +29,9 @@ with the SOURCE connection settings from Lab 0.
 psql -X -d suta_shop
 ```
 
+**Connection options:** `-X` skips psql startup files so custom settings do not
+affect the lab. `-d suta_shop` selects the original shop database.
+
 ```sql
 CREATE ROLE suta_report_reader NOLOGIN;
 ```
@@ -68,6 +71,7 @@ pg_dumpall --globals-only --no-role-passwords -f globals.sql
 - `pg_dump` does not save the roles shared by all databases in the cluster.
 - `pg_dumpall --globals-only` saves those role definitions and other shared objects.
 - `--no-role-passwords` leaves out saved password hashes.
+- `-f globals.sql`: save the role definitions in this file.
 - Any login passwords must be set up separately and securely.
 
 ```bash
@@ -82,13 +86,21 @@ can expose role names and settings.
 pg_dump -Fc -d suta_shop -f shop-with-access.dump
 ```
 
+`-Fc` selects custom backup format, `-d` selects the source database, and `-f`
+names the output file. This backup includes the table permissions you just granted.
+
 ```bash
 createdb -T template0 suta_access_restore
 ```
 
+`-T template0` creates the new database from PostgreSQL's clean starting template.
+
 ```bash
 pg_restore --exit-on-error -d suta_access_restore shop-with-access.dump
 ```
+
+`--exit-on-error` stops at the first restore error. `-d suta_access_restore`
+selects the database receiving the backup.
 
 Same-cluster restore already has the role. **Do not replay globals.sql here**:
 existing roles cause conflicts. On a separate fresh cluster, the instructor must

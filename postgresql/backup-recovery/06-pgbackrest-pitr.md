@@ -156,6 +156,13 @@ not a completed recovery: Lab 7 takes backups and Lab 8 tests recovery from them
 psql -X -h /var/run/postgresql -p 5432 -d suta_shop
 ```
 
+**Connection options used throughout these labs:**
+
+- `-X`: skip psql startup files so saved custom settings do not affect the commands.
+- `-h`: choose the local socket folder; `-p`: choose the port.
+- `-d suta_shop`: connect to the shop database on that cluster.
+- SOURCE uses port `5432`; COPY uses its own socket folder and port `55433`.
+
 **Inside psql:**
 
 ```sql
@@ -301,6 +308,9 @@ It does not prove recovery yet. Lab 8 restores that backup and replays later WAL
 pgbackrest --type=full backup
 ```
 
+`--type=full` selects a full backup. Later, `--type=incr` selects an incremental
+backup and `--type=diff` selects a differential backup.
+
 **Why:**
 
 - Take the full backup that later incremental and differential backups will depend on.
@@ -311,6 +321,9 @@ pgbackrest info
 ```
 
 Record the full backup label. Connect to suta_shop and make a known change:
+
+Here `psql -X` skips startup files and `-d` chooses the database. Without `-h`
+and `-p`, these commands use your saved SOURCE connection settings from Lab 0.
 
 ```bash
 psql -X -d suta_shop
@@ -419,6 +432,9 @@ point or insert the test orders a second time.
 **Where:**
 
 - Linux terminal as `postgres`; connect to SOURCE explicitly:
+
+Reminder: `psql -X` skips startup files; `-h`, `-p` and `-d` select the socket
+folder, port and database. Keep SOURCE's port `5432` for this incident.
 
 ```bash
 psql -X -h /var/run/postgresql -p 5432 -d suta_shop
@@ -592,6 +608,8 @@ After successful file restore:
 cp -n pitr-copy/postgresql.auto.conf pitr-copy/postgresql.auto.conf.before-isolation
 ```
 
+`cp -n` saves a copy without replacing an earlier saved file of the same name.
+
 ```bash
 nano pitr-copy/postgresql.auto.conf
 ```
@@ -627,6 +645,9 @@ node /var/lib/postgresql/dba-practicals/internal/postgresql/backup-recovery/chec
 pg_ctl -D /var/lib/postgresql/suta-backup-lab/pitr-copy -l /var/lib/postgresql/suta-backup-lab/pitr-recovery.log -w start
 ```
 
+`-D` selects COPY's data directory. `-l` saves server messages to the named log.
+`-w` waits for startup; it does not guarantee that WAL replay has reached our target.
+
 PostgreSQL now fetches required WAL through the generated restore_command and
 replays it. pg_ctl returning is not proof that the desired target has been reached.
 
@@ -640,6 +661,9 @@ Missing WAL or “target not reached” is failure, not an acceptable earlier re
 ```bash
 psql -X -h /var/lib/postgresql/suta-backup-lab/recovery-socket -p 55433 -d suta_shop
 ```
+
+`-X` skips psql startup files. `-h` and `-p 55433` select COPY's connection;
+`-d suta_shop` selects the database inside COPY.
 
 ```sql
 SHOW data_directory;

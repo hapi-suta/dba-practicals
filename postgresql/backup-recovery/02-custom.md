@@ -37,6 +37,7 @@ pg_dump -Fc -d suta_shop -f shop.dump
 **Why:**
 
 - `-Fc` creates a custom archive for pg_restore, not a SQL text file.
+- `-d suta_shop`: select the source database. `-f shop.dump`: name the backup file.
 
 ```bash
 pg_restore -l shop.dump
@@ -45,12 +46,15 @@ pg_restore -l shop.dump
 **Why:**
 
 - List the archive's table of contents.
+- `-l` means list; it does not restore anything.
 - Find the schema, tables, data, sequences, primary keys and foreign keys.
 - This proves the file's contents can be listed. The restore and data checks below show whether the saved database can be rebuilt.
 
 ```bash
 createdb -T template0 suta_custom_restore
 ```
+
+`-T template0` uses PostgreSQL's clean starting template for the new database.
 
 ```bash
 pg_restore --exit-on-error -d suta_custom_restore shop.dump
@@ -59,11 +63,14 @@ pg_restore --exit-on-error -d suta_custom_restore shop.dump
 **Why:**
 
 - Rebuild the tables, data and other saved objects in an empty database.
-- Stop if an error occurs.
+- `--exit-on-error`: stop the restore at the first error. `-d suta_custom_restore`: select the database receiving the data.
 
 ```bash
 psql -X -d suta_custom_restore
 ```
+
+**Connection options:** `-X` skips psql startup files so custom settings do not
+affect the lab. `-d` selects the database to connect to.
 
 ```sql
 SELECT count(*), sum(total) FROM shop.orders;

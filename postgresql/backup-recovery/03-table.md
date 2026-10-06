@@ -50,6 +50,9 @@ with the SOURCE connection settings from Lab 0.
 psql -X -d suta_custom_restore
 ```
 
+**Connection options:** `-X` skips psql startup files so custom settings do not
+affect the lab. `-d suta_custom_restore` selects the practice copy.
+
 ```sql
 SELECT current_database();
 ```
@@ -107,6 +110,7 @@ pg_restore --exit-on-error -d suta_custom_restore notes.dump
 **Why:**
 
 - Restore the complete table-only archive into the lab database where the table is absent and the schema exists.
+- `--exit-on-error`: stop at the first restore error. `-d` selects the database receiving the table.
 - The good orders table is not replaced.
 
 ```bash

@@ -62,6 +62,12 @@ Connect to the recovered COPY, not SOURCE:
 psql -X -h /var/lib/postgresql/suta-backup-lab/recovery-socket -p 55433 -d suta_shop
 ```
 
+**Connection options:**
+
+- `-X`: skip psql startup files so saved custom settings do not affect this session.
+- `-h`: choose the socket folder. `-p 55433`: use COPY's port.
+- `-d suta_shop`: select the database inside COPY.
+
 ```sql
 SHOW data_directory;
 ```
@@ -249,6 +255,9 @@ After your instructor accepts the results, return to the Linux terminal as
 pg_ctl -D /var/lib/postgresql/suta-backup-lab/pitr-copy -m fast -w stop
 ```
 
+`-D` selects this COPY's data directory. `-m fast` disconnects its sessions and
+rolls back unfinished transactions. `-w` waits for shutdown to finish.
+
 ## Lab 10 — a whole database is dropped
 
 ### A separate incident — recover only what the older backup contains
@@ -286,6 +295,11 @@ orders 1004 and 1005 remain safely in SOURCE, not in this older practice copy.
 This independent drill uses the older `shop.dump` from Lab 2. It recovers the
 backup snapshot, not the later PITR state. Linux terminal as `postgres`;
 all commands below explicitly select SOURCE's socket and port:
+
+- `-h` chooses the socket folder; `-p 5432` chooses SOURCE's port.
+- `createdb -T template0` creates an empty database from a clean starting template.
+- `pg_restore --exit-on-error` stops at the first restore error; `-d` chooses the destination database.
+- `psql -X` skips startup files; its `-d` chooses the database to inspect.
 
 ```bash
 createdb -h /var/run/postgresql -p 5432 -T template0 suta_drop_drill
@@ -421,6 +435,12 @@ cd /var/lib/postgresql/suta-backup-lab
 psql -X -h /var/run/postgresql -p 5432 -d postgres -Atc "SHOW data_directory"
 ```
 
+**What these options mean:**
+
+- `-X`: skip psql startup files.
+- `-h`, `-p` and `-d`: choose the socket folder, port and database.
+- `-Atc` combines three options: `-A` removes table-style alignment, `-t` hides column headings and row-count footers, and `-c` runs the quoted SQL and returns to the terminal.
+- Here the result is a plain data-directory path. The next query uses the same options to list any matching database names.
 **Expect:** `/var/lib/postgresql/16/lab`. Stop if it is a recovery copy or another server.
 
 ```bash
@@ -449,6 +469,9 @@ Record your practice start time before causing the error:
 date -Is
 ```
 
+`-Is` prints the date and time to the second, including the time-zone offset.
+The finish-time command below uses the same option.
+
 ```bash
 pg_restore --exit-on-error -h /var/run/postgresql -p 5432 -d suta_restore_typo shop.dump
 ```
@@ -465,6 +488,11 @@ succeeds, stop: the supposedly absent target was not absent.
 ### 11C — correct the destination and prove recovery
 
 **Where:** the same Linux terminal. Run creation and restoration once.
+
+As in Lab 10, `-T template0` gives `createdb` a clean template, and
+`--exit-on-error` makes `pg_restore` stop on an error. For the psql checks,
+`-X` skips startup files and `-c` runs the quoted query without opening an
+interactive psql session.
 
 ```bash
 createdb -h /var/run/postgresql -p 5432 -T template0 suta_fault_restore

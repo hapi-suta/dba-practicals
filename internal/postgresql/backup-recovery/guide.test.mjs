@@ -113,6 +113,17 @@ test('restore startup keeps mandatory preflight before pg_ctl start',()=>{
 
 // These are known student-reported wording defects, not a comprehension score.
 const unclearStudentWording = /\b(?:resume help|resume guide|resume\/error help|stop and investigate|fixture|preparation gate)\b/i;
+test('each student page using psql -X explains it outside command blocks',()=>{
+ for(const file of files){
+  const text=read(file);
+  if(!commands(text).some(c=>/^psql -X\b/m.test(c)))continue;
+  const prose=text.replace(/```[\s\S]*?```/g,'');
+  assert.match(prose,/`-X`[^\n]*(?:skip|startup)/i,file+' needs a psql -X explanation');
+ }
+ const physical=read('05-physical.md').replace(/```[\s\S]*?```/g,'');
+ assert.match(physical,/`-X stream`[^\n]*WAL/);
+ assert.match(physical,/does not mean the same thing as `psql -X`/);
+});
 test('beginner handouts teach visible results rather than shell exit codes',()=>{
  for(const file of files){
   assert.doesNotMatch(read(file),/echo\s+\$\?|exit (?:status|code)|nonzero exit|exit 3/i,file);
