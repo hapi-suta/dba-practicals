@@ -23,7 +23,10 @@
 - Show 4 orders / 205.00 in the custom copy and 3 / 195.00 in the schema copy.
 - Explain why those totals differ and identify the file you will use to recover the delivery-note table in Lab 3.
 
-Linux shell in the same folder and connection as Lab 1. Keep all previous files.
+**Where:** Linux terminal as `postgres`, in `/var/lib/postgresql/suta-backup-lab`,
+using the SOURCE connection from Lab 0. If you reconnected, first follow
+[the connection steps](TROUBLESHOOTING.md#returning-after-a-disconnect-or-another-help-page).
+Keep all previous files.
 
 ## Custom archive
 
@@ -43,7 +46,7 @@ pg_restore -l shop.dump
 
 - List the archive's table of contents.
 - Find the schema, tables, data, sequences, primary keys and foreign keys.
-- Listing alone does not prove restore.
+- This proves the file's contents can be listed. The restore and data checks below show whether the saved database can be rebuilt.
 
 ```bash
 createdb -T template0 suta_custom_restore
@@ -87,9 +90,8 @@ the existing rows using the query below. Do not add another test order.
 INSERT INTO shop.orders (customer_id, status, total) VALUES (1, 'New', 10) RETURNING order_id;
 ```
 
-**Run that INSERT once only.** Expect 1004: the restored identity sequence works.
-This affects ONLY the copy. If returning to this step, inspect existing rows
-first instead of repeating the INSERT:
+**Expect:** order ID `1004`. PostgreSQL generated the next ID in the restored copy.
+If you already ran this step, use the query below instead of repeating the INSERT:
 
 ```sql
 SELECT order_id, status, total FROM shop.orders WHERE order_id >= 1004 ORDER BY order_id;
@@ -106,7 +108,7 @@ SELECT count(*), sum(total) FROM shop.orders;
 **Expect:**
 
 - 4 / 205.00.
-- If 5 / 215.00, investigate with the instructor; do not delete an order or reset the sequence to make the numbers match.
+- If 5 / 215.00, the test order may have been inserted twice. Save the preceding query's rows and follow [the extra-row checks](TROUBLESHOOTING.md#5-too-many-orders-or-items). Do not delete an order or reset the ID counter to force a match.
 
 ```psql
 \q
@@ -153,16 +155,18 @@ SELECT count(*), sum(total) FROM shop.orders;
 pg_dump -Fc -t shop.delivery_notes -d suta_shop -f notes.dump
 ```
 
-`-t` selects a table. It is NOT a guarantee that external dependencies are included.
-The target must already have the `shop` schema. This deliberately simple table
-has no foreign keys or custom types; real tables need dependency planning.
+`-t` selects a table. It does not automatically include everything the table
+needs, such as its schema or a related table. The restore database must already
+have the `shop` schema. Our delivery-note table has no foreign keys or custom
+data types, so this first table-recovery exercise stays small.
 
 ```bash
 pg_restore -l notes.dump
 ```
 
-Check for the table, its data and primary key. Restoring the entire table-only
-archive keeps its included objects; `pg_restore -t` selection has different
-limitations and can omit subsidiary objects. Sources:
+Check the list for the table, its data and primary key. In Lab 3, restore the
+whole `notes.dump` file so all those saved parts are restored. Do not add
+`pg_restore -t`: that option can leave out related parts such as indexes.
+Sources:
 [pg_dump](https://www.postgresql.org/docs/18/app-pgdump.html),
 [pg_restore](https://www.postgresql.org/docs/18/app-pgrestore.html).

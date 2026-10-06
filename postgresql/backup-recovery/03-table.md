@@ -43,7 +43,8 @@ We damage ONLY `suta_custom_restore`, never the source shop.
 
 ## Confirm, then simulate the incident
 
-Linux shell:
+**Where:** Linux terminal as `postgres`, in `/var/lib/postgresql/suta-backup-lab`,
+with the SOURCE connection settings from Lab 0.
 
 ```bash
 psql -X -d suta_custom_restore
@@ -72,8 +73,9 @@ SHOW data_directory;
 
 **Expect:** `/var/lib/postgresql/16/lab`, with database `suta_custom_restore`
 from the check above. Otherwise STOP. The database name alone does not identify
-the server. This is a one-time incident; if the table is already absent, inspect
-your saved step instead of repeating the DROP.
+the server. Run the DROP only once. If the table is already missing, stop and
+compare your saved results with this lab before running anything else. Do not
+recreate it merely to repeat the incident.
 
 ```sql
 DROP TABLE shop.delivery_notes;
@@ -96,7 +98,7 @@ SELECT to_regclass('shop.delivery_notes');
 
 ## Recover
 
-Linux shell:
+**Where:** back in the Linux terminal as `postgres`, in the same lab folder.
 
 ```bash
 pg_restore --exit-on-error -d suta_custom_restore notes.dump
@@ -143,7 +145,9 @@ SELECT order_id, status, total FROM shop.orders WHERE order_id = 1004;
 
 **Expect:** exactly `1004 / New / 10.00`. This checks the particular newer
 order we promised to preserve. A matching count and total alone are not enough.
-If absent or different, stop and investigate; do not insert a replacement row.
+If absent or different, save the result and the earlier `current_database()`
+result. Ask the instructor to compare them with your Lab 2 results. Do not
+insert a replacement row to make the check pass.
 
 ```psql
 \q

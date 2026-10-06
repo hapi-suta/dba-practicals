@@ -6,7 +6,9 @@ We test permissions in `suta_access_restore`, not by deleting from SOURCE.
 
 **What you’ll practise:**
 
-- Give a reporting role read-only access, save role definitions separately from the database backup, and verify permissions in a restored copy.
+- Give a reporting role read-only access.
+- Save the role definitions separately from the database backup.
+- Test that the restored reader can read orders but cannot delete them.
 
 **Success looks like:**
 
@@ -20,7 +22,8 @@ We test permissions in `suta_access_restore`, not by deleting from SOURCE.
 Dedicated lab cluster only. Roles are cluster-wide, not private to one database.
 Do not run this against a shared class cluster without instructor coordination.
 
-Linux shell:
+**Where:** Linux terminal as `postgres`, in `/var/lib/postgresql/suta-backup-lab`,
+with the SOURCE connection settings from Lab 0.
 
 ```bash
 psql -X -d suta_shop
@@ -34,7 +37,7 @@ CREATE ROLE suta_report_reader NOLOGIN;
 
 - This role groups the permissions we want a report reader to have.
 - `NOLOGIN` means the role cannot sign in directly, so no password is needed.
-- If it exists, stop and inspect it rather than replacing it.
+- If PostgreSQL says the role already exists, stop. Show the error and your saved Lab 4 results to the instructor before changing that role's permissions. Do not drop it.
 
 ```sql
 GRANT USAGE ON SCHEMA shop TO suta_report_reader;
@@ -51,7 +54,10 @@ grant write access or privileges on all future tables.
 \q
 ```
 
-## Save globals and a new database backup
+## Save the roles and a new database backup
+
+Roles belong to the whole PostgreSQL cluster. They are called **global objects**
+because more than one database can use them.
 
 ```bash
 pg_dumpall --globals-only --no-role-passwords -f globals.sql
@@ -68,8 +74,9 @@ pg_dumpall --globals-only --no-role-passwords -f globals.sql
 less globals.sql
 ```
 
-Find the group role. Press `q`. Do not upload globals or dumps: even without
-passwords, they can expose role names and configuration.
+Find `suta_report_reader` in the file, then press `q` to leave the viewer.
+Do not upload `globals.sql` or database backups: even without passwords, they
+can expose role names and settings.
 
 ```bash
 pg_dump -Fc -d suta_shop -f shop-with-access.dump

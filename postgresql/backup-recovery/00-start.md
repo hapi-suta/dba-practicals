@@ -1,4 +1,4 @@
-# Lab 0 — connect and prepare known data
+# Lab 0 — connect and create the shop data
 
 **Why start here?** We need known data before we can prove a restore is correct.
 This is setup, not a recovery exercise. Keep the original `suta_shop` for later
@@ -7,7 +7,7 @@ labs; restored databases will have different names.
 **What you’ll practise:**
 
 - Connect to your assigned server and create Bob’s small shop.
-- We record its starting rows so later we can tell whether a restore is correct.
+- Record its starting rows so you can compare them with the restored data later.
 
 **Success looks like:**
 
@@ -48,7 +48,7 @@ sudo -iu postgres
 **Why:**
 
 - The `postgres` Linux account can connect to PostgreSQL locally in this lab.
-- If sudo is unavailable, ask for the assigned database login; do not change HBA.
+- If `sudo` is refused, send that error to your instructor for the correct login. Do not edit `pg_hba.conf`, the file that controls database connections.
 
 ```bash
 whoami
@@ -97,8 +97,10 @@ SHOW server_version;
 SHOW data_directory;
 ```
 
-Record the connection and version privately. No DROP/DELETE until these match
-your assigned lab. Exit psql, not the server:
+**Expect:** database `postgres`, database user `postgres`, PostgreSQL 16,
+and data directory `/var/lib/postgresql/16/lab`.
+If they differ, stop and send the results to your instructor before changing data.
+Record the connection and version privately. Leave psql and return to the Linux terminal:
 
 ```psql
 \q
@@ -120,7 +122,9 @@ umask 077
 mkdir suta-backup-lab
 ```
 
-If it exists, STOP: use the previous work or ask for a new run name, never overwrite.
+If the folder already exists, do not delete it or create another one. Follow
+[the existing-work checks](TROUBLESHOOTING.md#6-folderdatabase-exists-or-postmasterpid-exists)
+to find the step you reached earlier.
 
 ```bash
 cd suta-backup-lab
@@ -134,7 +138,9 @@ pwd
 df -h .
 ```
 
-Instructor confirms space. This same-disk folder is for practice, not disaster protection.
+The `Avail` column shows free disk space. Show this result to your instructor
+before taking backups. This practice folder is on the same disk as the database;
+losing that disk could lose both.
 
 ```bash
 createdb -T template0 suta_shop
@@ -153,8 +159,8 @@ psql -X -d suta_shop
 
 Inside psql, one statement at a time. Each CREATE should report success.
 **Run each INSERT below once.** A successful insert followed by a repeated insert
-can create additional orders/items with new IDs. If unsure, inspect the table first;
-do not repeat a write to see whether it worked.
+can create additional orders/items with new IDs. If unsure, use the SELECT queries
+in step 4 to see what was saved. Do not repeat an INSERT to test whether it worked.
 
 ```sql
 CREATE SCHEMA shop;
@@ -241,7 +247,7 @@ SELECT count(*) FROM shop.order_items;
 **Expect:**
 
 - 3, not 6.
-- Stop and inspect duplicates if different.
+- If different, stop inserting data. Use [the extra-row checks](TROUBLESHOOTING.md#5-too-many-orders-or-items) and save their output. Do not delete rows to force the count to match.
 
 ```sql
 SELECT count(*) FROM shop.delivery_notes;

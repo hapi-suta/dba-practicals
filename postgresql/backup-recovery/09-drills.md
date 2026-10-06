@@ -1,13 +1,14 @@
 # Labs 9–11 — return missing data and prove recovery
 
-Lab 9 depends on verified, paused recovery in Lab 8. Instructor-led; see
-[validation scope](../../internal/postgresql/backup-recovery/VALIDATION.md). Paths below are the actual class paths.
+Complete Lab 8's log and data checks before Lab 9. Keep the recovered copy paused.
+Work through these exercises with your instructor. The paths below are the class paths.
 SOURCE is port 5432; recovered COPY is port 55433. Do not repeat the merge if
-order 1001 already exists on SOURCE. Investigate existing work before continuing.
+order 1001 already exists on SOURCE. Compare it with your saved Lab 9 results
+and ask the instructor whether the recovery was already completed.
 
 ## Lab 9 — bring back only Maria's missing order
 
-### The incident continues — the recovered copy is not the live answer
+### The incident continues — return the missing order without losing the newer one
 
 Lab 8 recovered an older, safe version of the shop. Maria's order 1001 is there,
 but newer order 1005 exists only on SOURCE. We need data from both points in time.
@@ -24,7 +25,7 @@ but newer order 1005 exists only on SOURCE. We need data from both points in tim
 2. Load them into temporary staging tables on SOURCE.
 3. Compare IDs and values; confirm the customer exists and the order is still missing.
 4. Insert the order first, then its item, in the same transaction.
-5. Verify results before committing; if a check fails, roll back and investigate.
+5. Check the rows before committing. If a check fails, run `ROLLBACK;`, save the differing result and stop for instructor review.
 
 **By the end, you will be able to:**
 
@@ -54,7 +55,8 @@ This completes the missing-data recovery begun in Lab 8. Do not repeat the merge
 - This small lab has one missing order and one item.
 - Its customer still exists.
 
-Connect to the recovered copy, not source:
+**Where:** Linux terminal as `postgres` on your assigned server.
+Connect to the recovered COPY, not SOURCE:
 
 ```bash
 psql -X -h /var/lib/postgresql/suta-backup-lab/recovery-socket -p 55433 -d suta_shop
@@ -64,8 +66,10 @@ psql -X -h /var/lib/postgresql/suta-backup-lab/recovery-socket -p 55433 -d suta_
 SHOW data_directory;
 ```
 
-Must be pitr-copy. In psql, export only the identified lost records. `\copy` writes
-client-side files; these contain lab data and must stay OUT of Git.
+**Expect:** `/var/lib/postgresql/suta-backup-lab/pitr-copy`. If different, stop
+and leave psql with `\q`. Do not export from an unconfirmed server.
+In this psql session, export only the missing rows. `\copy` writes files on the
+machine running psql: your lab server here. Do not upload these files to Git.
 
 ```psql
 \copy (SELECT order_id, customer_id, status, total FROM shop.orders WHERE order_id = 1001) TO '/var/lib/postgresql/suta-backup-lab/missing-order.csv' WITH CSV HEADER
@@ -75,8 +79,9 @@ client-side files; these contain lab data and must stay OUT of Git.
 \copy (SELECT item_id, order_id, product, amount FROM shop.order_items WHERE order_id = 1001) TO '/var/lib/postgresql/suta-backup-lab/missing-items.csv' WITH CSV HEADER
 ```
 
-Each should report COPY 1 for this fixture. Do not generalize the row filter to
-an entire incident without identifying all affected relationships.
+**Expect:** `COPY 1` from each command: one order and one item were exported.
+If either number differs, stop before importing them into SOURCE. A real incident
+may affect more rows and related tables; this lab recovers only the two identified rows.
 
 ```psql
 \q
@@ -92,7 +97,10 @@ psql -X -h /var/run/postgresql -p 5432 -d suta_shop
 SHOW data_directory;
 ```
 
-Verify this is source PGDATA. Create temporary staging tables, not live replacements:
+**Expect:** `/var/lib/postgresql/16/lab`. If different, leave psql with `\q`
+and stop. The tables below are temporary holding tables: you use them to check
+the recovered rows before adding anything to the shop tables. They disappear
+when this psql connection closes.
 
 ```sql
 CREATE TEMP TABLE recovered_orders (order_id integer, customer_id integer, status text, total numeric(10,2));
@@ -151,7 +159,8 @@ SET LOCAL lock_timeout = '5s';
 LOCK TABLE shop.orders, shop.order_items IN SHARE ROW EXCLUSIVE MODE;
 ```
 
-If any statement fails, issue ROLLBACK and investigate; do not commit partial work.
+If any statement fails, run `ROLLBACK;` in this psql session. Save the full error
+and show it to the instructor before retrying. Do not commit only part of the recovery.
 
 ```sql
 SELECT * FROM shop.orders WHERE order_id = 1001;
@@ -193,7 +202,7 @@ SELECT count(*), sum(total) FROM shop.orders;
 **Expect:**
 
 - 5 and 250.00; order 1005 is still present.
-- If any check differs, ROLLBACK instead of COMMIT and retain your evidence for the instructor.
+- If any check differs, run `ROLLBACK;` instead of `COMMIT;`. Save the differing rows and totals for your instructor.
 
 Before committing, check the actual protected orders and recovered item:
 
@@ -233,7 +242,8 @@ SELECT * FROM shop.order_items ORDER BY item_id;
 \q
 ```
 
-After evidence is accepted, shell: stop ONLY the recovered copy, retaining its files:
+After your instructor accepts the results, return to the Linux terminal as
+`postgres`. Stop only the recovered COPY using its exact path below. Keep its files:
 
 ```bash
 pg_ctl -D /var/lib/postgresql/suta-backup-lab/pitr-copy -m fast -w stop
@@ -359,7 +369,8 @@ SELECT order_id, total FROM shop.orders ORDER BY order_id;
 ```
 
 **Expect after Lab 9:** IDs 1001–1005, worth 120.00, 50.00, 25.00, 40.00
-and 15.00. If different, stop and investigate rather than replacing SOURCE.
+and 15.00. If different, save these rows and compare them with your Lab 9 results
+with the instructor. Do not restore an older backup over SOURCE.
 
 ```psql
 \q
@@ -378,6 +389,9 @@ the target, then restore into a new empty practice database—not overwrite SOUR
 - Tell a connection/target error from evidence of a damaged backup.
 - Correct the destination without changing the backup or original database.
 - Record the failure, correction and verified result in a short runbook.
+
+A **runbook** is a short set of instructions another DBA can follow: the error,
+the safe fix and the checks that prove it worked.
 
 | Stage | Expected result |
 |---|---|
@@ -444,7 +458,8 @@ not exist. Record the actual error. This expected failure is the lesson, not a
 reason to add `--clean`, weaken permissions or recreate SOURCE.
 
 **If different:** an authentication error, missing file or unreachable server is
-a different problem. Stop and diagnose it before continuing. If the command
+a different problem. Save the exact error and the connection results from 11A
+for your instructor before continuing. If the command
 succeeds, stop: the supposedly absent target was not absent.
 
 ### 11C — correct the destination and prove recovery
@@ -462,7 +477,7 @@ pg_restore --exit-on-error -h /var/run/postgresql -p 5432 -d suta_fault_restore 
 ```
 
 **Expect:** successful completion. On failure, keep the partial target and error
-for investigation; do not blindly retry into it.
+for instructor review; do not run the restore into that partly filled database again.
 
 ```bash
 psql -X -h /var/run/postgresql -p 5432 -d suta_fault_restore -c "SELECT current_database(), count(*), sum(total) FROM shop.orders"
@@ -480,7 +495,8 @@ psql -X -h /var/run/postgresql -p 5432 -d suta_shop -c "SELECT order_id, total F
 ```
 
 **Expect after Lab 9:** SOURCE still has 1001–1005 with values 120.00, 50.00,
-25.00, 40.00 and 15.00. If different, stop and investigate; do not overwrite it.
+25.00, 40.00 and 15.00. If different, save the rows and compare them with your
+Lab 9 results with the instructor; do not overwrite SOURCE.
 Keep the new practice database and backup for review. No cleanup is required.
 
 After all checks match, record the finish time:
@@ -522,7 +538,7 @@ Discuss these separately; this drill does not set or prove business targets:
 - In a real incident, measure service downtime from loss of service through
   verified restoration. Here, SOURCE remains available; there is no simulated outage.
 
-Write a runbook using EVIDENCE.md. Another student should identify the correct
+Write a runbook using [the results sheet](EVIDENCE.md). Another student should identify the correct
 backup, target and validation checks without relying on your memory.
 
 **Timing limit:** this drill measures your diagnosis and restore exercise, not

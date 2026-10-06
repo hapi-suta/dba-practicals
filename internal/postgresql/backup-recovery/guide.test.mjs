@@ -110,3 +110,31 @@ test('restore startup keeps mandatory preflight before pg_ctl start',()=>{
    assert.match(s,/archive_mode = off/);assert.match(s,/55433/);assert.match(s,/recovery-socket/);
  }
 });
+
+// These are known student-reported wording defects, not a comprehension score.
+const unclearStudentWording = /\b(?:resume help|resume guide|resume\/error help|stop and investigate|fixture|preparation gate)\b/i;
+test('student-reported vague wording stays out of handouts',()=>{
+ for(const file of files)assert.doesNotMatch(read(file),unclearStudentWording,file);
+ for(const phrase of ['use resume help','use the resume guide','stop and investigate','this fixture','preparation gate']){
+  assert.match(phrase,unclearStudentWording,'must detect known regression: '+phrase);
+ }
+});
+test('student troubleshooting links point to existing heading anchors',()=>{
+ const anchors=text=>{
+  const seen=new Map();
+  return new Set([...text.matchAll(/^#{1,6} (.+)$/gm)].map(([,heading])=>{
+   const base=heading.toLowerCase().replace(/[^\p{L}\p{N}_\-\s]/gu,'').replace(/\s/g,'-');
+   const count=seen.get(base)||0;seen.set(base,count+1);
+   return base+(count?'-'+count:'');
+  }));
+ };
+ for(const file of files){
+  for(const [,link] of read(file).matchAll(/\]\(([^\s)]+)\)/g)){
+   if(/^[a-z]+:|^\//i.test(link)||!link.includes('#'))continue;
+   const [target,fragment]=link.split('#');
+   const resolved=path.resolve(root,target||file);
+   assert.ok(anchors(fs.readFileSync(resolved,'utf8')).has(decodeURIComponent(fragment)),file+' -> '+link);
+  }
+ }
+ assert.ok(!anchors('# Real section').has('missing-section'),'missing heading must fail');
+});

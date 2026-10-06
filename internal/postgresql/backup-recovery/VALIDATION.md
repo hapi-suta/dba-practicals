@@ -260,6 +260,38 @@ The test harness is instructor-only; it intentionally automates a rehearsal.
 Students should follow the separate one-action-at-a-time handouts. Run it only
 where matching PostgreSQL tools are already installed and local test-server
 creation is permitted. It retains evidence and stops only its own new cluster.
+# Full student-language review — 2026-10-06
+
+Reviewed all 14 student Markdown files, covering Labs 0–11 and support pages.
+This review addresses owner feedback about unclear wording, not a new database
+feature. The existing numbered lab URLs are unchanged.
+
+| Finding | Correction |
+|---|---|
+| “Investigate” and “resume help” did not tell students what to do. | Named the result to compare, error to save, safe stop condition and relevant help section. |
+| Terms such as fixture, globals, preflight, staging and runbook were unexplained. | Removed unnecessary shorthand or explained the term beside its use. |
+| Some steps assumed students knew whether to use the Linux terminal or psql. | Added execution context and full expected data-directory paths. |
+| README forbade stopping any service although labs intentionally stop COPY. | Kept SOURCE protected and explicitly limited stopping to the lab's named COPY step. |
+| The running-COPY help could be read as permission to stop an unconfirmed server. | Made confirmation of the exact COPY directory a required condition before the existing stop command. |
+| Student opening instructions linked to internal validation records. | Kept preparation guidance in the student page; retained internal evidence separately. |
+| Existing link tests checked files but not section headings. | Added student-link heading checks and tests for the reported vague phrases. |
+
+Verification:
+
+- 13 guide/report tests passed, including wording-regression and section-link checks.
+- Compared all fenced commands/configuration blocks in all 14 student files with
+  commit `4e2d9c4`: byte-for-byte unchanged and in the same order.
+- Read the changed student paths, expected-result branches and help-page return
+  instructions. This is an author review, not proof of student comprehension.
+- No new database rehearsal, cloud changes or student-server access. Earlier
+  database test evidence remains historical; it was not rerun for these prose edits.
+- Source Markdown review covers all pages. Any browser sampling is additional,
+  not a claim that every rendered page or screen size was inspected.
+
+Future review: do not use “investigate” as a complete instruction. Say what to
+check, what the result should be and where to stop. Preserve command context and
+working student URLs when simplifying wording.
+
 # Wording correction — 2026-10-06
 
 - Student feedback: “resume help” did not explain what to do when COPY was running.

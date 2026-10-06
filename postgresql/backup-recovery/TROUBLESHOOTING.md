@@ -1,4 +1,4 @@
-# Resume safely: do not start the lab again from the top
+# Help with errors or unfinished work
 
 **First:** confirm the instructor has started your assigned server and supplied
 its current address. A stopped server cannot accept SSH. Keep existing data,
@@ -18,7 +18,9 @@ cd /var/lib/postgresql/suta-backup-lab
 pwd
 ```
 
-**Expect:** the exact folder above. If absent, stop and locate existing work.
+**Expect:** `/var/lib/postgresql/suta-backup-lab`. If it is missing, save the
+`pwd` output and the error for your instructor. Do not create another folder
+or repeat setup until you know where your earlier work is.
 
 ```bash
 export PGHOST=/var/run/postgresql PGPORT=5432 PGUSER=postgres
@@ -45,10 +47,11 @@ config. If present, restore the two terminal settings:
 export PGBACKREST_CONFIG=/var/lib/postgresql/suta-backup-lab/pgbackrest.conf PGBACKREST_STANZA=shop
 ```
 
-Now find your last saved checkpoint and inspect current data before continuing.
-Do not rerun CREATE, INSERT, DELETE, DROP, backup or restore commands merely
-because you reconnected. A disconnect during Lab 9 loses its temporary staging
-tables; inspect whether the merge committed before recreating any staging work.
+Find the last step you recorded in [your results sheet](EVIDENCE.md).
+
+- Repeat that step's read-only SELECT or SHOW checks and compare the output with the lab.
+- Do not repeat CREATE, INSERT, DELETE, DROP, backup or restore commands merely because you reconnected.
+- If you disconnected during Lab 9, its temporary holding tables are gone. Use Lab 9's order checks on SOURCE to see whether order 1001 was already returned. Ask the instructor to confirm the result before importing or inserting anything again.
 
 If you opened this page inside an active transaction, do not leave it hanging:
 ask the instructor whether to finish or roll back before reconnecting.
@@ -101,8 +104,9 @@ Check the COPY's status before changing its file:
 pg_ctl -D /var/lib/postgresql/suta-backup-lab/physical-copy status
 ```
 
-If stopped, follow Lab 5 steps 3–4: save old config, edit the copy, then run the
-preflight check. Do not create a fake `/LAB` directory to satisfy the old setting.
+If it reports `no server running`, follow [Lab 5, step 3](05-physical.md#3-isolate-the-stopped-copy)
+and then step 4: save the old settings, edit COPY's file and run the safety
+checks before startup. Do not create a `/LAB` folder to match the old placeholder.
 
 ## 3. Copy is running, but the guide's connection fails
 
@@ -117,25 +121,36 @@ postgres -D /var/lib/postgresql/suta-backup-lab/physical-copy -C port
 ```
 
 These read disk settings, not necessarily settings loaded by an already-running
-server. Ask the instructor to connect using the observed socket/port and confirm
-`SHOW data_directory;` in that session. Never guess that port 5432 is your copy.
-If the verified physical COPY is running with wrong isolation settings, stop only it:
+server. They do not start or change PostgreSQL.
+
+- Expected socket folder: `/var/lib/postgresql/suta-backup-lab/recovery-socket`.
+- Expected port: `55433`.
+- Save both results. Ask the instructor to confirm the running server's connection and run `SHOW data_directory;` there.
+- That result must be `/var/lib/postgresql/suta-backup-lab/physical-copy`. Never assume port 5432 is COPY.
+- If the instructor cannot confirm the running server, stop here. Do not run the stop command below.
+
+Only after confirming this is the physical COPY and its settings need correction,
+return to the Linux terminal as `postgres` and stop it using its exact path:
 
 ```bash
 pg_ctl -D /var/lib/postgresql/suta-backup-lab/physical-copy -m fast -w stop
 ```
 
-This disconnects COPY sessions. Then follow Lab 5 steps 3–5. No new backup is
-needed just to correct the copy's port/socket. Leave SOURCE running.
+This disconnects COPY sessions. Follow [Lab 5, step 3](05-physical.md#3-isolate-the-stopped-copy),
+then complete steps 4–5 before checking its data. No new backup is needed to
+correct only COPY's port or socket. Leave SOURCE running.
 
 ## 4. pgBackRest reports a working-directory / pg1-path mismatch
 
 On these class copies, this error can occur when inherited source archiving is
-still enabled on COPY. Inspect the COPY's effective archive_mode. Lab 5 requires
-`off` and an empty archive_command on COPY, while SOURCE stays `on`.
+still enabled on COPY. After confirming COPY's data directory, run
+`SHOW archive_mode;` in that COPY's psql session. Lab 5 requires `off` and
+an empty `archive_command` on COPY, while SOURCE stays `on`.
 
 Do not "fix" this by changing the source stanza's pg1-path to physical-copy.
-Stop the verified copy first, then correct its isolation settings and preflight it.
+For the physical COPY, follow section 3 above to confirm and stop it, then repeat
+Lab 5's configuration and before-starting safety checks. For a PITR COPY, stop
+the exercise and show the instructor its data directory and error before making changes.
 For PITR, retain the generated restore_command: fetching archived WAL during
 recovery is different from archiving new WAL from a running copy.
 
@@ -157,8 +172,10 @@ SELECT order_id, product, count(*) FROM shop.order_items GROUP BY order_id, prod
 
 At the end of Lab 2, custom restore should have four orders totalling 205.00.
 Two `New / 10.00` rows suggest the one-time test insert was repeated. Source should
-have three items; duplicate Camera/Bag/Cable rows suggest the fixture insert was
-repeated. These observations are clues, not permission to delete rows.
+have three items at the end of Lab 0; duplicate Camera/Bag/Cable rows suggest
+the practice INSERT was repeated. Later incident labs deliberately change the
+data, so compare with the expected result for your current step. Do not delete rows
+based only on this count.
 
 Record the result and ask the instructor which rows belong to the exercise.
 Preserve a backup before any separately approved correction. Do not reset identity
@@ -166,10 +183,12 @@ sequences, drop a database or silently add ON CONFLICT to hide the difference.
 
 ## 6. Folder/database exists or `postmaster.pid` exists
 
-Existing work is not an error to erase. Run [the progress checker](CHECKS.md),
-compare with your saved step, and resume after the last verified action.
-A PID-file warning can mean a cluster is already running. Use `pg_ctl status`;
-never remove the PID file while a process may own it. Ask the instructor if stale.
+Do not delete the existing folder, database or file to clear the message.
+
+- For Labs 0–4, run [the progress check](CHECKS.md#check-labs-04) and compare it with your saved step and that lab's expected data.
+- For a Lab 5 copy, use the exact `pg_ctl ... status` command in [Lab 5, step 3](05-physical.md#3-isolate-the-stopped-copy). If it is running, use section 3 above; do not edit its settings yet.
+- For Labs 6–11, show your last completed step and current error to the instructor before repeating a backup, restore or incident command.
+- `postmaster.pid` records information about a running PostgreSQL server. Do not remove it yourself, even if you suspect it was left behind after a crash.
 
 Do not run pg_verifybackup after editing/starting the same copy and interpret
 that as verification of the original backup. Keep the original verification
@@ -177,5 +196,10 @@ result; if a new integrity test is needed, use a separately authorized fresh bac
 
 ## What to send the instructor
 
-Lab/step number, current OS user, database name, data directory, port/socket,
-exact error and read-only check output. Do not send passwords or full dumps.
+- Lab number and step.
+- Linux user (`whoami` in the terminal).
+- Database name and data directory, if connected.
+- Port and socket folder used by your connection command.
+- The exact error and the check output that differs from the lab.
+
+Do not send passwords or database backup files.

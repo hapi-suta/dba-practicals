@@ -1,8 +1,11 @@
 # Read-only checks: see where you are
 
-The checker reads your local lab. It does not change data/settings, start/stop
-servers, take backups or award completion. It observes current state, not who
-performed an earlier action. Node.js is already installed on the class servers.
+Run these supplied commands to compare your lab with the expected results.
+You do not need to study or edit the checker code.
+
+- It does not change data or settings, start or stop servers, or take backups.
+- It reports what exists now. It cannot prove who performed an earlier step.
+- Node.js, which runs the checker, is already installed on the class servers.
 
 ## Get the updated checker once
 
@@ -25,19 +28,22 @@ cd /var/lib/postgresql
 git clone https://github.com/hapi-suta/dba-practicals.git dba-practicals
 ```
 
-**Expect:** a new folder. If it already exists, do not delete it. Check for edits:
+**Expect:** a new `dba-practicals` folder. If Git says that folder already exists,
+do not delete it or clone again. Use the next command to check for local edits:
 
 ```bash
 git -C /var/lib/postgresql/dba-practicals status --short
 ```
 
-If changes appear, ask the instructor. If clean, update it:
+If filenames appear, there are local edits: show the output to the instructor
+before updating. If there is no output, continue with the update:
 
 ```bash
 git -C /var/lib/postgresql/dba-practicals pull --ff-only
 ```
 
-This updates guides, not databases. Stop on Git divergence. The older
+This updates guides, not databases. If Git says it cannot fast-forward, stop
+and share the message with your instructor; do not force the update. The older
 `/opt/suta/dba-practicals` snapshot may not contain the corrections.
 
 **Return to your lab folder before continuing:**
@@ -53,7 +59,7 @@ pwd
 **Expect:** `/var/lib/postgresql/suta-backup-lab`. If absent, stop and finish
 Lab 0 or locate your previous work with the instructor. Do not create a second
 working folder to hide the problem. If you opened a new login shell, also follow
-the [session restart steps](TROUBLESHOOTING.md#returning-after-a-disconnect-or-another-help-page).
+the [steps for reconnecting to the lab](TROUBLESHOOTING.md#returning-after-a-disconnect-or-another-help-page).
 
 ## Check Labs 0–4
 
@@ -63,17 +69,20 @@ node /var/lib/postgresql/dba-practicals/internal/postgresql/backup-recovery/chec
 
 | Result | Meaning / next action |
 |---|---|
-| PASS | This observation matches; retain evidence |
-| PRESENT | Nonempty file only; still prove restoration |
-| NOT_STARTED | Object/file absent; find your saved step (absence may be intentional mid-drill) |
-| MISMATCH | Different from baseline; investigate, never reset automatically |
-| UNKNOWN | Inspection failed; check connection, permissions and step |
-| INFO | Explanation or limit, not another pass |
+| PASS | This result matches. Save the output. |
+| PRESENT | A file exists and is not empty. You still need to restore it and check its data. |
+| NOT_STARTED | A file or database object is missing. Compare with your last completed step; some drills deliberately delete objects. |
+| MISMATCH | The result differs from the expected value. Save both values and follow the matching troubleshooting section. Do not reset your data. |
+| UNKNOWN | The checker could not read the result. Save its error and confirm your lab connection with the instructor. |
+| INFO | Extra explanation, not a passed check. |
 
-Labs 7–9 intentionally change source data, so early baseline checks can differ.
+Labs 7–9 intentionally change SOURCE's data, so checks against Lab 0's starting data can differ.
 Table presence cannot prove a previous DROP. This is not an automatic grade.
 
 ## Before starting a stopped recovery copy
+
+The `preflight` command checks the copy's settings before startup. Keep the copy
+stopped until these safety checks pass.
 
 Lab 5:
 
@@ -87,8 +96,9 @@ Lab 8:
 node /var/lib/postgresql/dba-practicals/internal/postgresql/backup-recovery/check-lab.mjs preflight pitr
 ```
 
-All safety checks must PASS. UNKNOWN/MISMATCH/NOT_STARTED means stop. This does
-not replace backup integrity verification or configuration review.
+All safety checks must PASS. If a check says UNKNOWN, MISMATCH or NOT_STARTED,
+do not start COPY. Save the check name and its message for the instructor.
+You must also complete the backup-file and configuration checks in the lab.
 
 ## After starting the recovery copy
 

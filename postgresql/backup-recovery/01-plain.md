@@ -45,7 +45,7 @@ echo $?
 **Expect:**
 
 - 0 immediately after pg_dump.
-- A different value means stop and inspect errors.
+- If it is not `0`, stop. Copy the error printed by `pg_dump` and send it with your lab number to the instructor. Do not try to restore this file yet.
 
 ```bash
 ls -lh shop.sql
@@ -82,8 +82,8 @@ psql -X -v ON_ERROR_STOP=1 -d suta_plain_restore -f shop.sql
 - `psql` runs the SQL in this file.
 - `ON_ERROR_STOP=1` stops at the first error.
 - Earlier commands may already have changed the restore database.
-- If it fails, keep that partly restored database so you can investigate.
-- After fixing the cause, use a new empty database.
+- If it fails, save the first error and keep the partly restored database. Do not run the restore into it again.
+- Ask your instructor to help correct the error and choose a new empty database for the next attempt.
 
 ```bash
 echo $?
@@ -146,8 +146,8 @@ should this restored copy contain it?
 
 ### If something goes wrong
 
-- `database already exists`: stop. Do not overwrite previous work.
-- `permission denied`: check the database role and file/folder permissions.
-- `role does not exist`: follow Lab 4. Do not add `--no-owner` without understanding what it changes.
+- `database already exists`: stop and follow [the existing-work checks](TROUBLESHOOTING.md#6-folderdatabase-exists-or-postmasterpid-exists). Do not drop that database.
+- `permission denied`: save the full error, including any named file or role, and confirm you followed Lab 0's `postgres` login steps. Ask the instructor to check access; do not grant broad permissions.
+- `role does not exist`: read [why roles need a separate backup in Lab 4](04-roles.md). Ask the instructor to confirm the missing role before retrying. Do not add `--no-owner` to hide the error; it changes object ownership on restore.
 
 Source: [SQL dump](https://www.postgresql.org/docs/18/backup-dump.html).

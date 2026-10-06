@@ -11,9 +11,9 @@ There is no simulated disk failure here; SOURCE must stay running.
 - **Copy:** `pg_basebackup` copies the whole cluster, not just `suta_shop`.
 - **Check files:** `pg_verifybackup` checks the backup before you change its settings.
 - **Start separately:** COPY uses its own data directory, private socket and port 55433.
-- **Prove it works:** check COPY's identity and data. File verification alone
+- **Prove it works:** check COPY's data directory and restored rows. File verification alone
   does not show that a server starts or that the expected data is usable.
-- **Finish:** stop only COPY and retain its files. SOURCE remains on port 5432.
+- **Finish:** stop only COPY and keep its files. SOURCE remains on port 5432.
 
 **By the end, you will be able to:**
 
@@ -36,9 +36,11 @@ restoration, not protection against losing that server or its disk.
 
 **Key term:** a PostgreSQL cluster is the set of databases managed by one PostgreSQL server. Its data directory holds its files.
 
-**Goal:** copy the whole cluster, then start the copy without changing the source.
 Use your assigned StepUP lab server, not a company server. Read
 [the class connection map](CLASS-SETUP.md) first. These are the actual class paths.
+
+A **socket directory** is a folder used for local database connections. Giving
+COPY its own socket directory and port keeps its connections separate from SOURCE.
 
 | Cluster | Data directory | Socket | Port |
 |---|---|---|---|
@@ -95,7 +97,7 @@ SELECT count(*), sum(total) FROM shop.orders;
 **Expect:**
 
 - `3` and `195.00` after Labs 0–4.
-- If different, investigate before copying.
+- If different, do not take the backup yet. Follow [the order and item checks](TROUBLESHOOTING.md#5-too-many-orders-or-items) and compare the results with Lab 0. Do not change rows just to match the expected total.
 
 ```psql
 \q
@@ -116,7 +118,7 @@ pg_basebackup -h /var/run/postgresql -p 5432 -D physical-copy -X stream -P
 - Copy the whole SOURCE cluster and stream the WAL needed for consistency.
 - The destination must be new.
 - Do not add `-R`: we are not creating a standby.
-- The initial checkpoint can take time; do not launch another backup during a pause.
+- PostgreSQL may first write changed data to disk (a checkpoint). This can delay the first progress message. Leave this command running; do not launch a second backup.
 
 ```bash
 echo $?
@@ -125,7 +127,7 @@ echo $?
 **Expect:**
 
 - `0`.
-- Otherwise stop and retain the error.
+- If it is not `0`, stop. Save the `pg_basebackup` error for your instructor. Do not continue to verification or startup.
 
 ```bash
 pg_verifybackup physical-copy
@@ -141,9 +143,12 @@ pg_verifybackup physical-copy
 
 ## 3. Isolate the stopped COPY
 
+Here, **isolate** means give COPY its own connection settings and turn off its
+WAL archiving. We must not start it using SOURCE's settings.
+
 **Where:**
 
-- Same Linux terminal.
+- Linux terminal as `postgres`, in `/var/lib/postgresql/suta-backup-lab`.
 - Keep SOURCE running.
 
 ```bash
@@ -210,7 +215,7 @@ Save: Ctrl+O, Enter. Exit: Ctrl+X.
 **Where:**
 
 - Linux terminal as `postgres`.
-- Install the [checker](CHECKS.md) first.
+- Follow [the checker setup steps](CHECKS.md#get-the-updated-checker-once) first. You run the supplied command; you do not need to read or edit its code.
 
 After that page, return here in the Linux terminal as `postgres`:
 
@@ -225,9 +230,9 @@ node /var/lib/postgresql/dba-practicals/internal/postgresql/backup-recovery/chec
 **Expect:**
 
 - All safety checks PASS.
-- INFO explains limits.
+- INFO lines explain what a check can and cannot prove.
 - Any MISMATCH, UNKNOWN or NOT_STARTED: **do not start the copy**.
-- Show the instructor the check name.
+- Save the failing check's name, expected value and actual value for your instructor. Correct the named problem before running the checks again.
 - The checker does not modify files or start PostgreSQL.
 
 To inspect the archiving setting yourself:
@@ -240,9 +245,11 @@ postgres -D /var/lib/postgresql/suta-backup-lab/physical-copy -C archive_mode
 
 - `off`.
 - `-C` reads the effective setting without starting the server.
-- If it says `on`, correct the COPY's settings, not the source.
+- If it says `on`, return to step 3 while COPY is still stopped. Set `archive_mode = off` in COPY's file, save it and repeat all of step 4. Do not change SOURCE.
 
 ## 5. Start and verify the COPY
+
+**Where:** Linux terminal as `postgres`. Continue only after step 4 passes.
 
 ```bash
 pg_ctl -D /var/lib/postgresql/suta-backup-lab/physical-copy -l /var/lib/postgresql/suta-backup-lab/physical-recovery.log -w start
@@ -251,7 +258,9 @@ pg_ctl -D /var/lib/postgresql/suta-backup-lab/physical-copy -l /var/lib/postgres
 **Expect:**
 
 - `server started`.
-- On failure, inspect `physical-recovery.log` rather than repeatedly starting it or stopping the source to free a port.
+- If startup fails, open `/var/lib/postgresql/suta-backup-lab/physical-recovery.log` with `less`.
+- Copy the error and press `q` to return to the terminal. Send the error to your instructor before retrying.
+- Do not stop SOURCE to free a port.
 
 ```bash
 psql -X -h /var/lib/postgresql/suta-backup-lab/recovery-socket -p 55433 -d suta_shop
@@ -266,6 +275,7 @@ SHOW data_directory;
 **Expect:**
 
 - `/var/lib/postgresql/suta-backup-lab/physical-copy`.
+- If it differs, leave psql with `\q` and stop this exercise. You have not confirmed that you are connected to COPY.
 
 ```sql
 SHOW archive_mode;
@@ -274,6 +284,9 @@ SHOW archive_mode;
 **Expect:**
 
 - `off`.
+
+If this running COPY reports `on`, do not edit its file while it is running.
+Follow [the running-COPY checks](TROUBLESHOOTING.md#3-copy-is-running-but-the-guides-connection-fails) with your instructor first.
 
 ```sql
 SELECT pg_is_in_recovery();
@@ -308,7 +321,8 @@ node /var/lib/postgresql/dba-practicals/internal/postgresql/backup-recovery/chec
 
 ## 6. Stop ONLY this COPY
 
-After recording results:
+**Where:** back in the Linux terminal as `postgres`, after leaving COPY's psql
+session with `\q`. Use the exact data-directory path below; do not substitute SOURCE's path.
 
 ```bash
 pg_ctl -D /var/lib/postgresql/suta-backup-lab/physical-copy -m fast -w stop
@@ -317,7 +331,7 @@ pg_ctl -D /var/lib/postgresql/suta-backup-lab/physical-copy -m fast -w stop
 **Expect:**
 
 - `server stopped`.
-- Retain all files.
+- Keep the copied files and startup log for review.
 - SOURCE stays running on port 5432; the recovery port is now available for Lab 8.
 
 **Explain:** why is archiving off on COPY but on for SOURCE?
