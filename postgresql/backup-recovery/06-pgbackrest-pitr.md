@@ -358,6 +358,39 @@ full-then-incremental-then-differential command sequence.
 
 ## Lab 8A — create an incident with a known safe boundary
 
+### The incident — read this before running commands
+
+Bob's shop has a completed differential backup from Lab 7. Customers keep
+placing orders after that backup. Someone then deletes Maria's order and its
+item, and commits the mistake. Another valid order arrives afterward.
+
+**Your job:** recover the missing order without losing valid newer orders.
+
+| Stage | What happens on SOURCE | Why it matters |
+|---|---|---|
+| Backup completed | Orders 1001, 1002 and 1003 are saved. | This is the backup we will restore. |
+| New order arrives | Order 1004 is saved, worth 40.00. | It is not in that backup. WAL is needed to recover it. |
+| Safe point recorded | We create `suta_before_delete`. | The recovery copy must stop here. |
+| Mistake committed | Maria's order 1001 and its item are deleted. | The missing order was worth 120.00. |
+| Business continues | Order 1005 is saved, worth 15.00. | It is valid newer work that must stay on SOURCE. |
+
+**Two labs, two different results:**
+
+- **Lab 8:** build and check a separate recovery copy containing the missing data.
+- **Lab 9:** bring only the missing order and item back into SOURCE.
+- We do not replace SOURCE with the older copy. That would lose order 1005.
+
+**This is a controlled practice incident:**
+
+- We create a named safe point deliberately, before making the mistake.
+- A real unexpected deletion may have no such marker. Finding a safe recovery
+  target from incident evidence is a separate investigation.
+- This lab uses a named target, not a clock-time target. Recording the time does
+  not change the target type used by the restore command.
+- These IDs assume the earlier labs were followed without extra inserts. If
+  yours differ, stop and review the existing rows with the instructor; do not
+  delete rows or reset the sequence to force a match.
+
 **What we’re doing:**
 
 - Add an order, mark a safe recovery point, then deliberately delete an older order and add a newer one in this disposable lab.
@@ -472,6 +505,32 @@ Require success and the needed archived history before recovery.
 
 ## Lab 8B — restore files, then replay WAL
 
+### What the recovered copy should contain
+
+Restore the completed Lab 7 differential into separate storage. pgBackRest
+retrieves the required files from that differential and its full backup.
+When the copy starts, PostgreSQL replays the required archived WAL up to
+`suta_before_delete`. The earlier incremental is not needed for this differential.
+
+| Check | SOURCE after the incident, port 5432 | Recovery COPY at the safe point, port 55433 |
+|---|---|---|
+| Order 1001 | Missing | Present: the deletion has not been replayed. |
+| Order 1004 | Present | Present: WAL recovered this post-backup order. |
+| Order 1005 | Present | Absent: it was created after the safe point. |
+| All order IDs | 1002, 1003, 1004, 1005 | 1001, 1002, 1003, 1004 |
+| Count and total | 4 orders / 130.00 | 4 orders / 235.00 |
+
+**Notice:** both databases contain four orders, but they are not the same four.
+Check the IDs and values, not just the row count.
+
+**By the end, you will be able to:**
+
+- Explain why backup files alone cannot recover order 1004.
+- Restore into a separate cluster without overwriting SOURCE.
+- Recover to the named safe point using archived WAL.
+- Verify the target-reached log entry, paused recovery state and actual rows.
+- Explain why Lab 9 must return only the missing data rather than replace SOURCE.
+
 **What we’re doing:**
 
 - Restore a separate cluster from the selected backup, then replay archived WAL to the safe point before the deletion.
@@ -493,6 +552,9 @@ Require success and the needed archived history before recovery.
 - Show the target-reached log entry, paused state and orders 1001–1004.
 - Explain how order 1004 returned even though it was created after the differential backup.
 - Keep the copy paused for Lab 9.
+
+**Before proceeding:** use your incident evidence to confirm SOURCE still has
+order 1005. Do not reconnect the shop to the recovery copy or promote it.
 
 **Where:**
 
@@ -624,4 +686,5 @@ node /var/lib/postgresql/dba-practicals/postgresql/backup-recovery/check-lab.mjs
 differential alone miss order 1004? Why must we NOT replace the source with this copy?
 
 Sources: [pgBackRest 2.50 guide](https://pgbackrest.org/prior/2.50/user-guide.html),
-[PostgreSQL 16 archive recovery](https://www.postgresql.org/docs/16/continuous-archiving.html).
+[PostgreSQL 16 archive recovery](https://www.postgresql.org/docs/16/continuous-archiving.html),
+[named recovery targets and pause](https://www.postgresql.org/docs/16/runtime-config-wal.html#RUNTIME-CONFIG-WAL-RECOVERY-TARGET).

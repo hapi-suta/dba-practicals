@@ -10,6 +10,7 @@ process.umask(0o077);
 const env={...process.env,PGHOST:c.socket,PGPORT:c.port,PGUSER:'postgres'};
 for(const key of ['PGSERVICE','PGDATABASE','PGOPTIONS'])delete env[key];
 const results=[];
+const scenario=[];
 function run(bin,args,input){return execFileSync(bin,args,{input,encoding:'utf8',env,timeout:180000,maxBuffer:2*1024*1024,stdio:['pipe','pipe','pipe']}).trim();}
 const sql=(q,db='suta_shop')=>run('psql',['-XAt','-v','ON_ERROR_STOP=1','-d',db,'-c',q]);
 const report=(label,checks)=>{assert.ok(!checks.some(x=>['MISMATCH','UNKNOWN','NOT_STARTED'].includes(x.status)),JSON.stringify(checks));results.push(label);console.log('PASS '+label);};
@@ -84,11 +85,20 @@ try{
  const info=JSON.parse(run('pgbackrest',['--output=json','info']));
  const diff=info[0].backup.findLast?info[0].backup.findLast(b=>b.type==='diff'):info[0].backup.filter(b=>b.type==='diff').at(-1);
  assert.ok(diff);results.push('Full incremental differential chain');
- sql("INSERT INTO shop.orders(customer_id,status,total) VALUES(3,'New',40)");
- sql("SELECT pg_create_restore_point('suta_before_delete')");
- sql('BEGIN; DELETE FROM shop.order_items WHERE order_id=1001; DELETE FROM shop.orders WHERE order_id=1001; COMMIT');
- sql("INSERT INTO shop.orders(customer_id,status,total) VALUES(2,'New',15)");
- sql('SELECT pg_switch_wal()');run('pgbackrest',['check']);
+ const stateQuery="SELECT json_build_object('ids',array_agg(order_id ORDER BY order_id),'count',count(*),'total',sum(total)) FROM shop.orders";
+ const backupState=JSON.parse(sql(stateQuery));
+ assert.deepEqual(backupState,{ids:[1001,1002,1003],count:3,total:195});
+ scenario.push({stage:'source-after-differential',...backupState});
+ // One persistent session preserves the handout's explicit BEGIN/COMMIT.
+ const incident=fs.readFileSync('/guide/06-pgbackrest-pitr.md','utf8').split('## Lab 8A')[1].split('## Lab 8B')[0];
+ const incidentSQL=[...incident.matchAll(/```sql\n([\s\S]*?)\n```/g)].map(m=>m[1]).join('\n');
+ assert.ok(incidentSQL.includes("pg_create_restore_point('suta_before_delete')"));
+ run('psql',['-X','-v','ON_ERROR_STOP=1','-d','suta_shop'],incidentSQL);
+ run('pgbackrest',['check']);
+ const sourceState=JSON.parse(sql(stateQuery));
+ assert.deepEqual(sourceState,{ids:[1002,1003,1004,1005],count:4,total:130});
+ scenario.push({stage:'source-after-committed-delete-and-new-order',...sourceState});
+ results.push('Exact Lab 8A SQL produces the documented incident');
  run('pgbackrest',[`--pg1-path=${pitr}`,`--set=${diff.label}`,'--type=name','--target=suta_before_delete','--target-action=pause','restore']);
  fs.appendFileSync(pitr+'/postgresql.auto.conf','\n'+isolation+'\n');
  report('PITR preflight preserves generated recovery settings',inspect('preflight','pitr'));
@@ -98,6 +108,11 @@ try{
    if(state==='t')break;Atomics.wait(new Int32Array(new SharedArrayBuffer(4)),0,0,200);
  }
  report('PITR target / paused / expected rows / current log',inspect('recovery','pitr'));
+ const copyState=JSON.parse(run('psql',['-XAt','-h',c.root+'/recovery-socket','-p',c.recoveryPort,'-d','suta_shop','-c',stateQuery]));
+ assert.deepEqual(copyState,{ids:[1001,1002,1003,1004],count:4,total:235});
+ assert.deepEqual(JSON.parse(sql(stateQuery)),sourceState);
+ scenario.push({stage:'paused-recovery-copy',...copyState});
+ results.push('Same row count does not hide different IDs; source remains unchanged');
  assert.equal(sql('SELECT count(*)||\'|\'||sum(total) FROM shop.orders'),'4|130.00');
  // Execute Lab 9's SQL and psql copy commands directly from the updated guide.
  let recovered=true;
@@ -109,6 +124,9 @@ try{
  run('psql',['-X','-v','ON_ERROR_STOP=1','-d','suta_shop'],merge);
  assert.equal(sql("SELECT count(*)||'|'||sum(total) FROM shop.orders"),'5|250.00');
  assert.equal(sql('SELECT count(*) FROM shop.order_items'),'3');results.push('Guide Lab 9 selective merge preserves newer order');
+ const mergedState=JSON.parse(sql(stateQuery));
+ assert.deepEqual(mergedState,{ids:[1001,1002,1003,1004,1005],count:5,total:250});
+ scenario.push({stage:'source-after-selective-merge',...mergedState});
  const lab10=fs.readFileSync('/guide/09-drills.md','utf8').split('## Lab 10')[1].split('## Lab 11')[0];
  // Run all commands in the documented disposable drop drill; psql queries target it explicitly.
  for(const m of lab10.matchAll(/```(bash|sql|psql)\n([\s\S]*?)\n```/g)){
@@ -121,7 +139,7 @@ try{
    }
  }
  assert.equal(sql("SELECT count(*)||'|'||sum(total) FROM shop.orders",'suta_drop_drill'),'3|195.00');results.push('Guide Lab 10 drop / restore disposable database');
- const evidence={date:new Date().toISOString(),postgres:run('postgres',['--version']),pgbackrest:run('pgbackrest',['version']),results,scope:'Local isolated container; no student servers restarted or changed. Fast checkpoints used in automated rehearsal; interactive nano/SSH not replayed.'};
+ const evidence={date:new Date().toISOString(),postgres:run('postgres',['--version']),pgbackrest:run('pgbackrest',['version']),results,scenario,scope:'Local isolated container; no student servers restarted or changed. Lab 8A SQL and Lab 9 SQL/psql read directly from handouts. Fast checkpoints and programmatic configuration used; interactive nano/SSH not replayed.'};
  fs.writeFileSync('/var/lib/postgresql/qualification.json',JSON.stringify(evidence,null,2));console.log(JSON.stringify(evidence,null,2));
 }finally{
  for(const [started,dir]of[[pitrStarted,pitr],[physicalStarted,physical],[sourceStarted,c.source]])if(started)run('pg_ctl',['-D',dir,'-m','fast','-w','stop']);

@@ -1,5 +1,50 @@
 # Qualification — honest scope
 
+## Lab 8 scenario rehearsal — 2026-10-06
+
+The scenario is now explained before commands: completed backup → order 1004 →
+named safe point → committed deletion of order 1001 and its item → order 1005.
+Lab 8 creates the paused recovery copy; Lab 9 returns only the missing data.
+The source/copy comparison warns that equal row counts can hide different rows.
+
+**New live local server test passed:** 23 integration checks, plus seven guide
+and report tests. PostgreSQL 16.13 / pgBackRest 2.59.3 in a fresh isolated Docker
+container, with no network, published ports, cloud credentials or student data.
+The existing image was reused; no host packages or infrastructure were changed.
+All test clusters and the container were stopped; files remain preserved.
+
+| Verified state | Order IDs | Count | Total |
+|---|---|---|---|
+| SOURCE after differential backup | 1001, 1002, 1003 | 3 | 195.00 |
+| SOURCE after deletion and newer order | 1002, 1003, 1004, 1005 | 4 | 130.00 |
+| COPY paused at `suta_before_delete` | 1001, 1002, 1003, 1004 | 4 | 235.00 |
+| SOURCE after Lab 9 selective merge | 1001, 1002, 1003, 1004, 1005 | 5 | 250.00 |
+
+- Lab 8A's SQL was read directly from the handout and executed in one session,
+  preserving its explicit transaction. Lab 9's SQL/psql was also read from the guide.
+- Checks confirmed the named target, recovery pause, recovery log, copy isolation,
+  unchanged SOURCE during recovery, preserved order 1005 and three final items.
+- Student command/configuration blocks are unchanged from release `7953431`.
+- Evidence and input hashes: [PITR scenario record](evidence/pitr-scenario-20261006.json).
+- Retained local server: `dba-practicals-pitr-scenario-20261006-v1`.
+
+**Limits:** this is a local Linux server rehearsal, not a new test on the student
+Ubuntu 24.04 / PostgreSQL 16.15 / pgBackRest 2.50 hosts. Those hosts were untouched.
+Fast checkpoints and programmatic configuration replace interactive nano; SSH
+and classroom interaction were not replayed. Lab 11 failure extensions remain
+untested. This is named-target recovery, not a tested timestamp-target exercise.
+
+**Documentation checked on 2026-10-06:**
+
+- [PostgreSQL 16 recovery targets](https://www.postgresql.org/docs/16/runtime-config-wal.html#RUNTIME-CONFIG-WAL-RECOVERY-TARGET):
+  `recovery_target_name` uses a previously created restore point; `pause` permits
+  checking recovered data before finishing recovery.
+- [pgBackRest 2.50 guide](https://pgbackrest.org/prior/2.50/user-guide.html#pitr):
+  PITR and explicit backup selection for named targets. Its Concepts section
+  explains the full-backup dependency of a differential backup.
+- The order IDs, totals and preservation claims above come from the new server
+  rehearsal, not from documentation or invented sample output.
+
 ## Revised class edition — 2026-10-05 Pacific / 2026-10-06 UTC
 
 Passed a new isolated local Docker rehearsal with **PostgreSQL 16.13**, Debian,
