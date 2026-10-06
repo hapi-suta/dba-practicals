@@ -1,5 +1,9 @@
 # Lab 1 — restore a plain SQL backup
 
+**What we’re doing:** save the shop as a readable SQL file, then use that file to
+rebuild it in a different database. The original stays untouched.
+**You finish with:** `suta_plain_restore`, containing 3 orders worth 195.00.
+
 Prerequisite: Lab 0. Linux shell, postgres user, inside `suta-backup-lab`.
 Output names are new for this run; do not rerun over previous files.
 

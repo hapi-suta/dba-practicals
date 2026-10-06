@@ -1,0 +1,29 @@
+{
+  "date": "2026-10-06T03:51:57.593Z",
+  "postgres": "postgres (PostgreSQL) 16.13 (Debian 16.13-1.pgdg13+1)",
+  "pgbackrest": "pgBackRest 2.59.3",
+  "results": [
+    "Exact Labs 0–4 SQL rehearsal",
+    "Absent copy never marked passed",
+    "Unavailable source never marked passed",
+    "Progress positive baseline",
+    "Backup file existence is not a restore pass",
+    "Repeated test insert detected",
+    "Duplicate fixture detected",
+    "Physical integrity before edits",
+    "Physical preflight passes exact guide settings",
+    "Literal placeholder detected",
+    "Later duplicate archive override detected",
+    "Unsupported auto.conf directory setting detected",
+    "Source directory redirection detected",
+    "Physical copy live identity / isolation / data",
+    "Running copy blocked from editing",
+    "Prepared-to-student repository transition",
+    "Full incremental differential chain",
+    "PITR preflight preserves generated recovery settings",
+    "PITR target / paused / expected rows / current log",
+    "Guide Lab 9 selective merge preserves newer order",
+    "Guide Lab 10 drop / restore disposable database"
+  ],
+  "scope": "Local isolated container; no student servers restarted or changed. Fast checkpoints used in automated rehearsal; interactive nano/SSH not replayed."
+}

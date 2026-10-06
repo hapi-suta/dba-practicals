@@ -15,9 +15,20 @@ Source review does not replace execution on the actual class environment.
 | [PostgreSQL 14 pg_dump](https://www.postgresql.org/docs/14/app-pgdump.html) | Local rehearsal compatibility |
 | [PostgreSQL 14 archive recovery](https://www.postgresql.org/docs/14/continuous-archiving.html) | Version-matched recovery background |
 
+The revised class edition also checks the [pgBackRest 2.50 guide](https://pgbackrest.org/prior/2.50/user-guide.html),
+[PostgreSQL 16 settings](https://www.postgresql.org/docs/16/config-setting.html),
+[file locations](https://www.postgresql.org/docs/16/runtime-config-file-locations.html),
+[postgres -C](https://www.postgresql.org/docs/16/app-postgres.html) and
+[archive recovery](https://www.postgresql.org/docs/16/continuous-archiving.html).
+These support source/repository distinctions, effective overrides, isolated
+copy startup and recovery-target checks. `data_directory` belongs in the main
+configuration/command line, not postgresql.auto.conf; the checker rejects that
+unsupported placement rather than allowing misleading settings.
+
 No native PostgreSQL incremental-backup commands are taught in this pack;
-pgBackRest full/differential/incremental are its own backup types. Actual class
-server and pgBackRest versions have not yet been supplied. No claim is made that
+pgBackRest full/differential/incremental are its own backup types. Prepared class
+hosts were PostgreSQL 16.15 with pgBackRest 2.50. See VALIDATION.md for the
+separate local rehearsal versions and limits. No claim is made that
 these labs are a complete production backup/security policy or a HA runbook.
 
 Lab 8 uses a named restore point for a deterministic drill. A real timestamp

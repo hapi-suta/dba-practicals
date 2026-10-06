@@ -1,9 +1,16 @@
 # Labs 9–11 — return missing data and prove recovery
 
-Lab 9 depends on the successful, paused recovery in Lab 8. Instructor-led and
-not rehearsed on the class host. `/LAB` must be the confirmed working directory.
+Lab 9 depends on verified, paused recovery in Lab 8. Instructor-led; see
+[validation scope](VALIDATION.md). Paths below are the actual class paths.
+SOURCE is port 5432; recovered COPY is port 55433. Do not repeat the merge if
+order 1001 already exists on SOURCE. Investigate existing work before continuing.
 
 ## Lab 9 — bring back only Maria's missing order
+
+**What we’re doing:** export the missing order and its item from the recovery
+copy, inspect them in temporary staging tables, then return only those rows.
+**You finish with:** 5 orders worth 250.00 and 3 items on source. The newer
+order 1005 survives; the live table is not replaced.
 
 Why: the live lab source has order 1005, which the recovered copy does not.
 Replacing the entire table would lose valid newer work. Real incidents also need
@@ -13,7 +20,7 @@ has one known order and one item, with its customer still present.
 Connect to the recovered copy, not source:
 
 ```bash
-psql -X -h /LAB/recovery-socket -p 55433 -d suta_shop
+psql -X -h /var/lib/postgresql/suta-backup-lab/recovery-socket -p 55433 -d suta_shop
 ```
 
 ```sql
@@ -24,11 +31,11 @@ Must be pitr-copy. In psql, export only the identified lost records. `\copy` wri
 client-side files; these contain lab data and must stay OUT of Git.
 
 ```psql
-\copy (SELECT order_id, customer_id, status, total FROM shop.orders WHERE order_id = 1001) TO '/LAB/missing-order.csv' WITH CSV HEADER
+\copy (SELECT order_id, customer_id, status, total FROM shop.orders WHERE order_id = 1001) TO '/var/lib/postgresql/suta-backup-lab/missing-order.csv' WITH CSV HEADER
 ```
 
 ```psql
-\copy (SELECT item_id, order_id, product, amount FROM shop.order_items WHERE order_id = 1001) TO '/LAB/missing-items.csv' WITH CSV HEADER
+\copy (SELECT item_id, order_id, product, amount FROM shop.order_items WHERE order_id = 1001) TO '/var/lib/postgresql/suta-backup-lab/missing-items.csv' WITH CSV HEADER
 ```
 
 Each should report COPY 1 for this fixture. Do not generalize the row filter to
@@ -41,7 +48,7 @@ an entire incident without identifying all affected relationships.
 Now connect to the **source** using the original shell connection settings:
 
 ```bash
-psql -X -d suta_shop
+psql -X -h /var/run/postgresql -p 5432 -d suta_shop
 ```
 
 ```sql
@@ -59,11 +66,11 @@ CREATE TEMP TABLE recovered_items (item_id integer, order_id integer, product te
 ```
 
 ```psql
-\copy recovered_orders FROM '/LAB/missing-order.csv' WITH CSV HEADER
+\copy recovered_orders FROM '/var/lib/postgresql/suta-backup-lab/missing-order.csv' WITH CSV HEADER
 ```
 
 ```psql
-\copy recovered_items FROM '/LAB/missing-items.csv' WITH CSV HEADER
+\copy recovered_items FROM '/var/lib/postgresql/suta-backup-lab/missing-items.csv' WITH CSV HEADER
 ```
 
 ```sql
@@ -156,10 +163,15 @@ The live sequence was never rolled back or replaced: do not reset it downward.
 After evidence is accepted, shell: stop ONLY the recovered copy, retaining its files:
 
 ```bash
-pg_ctl -D pitr-copy -m fast -w stop
+pg_ctl -D /var/lib/postgresql/suta-backup-lab/pitr-copy -m fast -w stop
 ```
 
 ## Lab 10 — a whole database is dropped
+
+**What we’re doing:** create a separate drill database, drop only that database,
+then rebuild it from the earlier logical backup.
+**You finish with:** 3 orders worth 195.00. You can explain why this older
+backup cannot contain the changes made after it was taken.
 
 This independent drill uses the older `shop.dump` from Lab 2. It recovers the
 backup snapshot, not the later PITR state. Shell, original connection:
@@ -218,6 +230,11 @@ database afterward is a separate logical dump/restore step.
 ```
 
 ## Lab 11 — failures, recovery objectives and runbook
+
+**What we’re doing:** investigate one instructor-approved failure in isolation,
+record recovery time and data loss, and write steps someone else can follow.
+**You finish with:** evidence and a usable recovery runbook—not just a backup
+file. The instructor must prepare any fault-injection environment first.
 
 Instructor chooses ONE isolated fault after the successful baseline:
 

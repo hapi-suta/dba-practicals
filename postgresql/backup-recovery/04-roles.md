@@ -1,5 +1,9 @@
 # Lab 4 — recovered data needs the right access
 
+**What we’re doing:** give a reporting role read-only access, save role definitions
+separately from the database backup, and verify permissions in a restored copy.
+**You finish with:** a reader that can SELECT orders but cannot DELETE them.
+
 Dedicated lab cluster only. Roles are cluster-wide, not private to one database.
 Do not run this against a shared class cluster without instructor coordination.
 

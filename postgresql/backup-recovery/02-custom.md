@@ -1,5 +1,10 @@
 # Lab 2 — archives, schemas and tables
 
+**What we’re doing:** take a custom-format backup, inspect its contents and restore
+it with `pg_restore`. Then practise selecting one schema or one table to back up.
+**You finish with:** restored copies, a working order-number sequence and a
+delivery-note backup ready for Lab 3.
+
 Linux shell in the same folder and connection as Lab 1. Keep all previous files.
 
 ## Custom archive
@@ -43,11 +48,29 @@ Expect 3 and 195.00.
 
 Check the identity, primary key and customer foreign key, not only row count.
 
+**Run once only.** If you already added order 1004, skip this INSERT and inspect
+the existing rows using the query below. Do not add another test order.
+
 ```sql
 INSERT INTO shop.orders (customer_id, status, total) VALUES (1, 'New', 10) RETURNING order_id;
 ```
 
-Expect 1004: the restored identity sequence works. This insert affects ONLY the copy.
+**Run that INSERT once only.** Expect 1004: the restored identity sequence works.
+This affects ONLY the copy. If returning to this step, inspect existing rows
+first instead of repeating the INSERT:
+
+```sql
+SELECT order_id, status, total FROM shop.orders WHERE order_id >= 1004 ORDER BY order_id;
+```
+
+**Expect after the one-time insert:** one row, 1004 / New / 10.00.
+
+```sql
+SELECT count(*), sum(total) FROM shop.orders;
+```
+
+**Expect:** 4 / 205.00. If 5 / 215.00, investigate with the instructor; do not
+delete an order or reset the sequence to make the numbers match.
 
 ```psql
 \q

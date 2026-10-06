@@ -1,6 +1,13 @@
 # Lab 0 — connect and prepare known data
 
+**What we’re doing:** connect to your assigned server and create Bob’s small shop.
+We record its starting rows so later we can tell whether a restore is correct.
+**You finish with:** 3 customers, 3 orders worth 195.00, 3 items and 1 delivery note.
+
 **Goal:** know which server you are changing before taking a backup.
+
+Read [your class connection map](CLASS-SETUP.md). If continuing earlier work,
+use [resume help](TROUBLESHOOTING.md), not a fresh run of all CREATE/INSERT steps.
 
 ## 1. Sign in
 
@@ -26,8 +33,8 @@ If sudo is unavailable, ask for the assigned database login; do not change HBA.
 whoami
 ```
 
-Expect `postgres`. Instructor must adjust the following socket/port for the lab.
-These are Debian/Ubuntu defaults, not proof of the actual configuration:
+Expect `postgres`. The following values are for the assigned StepUP class source.
+On another environment, stop and get an instructor-approved connection map:
 
 ```bash
 export PGHOST=/var/run/postgresql
@@ -116,6 +123,9 @@ psql -X -d suta_shop
 ## 3. Build the small shop
 
 Inside psql, one statement at a time. Each CREATE should report success.
+**Run each INSERT below once.** A successful insert followed by a repeated insert
+can create additional orders/items with new IDs. If unsure, inspect the table first;
+do not repeat a write to see whether it worked.
 
 ```sql
 CREATE SCHEMA shop;
@@ -180,6 +190,24 @@ SELECT count(*), sum(total) FROM shop.orders;
 ```
 
 Expect 3 and 195.00. Write this into your evidence sheet.
+
+```sql
+SELECT count(*) FROM shop.customers;
+```
+
+**Expect:** 3.
+
+```sql
+SELECT count(*) FROM shop.order_items;
+```
+
+**Expect:** 3, not 6. Stop and inspect duplicates if different.
+
+```sql
+SELECT count(*) FROM shop.delivery_notes;
+```
+
+**Expect:** 1. These baselines help separate a backup issue from repeated setup.
 
 ```psql
 \q

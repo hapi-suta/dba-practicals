@@ -9,3 +9,10 @@ shop.sql
 data/
 repo/
 archive/
+*.csv
+*inventory*.json
+class-progress*.html
+*connection-sheet-private*
+*.pem
+*.key
+known_hosts*

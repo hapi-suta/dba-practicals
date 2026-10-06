@@ -1,5 +1,10 @@
 # Lab 3 — someone dropped a table
 
+**What we’re doing:** deliberately drop the delivery-note table in the disposable
+copy, then recover only that table. We check that a newer order is not lost.
+**You finish with:** the note and its constraints back, with all 4 orders worth
+205.00 still present in `suta_custom_restore`.
+
 Prerequisite: Lab 2, including `notes.dump` and the restored custom database.
 We damage ONLY `suta_custom_restore`, never the source shop.
 

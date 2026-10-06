@@ -1,142 +1,227 @@
-# Lab 5 — restore an entire physical cluster
+# Lab 5 — start a separate physical copy
 
-**Instructor-led; class-host rehearsal required.** Complete INSTRUCTOR.md's
-advanced gate. Work as the source cluster's OS owner, never root. Source contains
-only our disposable databases, uses compatible installed binaries and has no
-external tablespaces/configuration. Instructor provides replication access and
-WAL sender capacity for pg_basebackup; do not weaken authentication to get past errors.
+**What we’re doing:** copy the whole PostgreSQL cluster with `pg_basebackup`,
+verify the backup, then safely start a separate copy on port 55433.
+**You finish with:** a working copy with 3 orders worth 195.00, while the source
+on port 5432 remains untouched. We stop only the copy at the end.
 
-## 1. Identify the source
+**Goal:** copy the whole cluster, then start the copy without changing the source.
+Use your assigned StepUP lab server, not a company server. Read
+[the class connection map](CLASS-SETUP.md) first. These are the actual class paths.
 
-In the source psql session:
+| Cluster | Data directory | Socket | Port |
+|---|---|---|---|
+| SOURCE — keep running | `/var/lib/postgresql/16/lab` | `/var/run/postgresql` | 5432 |
+| COPY — this exercise | `/var/lib/postgresql/suta-backup-lab/physical-copy` | `/var/lib/postgresql/suta-backup-lab/recovery-socket` | 55433 |
+
+**Already attempted this lab?** Use [resume help](TROUBLESHOOTING.md).
+Do not overwrite `physical-copy`, repeat a backup into it, or remove a PID file.
+
+## 1. Check the source
+
+**Where:** Linux terminal as `postgres`. Switch with `sudo -iu postgres` first
+if you are still the `student` OS user.
+
+```bash
+cd /var/lib/postgresql/suta-backup-lab
+```
+
+**Why:** keep this work in the folder created in Lab 0. If absent, finish Lab 0.
+
+```bash
+psql -X -h /var/run/postgresql -p 5432 -d suta_shop
+```
+
+**Now inside psql on SOURCE:**
 
 ```sql
 SHOW data_directory;
 ```
 
-```sql
-SHOW server_version;
-```
+**Expect:** `/var/lib/postgresql/16/lab`. Any other value: stop.
 
 ```sql
 SELECT spcname, pg_tablespace_location(oid) FROM pg_tablespace;
 ```
 
-Only default tablespaces with empty external paths are supported in this exercise.
-If a custom path appears, stop: a physical restore needs explicit tablespace mapping.
+**Expect:** default tablespaces only, with empty external locations. Ask the
+instructor if any custom location exists; this exercise does not map tablespaces.
+
+```sql
+SELECT count(*), sum(total) FROM shop.orders;
+```
+
+**Expect:** `3` and `195.00` after Labs 0–4. If different, investigate before copying.
 
 ```psql
 \q
 ```
 
-## 2. Take a streaming base backup
+## 2. Copy and verify
 
-Shell, in the lab working directory, with PGHOST/PGPORT pointing to the source:
+**Where:** Linux terminal as `postgres`, in the lab folder.
 
 ```bash
-pg_basebackup -D physical-copy -X stream -P
+pg_basebackup -h /var/run/postgresql -p 5432 -D physical-copy -X stream -P
 ```
 
-Why: `-D` names a new target; `-X stream` collects the WAL needed to make the
-backup consistent; `-P` shows progress. The destination must not contain previous
-work. This copies the cluster, not one database. Do not add `-R`: this exercise
-is a standalone restore, not configuring a streaming standby.
+**Why:** copy the whole SOURCE cluster and stream the WAL needed for consistency.
+The destination must be new. Do not add `-R`: we are not creating a standby.
+The initial checkpoint can take time; do not launch another backup during a pause.
 
 ```bash
 echo $?
 ```
 
-Expect 0. Then, **before editing any files**:
+**Expect:** `0`. Otherwise stop and retain the error.
 
 ```bash
 pg_verifybackup physical-copy
 ```
 
-Expect successful verification. This checks backup integrity, not application
-usability. Keep a protected original backup for real operations; this disposable
-exercise starts this copy itself and therefore changes it.
+**Expect:** successful verification, **before editing or starting this copy**.
+This checks integrity, not application usability. This disposable exercise starts
+the backup itself; real operations should also retain an untouched backup.
 
-## 3. Isolate the restored cluster
+## 3. Isolate the stopped COPY
 
-Instructor substitutes the absolute working directory for `/LAB` below.
+**Where:** same Linux terminal. Keep SOURCE running.
 
 ```bash
 mkdir recovery-socket
 ```
 
+If the directory already exists, use the resume guide; do not delete it.
+
 ```bash
 chmod 700 recovery-socket
 ```
+
+**Why:** restrict the copy's connection directory to its owner.
+
+```bash
+pg_ctl -D /var/lib/postgresql/suta-backup-lab/physical-copy status
+```
+
+**Expect:** `no server running` (exit 3 is normal). If running, inspect it using
+resume help; do not edit a running copy or stop the source.
+
+```bash
+cp -n physical-copy/postgresql.auto.conf physical-copy/postgresql.auto.conf.before-lab5
+```
+
+**Why:** preserve the original settings; `-n` keeps any earlier saved copy.
 
 ```bash
 nano physical-copy/postgresql.auto.conf
 ```
 
-Instructor reviews existing settings first. In this **copy only**, replace any
-duplicate settings below and add missing ones. Keep other required compatible
-settings. Do not copy these onto the source cluster:
+**Only edit the STOPPED COPY.** Replace existing entries for these settings and
+add missing entries. Keep unrelated settings. Keep one active entry per setting.
 
 ```conf
 port = 55433
 listen_addresses = ''
-unix_socket_directories = '/LAB/recovery-socket'
+unix_socket_directories = '/var/lib/postgresql/suta-backup-lab/recovery-socket'
 archive_mode = off
 archive_command = ''
 primary_conninfo = ''
 ssl = off
 ```
 
-No TCP listeners: students connect through the private socket. Disabling archiving
-on the copy prevents it writing into the source's archive. Check there is no
-data_directory override redirecting it to the source and no recovery/standby
-settings inherited from another drill. If any exist, stop for instructor review.
-In nano, Ctrl+O, Enter saves; Ctrl+X exits.
+Save: Ctrl+O, Enter. Exit: Ctrl+X.
+
+**Why:** the backup includes the source configuration. The copy needs its own
+port/socket and must not use the source's archive. `postgresql.auto.conf` overrides
+`postgresql.conf`; the last duplicate setting wins. Manual editing here is limited
+to the stopped recovery copy, not a running source.
+
+## 4. Check BEFORE starting
+
+**Where:** Linux terminal as `postgres`. Install the [checker](CHECKS.md) first.
 
 ```bash
-pg_ctl -D physical-copy -l physical-recovery.log -w start
+node /var/lib/postgresql/dba-practicals/postgresql/backup-recovery/check-lab.mjs preflight physical
 ```
 
-Why: start only the new directory, with its own port/socket. If startup fails,
-inspect `physical-recovery.log`; do not change/start/stop the source to compensate.
+**Expect:** all safety checks PASS. INFO explains limits. Any MISMATCH, UNKNOWN
+or NOT_STARTED: **do not start the copy**. Show the instructor the check name.
+The checker does not modify files or start PostgreSQL.
 
-## 4. Verify the copy
+To inspect the archiving setting yourself:
 
 ```bash
-psql -X -h /LAB/recovery-socket -p 55433 -d suta_shop
+postgres -D /var/lib/postgresql/suta-backup-lab/physical-copy -C archive_mode
 ```
+
+**Expect:** `off`. `-C` reads the effective setting without starting the server.
+If it says `on`, correct the COPY's settings, not the source.
+
+## 5. Start and verify the COPY
+
+```bash
+pg_ctl -D /var/lib/postgresql/suta-backup-lab/physical-copy -l physical-recovery.log -w start
+```
+
+**Expect:** `server started`. On failure, inspect `physical-recovery.log` rather
+than repeatedly starting it or stopping the source to free a port.
+
+```bash
+psql -X -h /var/lib/postgresql/suta-backup-lab/recovery-socket -p 55433 -d suta_shop
+```
+
+**Now inside psql on COPY:**
 
 ```sql
 SHOW data_directory;
 ```
 
-Must be the new `physical-copy`, not source PGDATA.
+**Expect:** `/var/lib/postgresql/suta-backup-lab/physical-copy`.
+
+```sql
+SHOW archive_mode;
+```
+
+**Expect:** `off`.
 
 ```sql
 SELECT pg_is_in_recovery();
 ```
 
-Expect false once standalone recovery has completed.
+**Expect:** `false` once this standalone copy finishes recovery.
 
 ```sql
 SELECT count(*), sum(total) FROM shop.orders;
 ```
 
-Compare with the source baseline at backup time (3 and 195 if Labs 0–4 are unchanged).
-
-```psql
-\l
-```
-
-Notice other lab databases were copied too. Exit, then stop only this copy so
-the recovery port is available for the next lab:
+**Expect:** `3` and `195.00`, matching source at backup time.
 
 ```psql
 \q
 ```
 
+**Back in the Linux terminal:**
+
 ```bash
-pg_ctl -D physical-copy -m fast -w stop
+node /var/lib/postgresql/dba-practicals/postgresql/backup-recovery/check-lab.mjs recovery physical
 ```
 
-Retain all files. Sources: [pg_basebackup](https://www.postgresql.org/docs/18/app-pgbasebackup.html),
-[pg_verifybackup](https://www.postgresql.org/docs/18/app-pgverifybackup.html).
+**Expect:** recovery checks PASS. Keep the output as evidence.
+
+## 6. Stop ONLY this COPY
+
+After recording results:
+
+```bash
+pg_ctl -D /var/lib/postgresql/suta-backup-lab/physical-copy -m fast -w stop
+```
+
+**Expect:** `server stopped`. Retain all files. SOURCE stays running on port 5432;
+the recovery port is now available for Lab 8.
+
+**Explain:** why is archiving off on COPY but on for SOURCE?
+
+Sources: [configuration precedence](https://www.postgresql.org/docs/16/config-setting.html),
+[postgres -C](https://www.postgresql.org/docs/16/app-postgres.html),
+[physical backup](https://www.postgresql.org/docs/16/app-pgbasebackup.html),
+[verification](https://www.postgresql.org/docs/16/app-pgverifybackup.html).

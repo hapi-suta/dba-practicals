@@ -7,6 +7,14 @@ data without overwriting good data that arrived after the backup.
 
 ## Start here
 
+**New:** [What we’re doing in each lab — one-page overview](LAB-OVERVIEW.md).
+Read this first; every individual lab also starts with its purpose and end result.
+
+1. Read [your server connection map](CLASS-SETUP.md): SOURCE 5432 versus COPY 55433.
+2. Follow the beginner labs 0–4. Run each write once; record the expected checks.
+3. Use [read-only checks](CHECKS.md) and [resume/error help](TROUBLESHOOTING.md).
+4. Move to instructor-led Labs 5–11 only after the source baseline is correct.
+
 Use a **disposable, instructor-approved PostgreSQL lab**, one cluster per student.
 Never run the incident exercises against a company database. Do not destroy the
 server, remove PGDATA, stop an existing service or delete backup/WAL files.
@@ -24,6 +32,10 @@ server, remove PGDATA, stop an existing service or delete backup/WAL files.
 
 Do not rush every lab into one class. For today's first session, do 0–3 and the
 access check in 4. Physical/PITR work needs the instructor preparation gate.
+
+**Class edition:** commands now use actual StepUP server paths, not `/LAB`
+placeholders. Do not substitute your source directory for a recovery-copy path.
+The checker reports evidence, not automatic completion or a backup guarantee.
 
 Each command block is one action. `bash` means the Linux terminal; `sql` means
 inside psql. `psql` blocks contain psql commands such as `\q`. Do not type the
