@@ -31,20 +31,14 @@ below must be set again in a new shell. Do not repeat inserts or incident delete
 directory is what we protect; the repository is where backups and archived WAL
 will be stored. Creating the stanza prepares this setup—it does not take a backup.
 
-**What we’re doing:**
+**What you’ll practise:**
 
 - Tell pgBackRest where the source cluster lives and where to store its backups.
 - A stanza is the named configuration for this cluster.
 
-**You finish with:**
+**Success looks like:**
 
 - The `shop` stanza pointing at the actual source PGDATA, not the backup folder or restored copy.
-
-**Your task:**
-
-- Create the student backup folder and configuration file.
-- Check the source path and backup path carefully.
-- Run `stanza-create`. It must succeed before you change source archiving.
 
 **Pause and discuss:**
 
@@ -136,20 +130,14 @@ pgbackrest stanza-create
 repository. Keep the instructor repository intact. A successful check here is
 not a completed recovery: Lab 7 takes backups and Lab 8 tests recovery from them.
 
-**What we’re doing:**
+**What you’ll practise:**
 
 - Send completed WAL segments to the student repository and check that archiving works.
 - WAL is needed to recover changes after a backup.
 
-**You finish with:**
+**Success looks like:**
 
 - A successful archive check; then take a new full backup in Lab 7 so this repository has a usable starting point.
-
-**Your task:**
-
-- Check that you are connected to SOURCE.
-- Change its archive command to use the student backup folder.
-- Reload the settings, check the command in use, then test archiving.
 
 **Pause and discuss:**
 
@@ -290,21 +278,9 @@ Inspect `pgbackrest info`; let pgBackRest select required files during restorati
 **This lab ends** with successful backups and the saved differential label.
 It does not prove recovery yet. Lab 8 restores that backup and replays later WAL.
 
-**What we’re doing:**
-
-- Take a full backup, make a change, take an incremental, make another change and take a differential.
-- Inspect their dependencies.
-
-**You finish with:**
+**Success looks like:**
 
 - A verified backup inventory and the differential label you will select for recovery. pgBackRest resolves the required backup files.
-
-**Your task:**
-
-- Take a full backup.
-- Change an order, then take an incremental backup.
-- Change another order, then take a differential backup.
-- Save the completed backup labels shown by `pgbackrest info`.
 
 **Pause and discuss:**
 
@@ -422,19 +398,9 @@ item, and commits the mistake. Another valid order arrives afterward.
   yours differ, stop and review the existing rows with the instructor; do not
   delete rows or reset the sequence to force a match.
 
-**What we’re doing:**
-
-- Add an order, mark a safe recovery point, then deliberately delete an older order and add a newer one in this disposable lab.
-
-**You finish with:**
+**Success looks like:**
 
 - A known mistake and evidence of which orders recovery must retrieve—and which newer order must survive on the source.
-
-**Your task:**
-
-- Run the practice incident once.
-- Record the safe restore-point name and the order IDs.
-- Check that the required WAL has been archived.
 
 **Pause and discuss:**
 
@@ -485,6 +451,14 @@ SELECT current_database();
 
 Must be suta_shop on the disposable source. Delete dependent items first so the
 foreign key is respected, and commit both changes together:
+
+```sql
+SHOW data_directory;
+```
+
+**Expect:** `/var/lib/postgresql/16/lab`. If either the database or directory
+differs, STOP before BEGIN or DELETE. The recovery copy also contains a database
+named `suta_shop`, so the name alone is not enough.
 
 ```sql
 BEGIN;
@@ -562,21 +536,9 @@ Check the IDs and values, not just the row count.
 - Verify the target-reached log entry, paused recovery state and actual rows.
 - Explain why Lab 9 must return only the missing data rather than replace SOURCE.
 
-**What we’re doing:**
-
-- Restore a separate cluster from the selected backup, then replay archived WAL to the safe point before the deletion.
-- Do not rewind source.
-
-**You finish with:**
+**Success looks like:**
 
 - A paused recovery copy containing orders 1001–1004, worth 235.00, with logs confirming the intended recovery point.
-
-**Your task:**
-
-- Restore the selected differential backup into `pitr-copy`.
-- Set up the copy's separate connections and pass the safety checks.
-- Start recovery and check that it pauses at the safe point.
-- Check the recovered orders. Keep the copy paused for Lab 9.
 
 **Pause and discuss:**
 
@@ -594,6 +556,13 @@ order 1005. Do not reconnect the shop to the recovery copy or promote it.
 - Use a new, absent `pitr-copy` directory.
 - Replace **only `DIFF_LABEL`** below with the exact completed differential label from your own `pgbackrest info`.
 - Unlike the paths, that label is unique to your backup and cannot be prefilled.
+
+```bash
+cd /var/lib/postgresql/suta-backup-lab
+```
+
+If you reconnected, restore the [session settings](TROUBLESHOOTING.md#returning-after-a-disconnect-or-another-help-page)
+first. This does not mean repeating the incident.
 
 ```bash
 pgbackrest --pg1-path=/var/lib/postgresql/suta-backup-lab/pitr-copy --set=DIFF_LABEL --type=name --target=suta_before_delete --target-action=pause restore
@@ -645,14 +614,14 @@ node /var/lib/postgresql/dba-practicals/postgresql/backup-recovery/check-lab.mjs
 - Otherwise stop; do not start the copy.
 
 ```bash
-pg_ctl -D /var/lib/postgresql/suta-backup-lab/pitr-copy -l pitr-recovery.log -w start
+pg_ctl -D /var/lib/postgresql/suta-backup-lab/pitr-copy -l /var/lib/postgresql/suta-backup-lab/pitr-recovery.log -w start
 ```
 
 PostgreSQL now fetches required WAL through the generated restore_command and
 replays it. pg_ctl returning is not proof that the desired target has been reached.
 
 ```bash
-less pitr-recovery.log
+less /var/lib/postgresql/suta-backup-lab/pitr-recovery.log
 ```
 
 Look for reaching the named restore point and pausing recovery. `q` exits.

@@ -1,5 +1,43 @@
 # Qualification — honest scope
 
+## Student walkthrough fixes — 2026-10-06
+
+The author re-read the student path separately from the test harness, corrected
+the five audit findings below, then rehearsed the changed commands in a fresh
+isolated container. This is self-review, not an independent student usability study.
+
+| Audit finding | Fix in the student guide | Verification |
+|---|---|---|
+| Checker detour changes the working folder; reconnect loses session settings | CHECKS has a return command; TROUBLESHOOTING has a read-only session restart path; recovery logs use absolute paths | Actual return command and physical/PITR startup commands executed from another folder; correct logs found |
+| Destructive steps lack fresh server identity checks | Labs 3, 8A and 10 show data directory and database expectations before damage; Lab 10 pins its connection | Guide SQL executed; documentation regression checks; Lab 10 succeeds despite a deliberately wrong inherited port |
+| Promised results are checked only by the harness or counts | Lab 1 shows constraints; Lab 3 checks order 1004; Lab 9 checks order 1001, order 1005 and the item before COMMIT; Lab 10 checks restored IDs and protected SOURCE | Added guide commands executed; existing identity/value invariants remain passing |
+| Lab 11 asks to time an outage that does not happen | Record practice start before the error and finish after verified recovery; distinguish that elapsed time from business RPO/RTO | Both date commands executed; narrative reviewed for consistency; no production outage claim |
+| Repeated introduction/task lists obscure the steps | Removed duplicate task blocks; kept scenarios, measurable success and discussion | All lab/sub-lab briefing checks pass; final source reviewed |
+
+**Results:** 29 integration checks passed; ten guide/report tests passed. The
+regression test deliberately removes six safety/result/return-path features and
+confirms the checks detect each missing feature. These static checks supplement
+the server rehearsal; they do not enforce runtime safety on a student's shell.
+Node syntax, diff checks and local skill structure validation also passed.
+
+- Evidence and tested input hashes: [student walkthrough rehearsal](evidence/student-walkthrough-20261006.json).
+- Retained container: `dba-practicals-selfreview-20261006-v1`; test clusters and
+  container stopped after verification. No student/cloud server was accessed.
+- Tested PostgreSQL 16.13 / pgBackRest 2.59.3, not class hosts' 16.15 / 2.50.
+- Labs 0–4 use an isolated temporary socket/path. Configuration edits and fast
+  checkpoints are automated. SSH, interactive nano, every possible disconnect,
+  and advanced Lab 11 faults were not replayed. Human stop/approval decisions
+  remain part of the instructor-led exercises.
+- The updated local `suta-lab-builder` requires this self-review/fix/retest loop
+  during implementation, while audit-only requests remain read-only. It does not
+  authorize extra infrastructure, publishing or resets to bypass a failed check.
+
+**Documentation checked:** [PostgreSQL 16 psql](https://www.postgresql.org/docs/16/app-psql.html)
+for connection options and table inspection; [dropdb](https://www.postgresql.org/docs/16/app-dropdb.html)
+for explicit target connections; [pg_ctl](https://www.postgresql.org/docs/16/app-pg-ctl.html)
+for startup and log-file options. The test evidence, not these references, supplies
+the observed lab outcomes.
+
 ## Scenario-led labs and troubleshooting rehearsal — 2026-10-06
 
 Labs 3, 5, 7, 9, 10 and 11 now start with a concrete scenario, what must stay

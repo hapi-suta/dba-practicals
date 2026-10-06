@@ -29,20 +29,9 @@ Replacing the whole copy from `shop.dump` would lose that later order.
 This is a simple independent table. Recovering a table with related tables needs
 additional checks; this exercise is not a universal production recovery recipe.
 
-**What we’re doing:**
-
-- Deliberately drop the delivery-note table in the practice copy, then recover only that table.
-- We check that a newer order is not lost.
-
-**You finish with:**
+**Success looks like:**
 
 - The note and its constraints back, with all 4 orders worth 205.00 still present in `suta_custom_restore`.
-
-**Your task:**
-
-- Check that you are in `suta_custom_restore`.
-- Drop only its delivery-note table.
-- Restore `notes.dump`, then check the notes and orders.
 
 **Pause and discuss before moving on:**
 
@@ -74,6 +63,17 @@ SELECT * FROM shop.delivery_notes;
 
 - Note 1.
 - Confirm `notes.dump` was created successfully in Lab 2.
+
+Immediately before the DROP, confirm which server owns this database:
+
+```sql
+SHOW data_directory;
+```
+
+**Expect:** `/var/lib/postgresql/16/lab`, with database `suta_custom_restore`
+from the check above. Otherwise STOP. The database name alone does not identify
+the server. This is a one-time incident; if the table is already absent, inspect
+your saved step instead of repeating the DROP.
 
 ```sql
 DROP TABLE shop.delivery_notes;
@@ -136,6 +136,14 @@ SELECT count(*), sum(total) FROM shop.orders;
 - 4 and 205.00: the later order from Lab 2 survived.
 - A whole-database replacement would have lost it.
 - In a real incident, rehearse restoration in a separate recovery target before writing to the live system.
+
+```sql
+SELECT order_id, status, total FROM shop.orders WHERE order_id = 1004;
+```
+
+**Expect:** exactly `1004 / New / 10.00`. This checks the particular newer
+order we promised to preserve. A matching count and total alone are not enough.
+If absent or different, stop and investigate; do not insert a replacement row.
 
 ```psql
 \q

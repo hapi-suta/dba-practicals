@@ -4,20 +4,14 @@
 database. There is no deletion in this lab. SOURCE stays intact; the restore
 should show the same three orders and values saved by the backup.
 
-**What we’re doing:**
+**What you’ll practise:**
 
 - Save the shop as a readable SQL file, then use that file to rebuild it in a different database.
 - The original stays untouched.
 
-**You finish with:**
+**Success looks like:**
 
 - `suta_plain_restore`, containing 3 orders worth 195.00.
-
-**Your task:**
-
-- Back up `suta_shop` to `shop.sql`.
-- Restore that file into `suta_plain_restore`.
-- Compare the restored rows and totals with your starting counts.
 
 **Pause and discuss before moving on:**
 
@@ -123,6 +117,15 @@ SELECT * FROM shop.order_items ORDER BY item_id;
 **Expect:**
 
 - Three items linked to the original order IDs.
+
+```psql
+\d shop.orders
+```
+
+**Expect:** an identity column for `order_id`, a primary key, a foreign key
+to `shop.customers` and a check that `total` is not negative. These are restored
+table rules, not just restored rows. If any is missing, stop and compare with
+SOURCE's table definition with the instructor.
 
 ```sql
 ANALYZE;

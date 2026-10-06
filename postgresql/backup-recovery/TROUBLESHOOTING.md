@@ -4,6 +4,55 @@
 its current address. A stopped server cannot accept SSH. Keep existing data,
 backups and logs. Do not recreate/drop a database to clear an error.
 
+## Returning after a disconnect or another help page
+
+On your assigned server, run `whoami` in the Linux terminal. If it says `student`,
+run `sudo -iu postgres`. If it already says `postgres`, do not switch again.
+If you are inside psql, use `\q` to return to the Linux terminal first.
+
+```bash
+cd /var/lib/postgresql/suta-backup-lab
+```
+
+```bash
+pwd
+```
+
+**Expect:** the exact folder above. If absent, stop and locate existing work.
+
+```bash
+export PGHOST=/var/run/postgresql PGPORT=5432 PGUSER=postgres
+```
+
+```bash
+psql -X -h /var/run/postgresql -p 5432 -U postgres -d postgres -c "SHOW data_directory"
+```
+
+**Expect:** `/var/lib/postgresql/16/lab`. Otherwise stop; you have not confirmed
+SOURCE. These terminal settings select SOURCE; they do not start or change it.
+For COPY, use the lab's explicit private socket and port 55433 instead.
+
+**For Labs 6–11 only, after your student configuration already exists:**
+
+```bash
+ls -l /var/lib/postgresql/suta-backup-lab/pgbackrest.conf
+```
+
+If absent, return to Lab 6A with the instructor. Do not switch to the instructor
+config. If present, restore the two terminal settings:
+
+```bash
+export PGBACKREST_CONFIG=/var/lib/postgresql/suta-backup-lab/pgbackrest.conf PGBACKREST_STANZA=shop
+```
+
+Now find your last saved checkpoint and inspect current data before continuing.
+Do not rerun CREATE, INSERT, DELETE, DROP, backup or restore commands merely
+because you reconnected. A disconnect during Lab 9 loses its temporary staging
+tables; inspect whether the merge committed before recreating any staging work.
+
+If you opened this page inside an active transaction, do not leave it hanging:
+ask the instructor whether to finish or roll back before reconnecting.
+
 ## 1. Stanza-create fails: pg1-path is wrong
 
 **Where:** Linux terminal as `postgres`.

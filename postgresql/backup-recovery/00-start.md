@@ -4,20 +4,14 @@
 This is setup, not a recovery exercise. Keep the original `suta_shop` for later
 labs; restored databases will have different names.
 
-**What we’re doing:**
+**What you’ll practise:**
 
 - Connect to your assigned server and create Bob’s small shop.
 - We record its starting rows so later we can tell whether a restore is correct.
 
-**You finish with:**
+**Success looks like:**
 
 - 3 customers, 3 orders worth 195.00, 3 items and 1 delivery note.
-
-**Your task:**
-
-- Sign in to your assigned server.
-- Check that you are connected to the original database server (SOURCE).
-- Create the shop once, then record the starting row counts.
 
 **Pause and discuss before moving on:**
 

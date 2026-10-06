@@ -4,19 +4,13 @@
 a restore. A successful SELECT is only half the proof: DELETE must be refused.
 We test permissions in `suta_access_restore`, not by deleting from SOURCE.
 
-**What we’re doing:**
+**What you’ll practise:**
 
 - Give a reporting role read-only access, save role definitions separately from the database backup, and verify permissions in a restored copy.
 
-**You finish with:**
+**Success looks like:**
 
 - A reader that can SELECT orders but cannot DELETE them.
-
-**Your task:**
-
-- Create the reporting role and give it read access.
-- Save the shared role definitions and the database in separate backups.
-- Restore the database into `suta_access_restore`, then test the reader's permissions.
 
 **Pause and discuss before moving on:**
 

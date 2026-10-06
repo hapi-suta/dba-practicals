@@ -6,7 +6,8 @@ performed an earlier action. Node.js is already installed on the class servers.
 
 ## Get the updated checker once
 
-**Where:** assigned server Linux terminal as `student`.
+**Where:** assigned server Linux terminal. If `whoami` already says `postgres`,
+skip the account switch below. Otherwise, run it from your `student` account:
 
 ```bash
 sudo -iu postgres
@@ -34,6 +35,21 @@ git -C /var/lib/postgresql/dba-practicals pull --ff-only
 
 This updates guides, not databases. Stop on Git divergence. The older
 `/opt/suta/dba-practicals` snapshot may not contain the corrections.
+
+**Return to your lab folder before continuing:**
+
+```bash
+cd /var/lib/postgresql/suta-backup-lab
+```
+
+```bash
+pwd
+```
+
+**Expect:** `/var/lib/postgresql/suta-backup-lab`. If absent, stop and finish
+Lab 0 or locate your previous work with the instructor. Do not create a second
+working folder to hide the problem. If you opened a new login shell, also follow
+the [session restart steps](TROUBLESHOOTING.md#returning-after-a-disconnect-or-another-help-page).
 
 ## Check Labs 0–4
 

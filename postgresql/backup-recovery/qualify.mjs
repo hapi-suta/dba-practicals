@@ -27,6 +27,10 @@ try{
  const offline=observer({socket:'/var/lib/postgresql/not-a-socket'});offline.progress();
  assert.equal(offline.checks[0].status,'UNKNOWN');results.push('Unavailable source never marked passed');
  fs.mkdirSync(c.root,{recursive:true});fs.mkdirSync(c.root+'/recovery-socket',{mode:0o700});
+ const checksGuide=fs.readFileSync('/guide/CHECKS.md','utf8');
+ const returnCommand=checksGuide.split('**Return to your lab folder before continuing:**')[1].match(/```bash\n([\s\S]*?)\n```/)[1];
+ assert.equal(run('bash',['-eu','-c',`cd /var/lib/postgresql\n${returnCommand}\npwd`]),c.root);
+ results.push('Checker detour returns to the existing lab folder');
  run('initdb',['-D',c.source,'--auth-local=trust','--auth-host=reject','--no-locale']);
  fs.mkdirSync('/var/lib/postgresql/prepared-backrest/repo',{recursive:true});
  const prepared='[global]\nrepo1-path=/var/lib/postgresql/prepared-backrest/repo\nlog-level-file=off\nlock-path=/var/lib/postgresql/prepared-backrest\n[shop]\npg1-path='+c.source+'\npg1-socket-path='+c.socket+'\n';
@@ -65,7 +69,13 @@ try{
  fs.appendFileSync(physical+'/postgresql.conf',`\ndata_directory='${c.source}'\n`);
  expectFail('Source directory redirection detected','physical','copy-data-directory');
  fs.writeFileSync(physical+'/postgresql.conf',mainConfig);
- run('pg_ctl',['-D',physical,'-l',c.root+'/physical-recovery.log','-w','start']);physicalStarted=true;
+ const startFromGuide=file=>{
+   const text=fs.readFileSync('/guide/'+file,'utf8');
+   const command=[...text.matchAll(/```bash\n([\s\S]*?)\n```/g)].map(m=>m[1].trim()).find(s=>s.startsWith('pg_ctl ')&&s.endsWith(' start'));
+   assert.ok(command);run('bash',['-eu','-c',`cd /var/lib/postgresql\n${command}`]);
+ };
+ startFromGuide('05-physical.md');physicalStarted=true;
+ assert.ok(fs.existsSync(c.root+'/physical-recovery.log'));results.push('Physical startup uses guide command and correct log despite checker detour');
  report('Physical copy live identity / isolation / data',inspect('recovery','physical'));
  const databases="SELECT string_agg(datname,',' ORDER BY datname) FROM pg_database WHERE NOT datistemplate";
  assert.equal(run('psql',['-XAt','-h',c.root+'/recovery-socket','-p',c.recoveryPort,'-d','postgres','-c',databases]),sql(databases,'postgres'));
@@ -107,7 +117,7 @@ try{
  run('pgbackrest',[`--pg1-path=${pitr}`,`--set=${diff.label}`,'--type=name','--target=suta_before_delete','--target-action=pause','restore']);
  fs.appendFileSync(pitr+'/postgresql.auto.conf','\n'+isolation+'\n');
  report('PITR preflight preserves generated recovery settings',inspect('preflight','pitr'));
- run('pg_ctl',['-D',pitr,'-l',c.root+'/pitr-recovery.log','-w','start']);pitrStarted=true;
+ startFromGuide('06-pgbackrest-pitr.md');pitrStarted=true;
  for(let n=0;n<30;n++){
    const state=run('psql',['-XAt','-h',c.root+'/recovery-socket','-p',c.recoveryPort,'-d','suta_shop','-c','SELECT pg_is_wal_replay_paused()']);
    if(state==='t')break;Atomics.wait(new Int32Array(new SharedArrayBuffer(4)),0,0,200);
@@ -133,20 +143,29 @@ try{
  assert.deepEqual(mergedState,{ids:[1001,1002,1003,1004,1005],count:5,total:250});
  scenario.push({stage:'source-after-selective-merge',...mergedState});
  const lab10=fs.readFileSync('/guide/09-drills.md','utf8').split('## Lab 10')[1].split('## Lab 11')[0];
+ let lab10Database='suta_drop_drill';
  // Run all commands in the documented disposable drop drill; psql queries target it explicitly.
  for(const m of lab10.matchAll(/```(bash|sql|psql)\n([\s\S]*?)\n```/g)){
    const command=m[2].trim();
-   if(m[1]==='sql')sql(command,'suta_drop_drill');
+   if(m[1]==='sql')sql(command,lab10Database);
+   if(m[1]==='bash'&&command.startsWith('psql ')){
+     const args=command.split(/\s+/);lab10Database=args[args.indexOf('-d')+1];
+     assert.ok(['suta_drop_drill','suta_shop'].includes(lab10Database));
+   }
    if(m[1]==='bash'&&!command.startsWith('psql ')){
      const [bin,...args]=command.split(/\s+/);
      if(!['createdb','dropdb','pg_restore'].includes(bin))throw Error('Unexpected Lab 10 command');
-     run(bin,args.map(a=>a==='shop.dump'?c.root+'/shop.dump':a));
+     // Deliberately wrong inherited connection and working folder: the handout
+     // must explicitly select the right source and absolute backup path.
+     const previous=env.PGPORT;env.PGPORT='65432';
+     try{run(bin,args);}finally{env.PGPORT=previous;}
    }
  }
  assert.equal(sql("SELECT count(*)||'|'||sum(total) FROM shop.orders",'suta_drop_drill'),'3|195.00');results.push('Guide Lab 10 drop / restore disposable database');
  assert.equal(sql("SELECT string_agg(order_id::text,',' ORDER BY order_id) FROM shop.orders",'suta_drop_drill'),'1001,1002,1003');
  assert.deepEqual(JSON.parse(sql(stateQuery)),mergedState);
  results.push('Lab 10 older snapshot IDs verified; repaired source preserved');
+ results.push('Lab 10 ignores wrong inherited port and uses an absolute backup path');
  // Execute the new student troubleshooting drill; exactly one failure is intended.
  const lab11=fs.readFileSync('/guide/09-drills.md','utf8').split('### 11A')[1].split('### Instructor-prepared extensions')[0];
  const backupHash=()=>createHash('sha256').update(fs.readFileSync(c.root+'/shop.dump')).digest('hex');

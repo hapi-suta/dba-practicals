@@ -24,21 +24,10 @@ There is no simulated disk failure here; SOURCE must stay running.
 **Practice limitation:** both copies are on one lab server. This demonstrates
 restoration, not protection against losing that server or its disk.
 
-**What we’re doing:**
-
-- Copy the whole PostgreSQL cluster with `pg_basebackup`, verify the backup, then safely start a separate copy on port 55433.
-
-**You finish with:**
+**Success looks like:**
 
 - A working copy with 3 orders worth 195.00, while the source on port 5432 remains untouched.
 - We stop only the copy at the end.
-
-**Your task:**
-
-- Take a physical backup and verify its files.
-- Give the copy its own connection settings and turn off its archiving.
-- Pass all safety checks before starting it.
-- Start the copy, check its data, then stop only that copy.
 
 **Pause and discuss before moving on:**
 
@@ -221,6 +210,12 @@ Save: Ctrl+O, Enter. Exit: Ctrl+X.
 - Linux terminal as `postgres`.
 - Install the [checker](CHECKS.md) first.
 
+After that page, return here in the Linux terminal as `postgres`:
+
+```bash
+cd /var/lib/postgresql/suta-backup-lab
+```
+
 ```bash
 node /var/lib/postgresql/dba-practicals/postgresql/backup-recovery/check-lab.mjs preflight physical
 ```
@@ -248,7 +243,7 @@ postgres -D /var/lib/postgresql/suta-backup-lab/physical-copy -C archive_mode
 ## 5. Start and verify the COPY
 
 ```bash
-pg_ctl -D /var/lib/postgresql/suta-backup-lab/physical-copy -l physical-recovery.log -w start
+pg_ctl -D /var/lib/postgresql/suta-backup-lab/physical-copy -l /var/lib/postgresql/suta-backup-lab/physical-recovery.log -w start
 ```
 
 **Expect:**

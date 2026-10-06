@@ -36,21 +36,10 @@ but newer order 1005 exists only on SOURCE. We need data from both points in tim
 Order 1001 is Shipped / 120.00; newer order 1005 is still New / 15.00.
 This completes the missing-data recovery begun in Lab 8. Do not repeat the merge.
 
-**What we’re doing:**
-
-- Export the missing order and its item from the recovery copy, inspect them in temporary tables, then return only those rows.
-- These staging tables hold the recovered rows while we check them.
-
-**You finish with:**
+**Success looks like:**
 
 - 5 orders worth 250.00 and 3 items on source.
 - The newer order 1005 survives; the live table is not replaced.
-
-**Your task:**
-
-- Export order 1001 and its item from the paused recovery copy.
-- Load them into temporary staging tables on SOURCE and check their values.
-- Return only the rows you have verified are missing.
 
 **Pause and discuss:**
 
@@ -206,6 +195,21 @@ SELECT count(*), sum(total) FROM shop.orders;
 - 5 and 250.00; order 1005 is still present.
 - If any check differs, ROLLBACK instead of COMMIT and retain your evidence for the instructor.
 
+Before committing, check the actual protected orders and recovered item:
+
+```sql
+SELECT order_id, status, total FROM shop.orders WHERE order_id IN (1001, 1005) ORDER BY order_id;
+```
+
+**Expect:** `1001 / Shipped / 120.00` and `1005 / New / 15.00`.
+
+```sql
+SELECT item_id, order_id, product, amount FROM shop.order_items WHERE order_id = 1001;
+```
+
+**Expect:** `1 / 1001 / Camera / 120.00`. If either check differs, issue
+`ROLLBACK;` and stop. Only commit when the rows as well as the totals match.
+
 ```sql
 COMMIT;
 ```
@@ -259,20 +263,10 @@ then rebuild it from the same saved file.
 We are not applying WAL to it. This exercise restores what was saved in that file;
 orders 1004 and 1005 remain safely in SOURCE, not in this older practice copy.
 
-**What we’re doing:**
-
-- Create a separate drill database, drop only that database, then rebuild it from the earlier logical backup.
-
-**You finish with:**
+**Success looks like:**
 
 - 3 orders worth 195.00.
 - You can explain why this older backup cannot contain the changes made after it was taken.
-
-**Your task:**
-
-- Create `suta_drop_drill` and check its data.
-- Ask the instructor to confirm that this is the database to drop.
-- Drop only that practice database, then restore and check it again.
 
 **Pause and discuss:**
 
@@ -280,25 +274,34 @@ orders 1004 and 1005 remain safely in SOURCE, not in this older practice copy.
 - Explain why that is correct here even though source reached 5 / 250.00 in Lab 9.
 
 This independent drill uses the older `shop.dump` from Lab 2. It recovers the
-backup snapshot, not the later PITR state. Shell, original connection:
+backup snapshot, not the later PITR state. Linux terminal as `postgres`;
+all commands below explicitly select SOURCE's socket and port:
 
 ```bash
-createdb -T template0 suta_drop_drill
+createdb -h /var/run/postgresql -p 5432 -T template0 suta_drop_drill
 ```
 
 ```bash
-pg_restore --exit-on-error -d suta_drop_drill shop.dump
+pg_restore --exit-on-error -h /var/run/postgresql -p 5432 -d suta_drop_drill /var/lib/postgresql/suta-backup-lab/shop.dump
 ```
 
 Connect, verify the disposable name and its 3 orders, then exit:
 
 ```bash
-psql -X -d suta_drop_drill
+psql -X -h /var/run/postgresql -p 5432 -d suta_drop_drill
 ```
 
 ```sql
 SELECT current_database(), count(*) FROM shop.orders;
 ```
+
+```sql
+SHOW data_directory;
+```
+
+**Expect:** `suta_drop_drill` with three orders, and directory
+`/var/lib/postgresql/16/lab`. If either differs, STOP. Do not drop a database
+based only on a similar name. Keep this session on the assigned lab server.
 
 ```psql
 \q
@@ -308,19 +311,19 @@ Instructor confirms the target is the drill just created, with no other users.
 This deliberately destroys that disposable database; recovery will use shop.dump.
 
 ```bash
-dropdb suta_drop_drill
+dropdb -h /var/run/postgresql -p 5432 suta_drop_drill
 ```
 
 ```bash
-createdb -T template0 suta_drop_drill
+createdb -h /var/run/postgresql -p 5432 -T template0 suta_drop_drill
 ```
 
 ```bash
-pg_restore --exit-on-error -d suta_drop_drill shop.dump
+pg_restore --exit-on-error -h /var/run/postgresql -p 5432 -d suta_drop_drill /var/lib/postgresql/suta-backup-lab/shop.dump
 ```
 
 ```bash
-psql -X -d suta_drop_drill
+psql -X -h /var/run/postgresql -p 5432 -d suta_drop_drill
 ```
 
 ```sql
@@ -332,6 +335,31 @@ SELECT count(*), sum(total) FROM shop.orders;
 - 3 and 195.00, not 5 and 250.00.
 - Explain which later changes this backup cannot recover.
 - A physical PITR recovery restores a cluster; extracting only one database afterward is a separate logical dump/restore step.
+
+```sql
+SELECT order_id, total FROM shop.orders ORDER BY order_id;
+```
+
+**Expect:** IDs 1001, 1002, 1003, worth 120.00, 50.00 and 25.00.
+
+```psql
+\q
+```
+
+### Prove SOURCE stayed unchanged
+
+In the Linux terminal, after leaving the drill database:
+
+```bash
+psql -X -h /var/run/postgresql -p 5432 -d suta_shop
+```
+
+```sql
+SELECT order_id, total FROM shop.orders ORDER BY order_id;
+```
+
+**Expect after Lab 9:** IDs 1001–1005, worth 120.00, 50.00, 25.00, 40.00
+and 15.00. If different, stop and investigate rather than replacing SOURCE.
 
 ```psql
 \q
@@ -357,20 +385,10 @@ the target, then restore into a new empty practice database—not overwrite SOUR
 | Correct new target `suta_fault_restore` | Restore succeeds: orders 1001–1003, total 195.00. |
 | Protected SOURCE after Lab 9 | Still orders 1001–1005, total 250.00. |
 
-**What we’re doing:**
-
-- Investigate the wrong-target restore error below, correct it and write steps someone else can follow.
-
-**You finish with:**
+**Success looks like:**
 
 - A verified `suta_fault_restore` and a runbook describing the failure and correction.
 - The advanced faults listed afterward need separate instructor preparation.
-
-**Your task:**
-
-- Follow the wrong-target drill below with your instructor.
-- Record the errors, checks, recovery time and any missing data.
-- Write recovery steps that another student can follow.
 
 **Pause and discuss:**
 
@@ -410,6 +428,12 @@ not the connection failure this exercise is designed to demonstrate.
 
 **Where:** the same Linux terminal. This command is deliberately aimed at an
 absent database. Do not substitute `suta_shop` or another existing database.
+
+Record your practice start time before causing the error:
+
+```bash
+date -Is
+```
 
 ```bash
 pg_restore --exit-on-error -h /var/run/postgresql -p 5432 -d suta_restore_typo shop.dump
@@ -459,6 +483,12 @@ psql -X -h /var/run/postgresql -p 5432 -d suta_shop -c "SELECT order_id, total F
 25.00, 40.00 and 15.00. If different, stop and investigate; do not overwrite it.
 Keep the new practice database and backup for review. No cleanup is required.
 
+After all checks match, record the finish time:
+
+```bash
+date -Is
+```
+
 ### Instructor-prepared extensions — not part of the tested drill above
 
 These are separate scenarios, not ready-to-run commands. Each requires an
@@ -477,13 +507,20 @@ repository permissions serving another cluster.
 
 ### Record what you learned
 
-Record what actually happened:
+For this practice drill, record:
 
-- When recovery started and when service and data checks finished.
-- The latest recovered order and any saved orders still missing.
-- **RPO:** how much data loss the business can accept. Compare this with what was lost.
-- **RTO:** how long the business can wait for service to return. Compare this with the full recovery time.
-- Time the whole outage, not just the restore command. Do not invent timings.
+- The start time just before the intended error in 11B.
+- The finish time after all data checks in 11C pass, including SOURCE's rows.
+- The elapsed time, including diagnosis, correction and verification—not only
+  the restore command. If you did not record a time, write “not measured”.
+- Which data was saved in the older dump, and which later orders it cannot contain.
+
+Discuss these separately; this drill does not set or prove business targets:
+
+- **RPO:** how much data loss the business can accept, usually expressed as time.
+- **RTO:** how long the business can wait for service to return.
+- In a real incident, measure service downtime from loss of service through
+  verified restoration. Here, SOURCE remains available; there is no simulated outage.
 
 Write a runbook using EVIDENCE.md. Another student should identify the correct
 backup, target and validation checks without relying on your memory.

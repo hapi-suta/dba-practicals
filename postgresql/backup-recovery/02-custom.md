@@ -9,20 +9,14 @@
 - `notes.dump` contains the independent delivery-note table for Lab 3; it does
   not contain the orders table. Keep all these files.
 
-**What we’re doing:**
+**What you’ll practise:**
 
 - Take a custom-format backup, inspect its contents and restore it with `pg_restore`.
 - Then practise selecting one schema or one table to back up.
 
-**You finish with:**
+**Success looks like:**
 
 - Restored copies, a working order-number sequence and a delivery-note backup ready for Lab 3.
-
-**Your task:**
-
-- List what is in the custom backup, then restore it.
-- Add the test order once to check that order IDs still work.
-- Make the schema backup and delivery-note backup for the next lab.
 
 **Pause and discuss before moving on:**
 
