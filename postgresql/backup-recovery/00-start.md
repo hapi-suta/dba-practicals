@@ -22,7 +22,7 @@ labs; restored databases will have different names.
 **Goal:** know which server you are changing before taking a backup.
 
 Read [your class connection map](CLASS-SETUP.md). If continuing earlier work,
-use [resume help](TROUBLESHOOTING.md), not a fresh run of all CREATE/INSERT steps.
+follow [the steps for reconnecting and checking your previous work](TROUBLESHOOTING.md#returning-after-a-disconnect-or-another-help-page). Do not repeat the CREATE/INSERT steps.
 
 ## 1. Sign in
 

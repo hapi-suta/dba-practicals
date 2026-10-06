@@ -260,3 +260,13 @@ The test harness is instructor-only; it intentionally automates a rehearsal.
 Students should follow the separate one-action-at-a-time handouts. Run it only
 where matching PostgreSQL tools are already installed and local test-server
 creation is permitted. It retains evidence and stops only its own new cluster.
+# Wording correction — 2026-10-06
+
+- Student feedback: “resume help” did not explain what to do when COPY was running.
+- Lab 5 now says to stop before editing, ask the instructor to confirm the server,
+  and follow the directly linked running-COPY checks. SOURCE must stay running.
+- Replaced the same vague wording in setup and pgBackRest instructions with
+  descriptive links to the exact troubleshooting sections.
+- Verification: 11 guide/report tests passed; fenced command blocks unchanged;
+  source Markdown and target headings checked. No new server rehearsal or
+  rendered-browser review for this prose-only correction.

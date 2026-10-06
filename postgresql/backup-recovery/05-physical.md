@@ -45,7 +45,7 @@ Use your assigned StepUP lab server, not a company server. Read
 | SOURCE — keep running | `/var/lib/postgresql/16/lab` | `/var/run/postgresql` | 5432 |
 | COPY — this exercise | `/var/lib/postgresql/suta-backup-lab/physical-copy` | `/var/lib/postgresql/suta-backup-lab/recovery-socket` | 55433 |
 
-**Already attempted this lab?** Use [resume help](TROUBLESHOOTING.md).
+**Already attempted this lab?** Follow [the steps for checking existing folders and databases](TROUBLESHOOTING.md#6-folderdatabase-exists-or-postmasterpid-exists) before continuing.
 Do not overwrite `physical-copy`, repeat a backup into it, or remove a PID file.
 
 ## 1. Check the source
@@ -150,7 +150,7 @@ pg_verifybackup physical-copy
 mkdir recovery-socket
 ```
 
-If the directory already exists, use the resume guide; do not delete it.
+If `recovery-socket` already exists, stop here. Follow [the steps for checking existing folders](TROUBLESHOOTING.md#6-folderdatabase-exists-or-postmasterpid-exists) with your instructor before continuing. Do not delete the folder.
 
 ```bash
 chmod 700 recovery-socket
@@ -167,7 +167,9 @@ pg_ctl -D /var/lib/postgresql/suta-backup-lab/physical-copy status
 **Expect:**
 
 - `no server running` (exit 3 is normal).
-- If running, inspect it using resume help; do not edit a running copy or stop the source.
+- If the output says `server is running`, stop here. Do not run the configuration-editing commands below.
+- Ask your instructor to help confirm which server is running. Follow [the checks for a running COPY](TROUBLESHOOTING.md#3-copy-is-running-but-the-guides-connection-fails).
+- Do not edit the running COPY or stop SOURCE on port 5432.
 
 ```bash
 cp -n physical-copy/postgresql.auto.conf physical-copy/postgresql.auto.conf.before-lab5

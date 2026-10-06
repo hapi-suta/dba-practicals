@@ -14,8 +14,8 @@
 - Keep the instructor's repository and configuration unchanged.
 - Take a new full backup in your repository. The instructor's backup is not part of your new backup set.
 
-**Returning after a disconnect?** Use [resume help](TROUBLESHOOTING.md). Exports
-below must be set again in a new shell. Do not repeat inserts or incident deletes.
+**Returning after a disconnect?** Follow [the steps for reconnecting and checking your previous work](TROUBLESHOOTING.md#returning-after-a-disconnect-or-another-help-page).
+Run the `export` commands again in your new terminal session to select your lab configuration. Do not repeat inserts or incident deletes.
 
 ### Terms used below
 

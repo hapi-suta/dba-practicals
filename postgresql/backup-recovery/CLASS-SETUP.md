@@ -46,6 +46,6 @@ Before a destructive drill, verify both `SHOW data_directory;` and
 
 Stopped servers cannot accept SSH. The instructor must restart them and confirm
 current addresses; public IPs can change. Do not provision replacements or reset
-work. Get the latest connection sheet and use [resume help](TROUBLESHOOTING.md).
+work. Get the latest connection sheet and follow [the steps for reconnecting and checking your previous work](TROUBLESHOOTING.md#returning-after-a-disconnect-or-another-help-page).
 Agree a shutdown time with the instructor before class; this guide creates no
 automatic schedule. Save your evidence before disconnecting.
