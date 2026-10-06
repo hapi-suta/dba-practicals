@@ -25,6 +25,9 @@ All test clusters and the container were stopped; files remain preserved.
 - Checks confirmed the named target, recovery pause, recovery log, copy isolation,
   unchanged SOURCE during recovery, preserved order 1005 and three final items.
 - Student command/configuration blocks are unchanged from release `7953431`.
+- GitHub preview review found a bare `1005.` bullet rendered as a nested numbered
+  list. The follow-up wording is `Order ID 1005`; executable blocks are unchanged.
+  The evidence hashes retain the exact pre-formatting files used for the server test.
 - Evidence and input hashes: [PITR scenario record](evidence/pitr-scenario-20261006.json).
 - Retained local server: `dba-practicals-pitr-scenario-20261006-v1`.
 

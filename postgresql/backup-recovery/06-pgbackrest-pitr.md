@@ -486,7 +486,7 @@ INSERT INTO shop.orders (customer_id, status, total) VALUES (2, 'New', 15) RETUR
 
 **Expect:**
 
-- 1005.
+- Order ID `1005`.
 - Record the actual value.
 
 ```sql
