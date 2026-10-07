@@ -24,7 +24,7 @@ replay later changes to reach a chosen recovery point.
 | Lab | What we do | What it teaches |
 |---|---|---|
 | [5 — Physical copy](05-physical.md) | Copy, verify and start a separate cluster on port 55433. | Keep source and recovery copies safely isolated. |
-| [6 — pgBackRest and WAL](06-pgbackrest-pitr.md#lab-6a--configure-the-repository) | Configure the source path, repository and WAL archiving. | Backups and archived WAL need the right configuration. |
+| [6 — pgBackRest and WAL](06-pgbackrest-pitr.md#lab-6a--configure-the-repository) | Fill in an empty configuration, enable archiving, restart SOURCE, create the stanza and check WAL delivery. | Build and verify the backup setup yourself; the instructor prepares only software and directories. |
 | [7 — Backup chain](06-pgbackrest-pitr.md#lab-7--create-and-inspect-the-backup-chain) | Take full, incremental and differential backups around changes. | Understand what each captures and which files recovery requires. |
 | [8 — PITR](06-pgbackrest-pitr.md#lab-8a--create-an-incident-with-a-known-safe-boundary) | Simulate a deletion; recover a copy to a named safe point using WAL. | Restoring files is not enough to recover changes after a backup. |
 | [9 — Return missing rows](09-drills.md#lab-9--bring-back-only-marias-missing-order) | Check the recovered order and item in temporary tables, then add only those missing rows to SOURCE. | Keep valid newer orders while returning the lost data. |

@@ -116,7 +116,6 @@ const requiredNativeChecks=['pwd -P','pg_ctl -D . status',
  "grep -nE '^[[:space:]]*include' postgresql.conf postgresql.auto.conf",
  "grep -nE '^[[:space:]]*data_directory' postgresql.auto.conf",
  'ls -A pg_tblspc','ls -a','ls -ld /var/lib/postgresql/suta-backup-lab/recovery-socket',
- 'printenv PGBACKREST_CONFIG PGBACKREST_STANZA',
  ...['data_directory','config_file','hba_file','ident_file','port','unix_socket_directories','listen_addresses',
  'archive_mode','archive_command','primary_conninfo','recovery_target_name','recovery_target_action',
  'restore_command','recovery_target','recovery_target_time','recovery_target_xid','recovery_target_lsn'].map(s=>'postgres -D . -C '+s)];
@@ -136,10 +135,39 @@ test('student handouts require neither internal tooling nor nano',()=>{
  for(const file of files){
   const text=read(file);
   assert.doesNotMatch(text,/\bnode\b|Node\.js|check-lab\.mjs|git (?:clone|pull)|\bnano\b|Ctrl\+[OX]/,file);
-  if(commands(text).some(c=>/^vi /m.test(c))){
+  if(commands(text).some(c=>/^(sudo )?vi /m.test(c))){
    assert.match(text,/`i` to edit/,file);assert.match(text,/:wq/,file);assert.match(text,/:q!/,file);
   }
  }
+});
+
+function auditBackupSetup(text){
+ const issues=[];
+ const lines=commands(text).flatMap(c=>c.split('\n'));
+ if(lines.some(c=>/^sudo |^.*apt-get |^install -d /.test(c)))issues.push('sysadmin-work-in-student-lab');
+ if(lines.some(c=>/^export PGBACKREST_/.test(c)))issues.push('hidden-backrest-selection');
+ if(!lines.includes('vi /etc/pgbackrest/pgbackrest.conf'))issues.push('standard-config');
+ if(!lines.includes("ALTER SYSTEM SET archive_mode = 'on';"))issues.push('student-enables-archiving');
+ if(!lines.includes('pg_ctl -D /var/lib/postgresql/16/lab -l /var/lib/postgresql/suta-backup-lab/source-restart.log -m fast -w restart'))issues.push('required-restart');
+ if(!lines.includes('pgbackrest --stanza=shop stanza-create'))issues.push('student-creates-stanza');
+ if(!/pgbackrest --config=\/etc\/pgbackrest\/pgbackrest.conf --stanza=shop .* restore/.test(text))issues.push('explicit-recovery-config');
+ if(!/empty configuration file/.test(text))issues.push('empty-start');
+ if(/SOURCE already saves archived WAL|instructor repository intact|archive_mode is already on/.test(text))issues.push('prebuilt-answer');
+ return issues;
+}
+test('sysadmin supplies prerequisites; student configures backup system at standard path',()=>{
+ const text=read('06-pgbackrest-pitr.md');
+ assert.deepEqual(auditBackupSetup(text),[]);
+ const mutations=[
+  ['vi /etc/pgbackrest/pgbackrest.conf','vi pgbackrest.conf','standard-config'],
+  ["ALTER SYSTEM SET archive_mode = 'on';",'SELECT 1;','student-enables-archiving'],
+  ['pg_ctl -D /var/lib/postgresql/16/lab -l /var/lib/postgresql/suta-backup-lab/source-restart.log -m fast -w restart','SELECT pg_reload_conf();','required-restart'],
+  ['pgbackrest --stanza=shop stanza-create','pgbackrest --stanza=shop info','student-creates-stanza']
+ ];
+ for(const [from,to,id]of mutations)assert.ok(auditBackupSetup(text.replace(from,to)).includes(id));
+ assert.ok(auditBackupSetup(text+'\nSOURCE already saves archived WAL').includes('prebuilt-answer'));
+ assert.match(read('CHECKS.md'),/--stanza=shop/);
+ assert.doesNotMatch(read('CHECKS.md'),/printenv PGBACKREST/);
 });
 
 // These are known student-reported wording defects, not a comprehension score.

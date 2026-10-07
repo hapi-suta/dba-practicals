@@ -28,7 +28,7 @@ its exact path. Do not delete database folders, backups or WAL files.
 | 3 | [Recover a dropped table](03-table.md) | 15 min | Delivery-note table, rows and table rules recovered |
 | 4 | [Roles and access](04-roles.md) | 15 min | Recovered permissions checked |
 | 5 | [Physical backup](05-physical.md) | 25 min | A separate physical cluster copy |
-| 6–8 | [pgBackRest, WAL and PITR](06-pgbackrest-pitr.md) | 60–90 min | Recovery before a committed mistake |
+| 6–8 | [pgBackRest, WAL and PITR](06-pgbackrest-pitr.md) | 60–90 min | Configure pgBackRest yourself, take backups and recover before a committed mistake |
 | 9–11 | [Incident drills and evidence](09-drills.md) | 30–45 min | Missing rows returned; recovery verified |
 
 Allow time to practise and discuss. Start with Labs 0–4 over as many sessions

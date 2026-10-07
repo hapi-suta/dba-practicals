@@ -42,21 +42,24 @@ psql -X -h /var/run/postgresql -p 5432 -U postgres -d postgres -c "SHOW data_dir
 SOURCE. These terminal settings select SOURCE; they do not start or change it.
 For COPY, use the lab's explicit private socket and port 55433 instead.
 
-**For Labs 6–11 only, after your student configuration already exists:**
+**For Labs 6–11 only, after your Lab 6 configuration already exists:**
 
 ```bash
-ls -l /var/lib/postgresql/suta-backup-lab/pgbackrest.conf
+ls -l /etc/pgbackrest/pgbackrest.conf
 ```
 
 `ls -l` lists the file with its owner, permissions and size.
 
-If absent, return to Lab 6A with the instructor. Do not switch to the instructor
-config. If present, restore the two terminal settings:
+If absent, return to Lab 6A with the instructor. If you started the older edition,
+use the existing-work guidance below; do not create a replacement configuration.
+For the fresh edition, clear old terminal overrides:
 
 ```bash
-export PGBACKREST_CONFIG=/var/lib/postgresql/suta-backup-lab/pgbackrest.conf PGBACKREST_STANZA=shop
+unset PGBACKREST_CONFIG PGBACKREST_CONFIG_PATH PGBACKREST_CONFIG_INCLUDE_PATH PGBACKREST_STANZA
 ```
 
+`unset` removes only the named terminal settings. Each command now uses
+`--stanza=shop` explicitly and the standard configuration file.
 Find the last step you recorded in [your results sheet](EVIDENCE.md).
 
 - Repeat that step's read-only SELECT or SHOW checks and compare the output with the lab.
@@ -66,12 +69,31 @@ Find the last step you recorded in [your results sheet](EVIDENCE.md).
 If you opened this page inside an active transaction, do not leave it hanging:
 ask the instructor whether to finish or roll back before reconnecting.
 
+## Existing pgBackRest work
+
+This edition teaches a fresh setup. It does not mean your earlier work is wrong
+or should be deleted. If your config is under `suta-backup-lab`, or the standard
+file already has active settings, pause the **setup changes**, not the running server.
+
+- Keep all configuration files, backups, archived WAL and recovery copies.
+- Show the instructor your last completed lab, the configuration you used and
+  SOURCE's `SHOW archive_command;` result.
+- Do not paste the new setup over an existing configuration or redirect archiving
+  to an empty repository. Older backups still depend on their original WAL.
+- Continue the verified earlier edition only after the instructor confirms its
+  paths and the step you reached. Do not mix commands from the two editions.
+- To practise from scratch again, use a separately assigned fresh environment;
+  do not reset completed work on your current server.
+
+The [instructor transition checklist](../../instructor/postgresql/backup-recovery/CONFIG-TRANSITION.md)
+explains how to preserve and review an existing setup before any migration.
+
 ## 1. Stanza-create fails: pg1-path is wrong
 
-**Where:** Linux terminal as `postgres`.
+**Where:** Linux terminal as `postgres` for editing your configuration.
 
 ```bash
-vi /var/lib/postgresql/suta-backup-lab/pgbackrest.conf
+vi /etc/pgbackrest/pgbackrest.conf
 ```
 
 Press `i` to edit. Under `[shop]`, the exact class setting is:
@@ -83,22 +105,16 @@ pg1-path=/var/lib/postgresql/16/lab
 This points to SOURCE PGDATA. `/Source_pgdata` and `/SOURCE_PGDATA` are not real
 class paths. `repo1-path` separately names your backup folder; do not point pg1-path
 there or at a restored copy. Save and quit with `Esc`, `:wq`, Enter.
-To quit without saving, use `Esc`, `:q!`, Enter. Restore your shell settings:
+To quit without saving, use `Esc`, `:q!`, Enter. If editing is denied, ask the
+instructor to check file ownership; do not loosen permissions. This correction applies to the fresh edition;
+do not edit a different configuration when continuing older work.
 
 ```bash
-export PGBACKREST_CONFIG=/var/lib/postgresql/suta-backup-lab/pgbackrest.conf
-```
-
-```bash
-export PGBACKREST_STANZA=shop
-```
-
-```bash
-pgbackrest stanza-create
+pgbackrest --stanza=shop stanza-create
 ```
 
 **Expect:** successful completion. If not, retain the complete error and ask the
-instructor. Do not switch to the instructor repository just to get a success message.
+instructor. Do not switch repositories just to get a success message.
 Return to Lab 6B only after this succeeds.
 
 ## 2. Copy will not start: `/LAB/recovery-socket` does not exist
@@ -164,7 +180,7 @@ correct only COPY's port or socket. Leave SOURCE running.
 On these class copies, this error can occur when inherited source archiving is
 still enabled on COPY. After confirming COPY's data directory, run
 `SHOW archive_mode;` in that COPY's psql session. Lab 5 requires `off` and
-an empty `archive_command` on COPY, while SOURCE stays `on`.
+an empty `archive_command` on COPY. SOURCE is initially `off`; Lab 6B turns it `on`.
 
 Do not "fix" this by changing the source stanza's pg1-path to physical-copy.
 For the physical COPY, follow section 3 above to confirm and stop it, then repeat

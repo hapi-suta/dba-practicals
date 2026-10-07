@@ -1,5 +1,73 @@
 # Qualification — honest scope
 
+## Students configure pgBackRest themselves — 2026-10-07
+
+This entry supersedes earlier prepared-repository and environment-variable setup.
+Owner clarification: sysadmins install packages and prepare directories,
+permissions and an empty editable file; students supply the settings themselves.
+The standard config is `/etc/pgbackrest/pgbackrest.conf`, owned by postgres with
+mode 640 for this dedicated teaching environment. The fresh repository directory
+is `/var/lib/pgbackrest`. No active stanza, backups or archiving is preconfigured.
+
+Changed student flow: inspect prerequisites → edit with vi → set wal_level and
+archive_mode/archive_command → planned explicit SOURCE restart → verify effective
+settings → create stanza → verify WAL archiving → take backups → recover COPY.
+The generated recovery command explicitly binds config/stanza, without relying
+on inherited PGBACKREST_CONFIG. COPY safety checks and native PostgreSQL commands
+remain; students do not run internal tools.
+
+Verification:
+
+- 18 guide/report tests passed, zero skipped. Mutation tests detect the loss of
+  standard config, student archiving/stanza steps and the required restart.
+- Fresh no-network container `dba-practicals-ground-up-20261007-v3` passed
+  **40 integration checks**. Exact instructor directory/permission commands are
+  executed as root; the postgres child begins with an empty configuration and
+  no active backup setup, then writes the handout's INI and executes Lab 6B SQL,
+  restart, stanza-create and archive checks. Full/incremental/differential,
+  explicit-config PITR, selective merge and later core drills all passed.
+- Repeating the admin harness on the completed container was rejected before
+  any preparation with `Refuse existing work: /etc/pgbackrest/pgbackrest.conf`.
+- Syntax checks for both rehearsal entries and `git diff --check` passed.
+- Updated local lab-builder skill validates; it now preserves the distinction
+  between sysadmin prerequisites and the feature students configure themselves.
+- Evidence: [student configuration rehearsal](evidence/student-config-20261007.json).
+
+Failures retained: the first preflight initially rejected a package-created empty
+repository directory; inspection proved it empty, and the guard now allows only
+empty directories. Its next run exposed PostgreSQL's `(disabled)` display for
+archive_command while archive_mode is off; the expectation and handout were
+corrected. A second container stalled because the restarted PostgreSQL inherited
+the test's output pipe. The SOURCE restart now specifies a dedicated absolute
+log path. The stalled v2 test cluster was stopped explicitly; its finally block
+also tried to stop it and reported a missing PID file. This was not a passing run.
+The fresh v3 run passed without that intervention. Earlier attempts are preserved.
+
+Limits: PostgreSQL 16.13 / pgBackRest 2.59.3 in the existing local image, not
+the class's 16.15 / 2.50. Version-matched documentation was checked. Package install
+uses the pre-existing image; apt installation, interactive vi/SSH and sudo policy
+were not replayed. Exact INI bytes substitute for typing; fast checkpoints shorten
+backups. Manual student comparison is still required. Advanced fault extensions
+and live migration remain untested. No student server was started, reset or changed.
+
+### Current isolated reproduction entry
+
+In a NEW no-network disposable container with this repository mounted read-only
+at `/course`, run as root with `SUTA_DISPOSABLE_QA=yes`:
+
+```bash
+node /course/internal/postgresql/backup-recovery/qualify-admin.mjs
+```
+
+It performs only instructor directory/file preparation, then runs the database
+rehearsal as postgres. It refuses existing active config or source data. Do not
+run it on a class host. The older direct-postgres entry below is historical;
+the current rehearsal needs this wrapper to establish actual filesystem ownership.
+
+Existing students follow the preservation/transition checklist. This publication
+does not migrate their config or repositories. The new edition must not be mixed
+with a half-finished earlier recovery exercise.
+
 ## Remove the student tooling dependency; use vi — 2026-10-06
 
 This entry supersedes the older instruction below to clone/pull a student checker.

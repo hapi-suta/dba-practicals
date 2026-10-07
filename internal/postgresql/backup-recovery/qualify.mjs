@@ -42,10 +42,9 @@ function nativeChecks(kind){
     const names=out.split('\n');assert.ok(!names.includes('postmaster.pid'));assert.ok(!names.includes('standby.signal'));
     assert.equal(names.includes('recovery.signal'),kind==='pitr');
   }else if(command.startsWith('ls -ld ')){assert.match(out,/^drwx------\s+\d+\s+postgres\s/);}
-  else if(command==='printenv PGBACKREST_CONFIG PGBACKREST_STANZA')assert.equal(out,c.root+'/pgbackrest.conf\nshop');
   else if(command.startsWith('postgres -D . -C ')){
     const setting=command.split(' ').at(-1);
-    if(setting==='restore_command'){assert.match(out,/archive-get/);assert.ok(out.includes('%f'));assert.ok(out.includes('%p'));}
+    if(setting==='restore_command'){assert.match(out,/archive-get/);assert.ok(out.includes('%f'));assert.ok(out.includes('%p'));assert.ok(out.includes('/etc/pgbackrest/pgbackrest.conf'));assert.match(out,/--stanza=shop/);}
     else {assert.ok(Object.hasOwn(expected,setting));assert.equal(out,expected[setting],setting);}
   }else throw Error('Unexpected native command '+command);
  }
@@ -70,12 +69,14 @@ try{
  assert.equal(run('bash',['-eu','-c',`cd /var/lib/postgresql\n${returnCommand}\npwd`]),c.root);
  results.push('Direct safety-check page returns to the existing lab folder');
  run('initdb',['-D',c.source,'--auth-local=trust','--auth-host=reject','--no-locale']);
- fs.mkdirSync('/var/lib/postgresql/prepared-backrest/repo',{recursive:true});
- const prepared='[global]\nrepo1-path=/var/lib/postgresql/prepared-backrest/repo\nlog-level-file=off\nlock-path=/var/lib/postgresql/prepared-backrest\n[shop]\npg1-path='+c.source+'\npg1-socket-path='+c.socket+'\n';
- fs.writeFileSync('/etc/pgbackrest/pgbackrest.conf',prepared);
- fs.writeFileSync(c.source+'/postgresql.auto.conf',"listen_addresses=''\nunix_socket_directories='/var/run/postgresql'\narchive_mode=on\narchive_command='/usr/bin/pgbackrest --config=/etc/pgbackrest/pgbackrest.conf --stanza=shop archive-push %p'\n");
+ assert.equal(fs.readFileSync('/etc/pgbackrest/pgbackrest.conf','utf8'),'','Prepared file has no active settings');
+ if(fs.existsSync('/var/lib/pgbackrest'))assert.deepEqual(fs.readdirSync('/var/lib/pgbackrest'),[],'No prebuilt repository contents');
+ fs.writeFileSync(c.source+'/postgresql.auto.conf',"listen_addresses=''\nunix_socket_directories='/var/run/postgresql'\n");
  run('pg_ctl',['-D',c.source,'-l','/var/lib/postgresql/qa-source.log','-w','start']);sourceStarted=true;
- run('pgbackrest',['--stanza=shop','stanza-create']);run('pgbackrest',['--stanza=shop','check']);
+ assert.equal(sql('SHOW archive_mode','postgres'),'off');
+ assert.equal(sql('SHOW archive_command','postgres'),'(disabled)');
+ assert.equal(sql('SHOW archive_library','postgres'),'');
+ results.push('Sysadmin prepared empty file/directories only; SOURCE has no archiving, stanza or backups');
  run('createdb',['suta_shop']);
  const start=fs.readFileSync(guide+'00-start.md','utf8').split('## 3.')[1];
  for(const m of start.matchAll(/```sql\n([\s\S]*?)\n```/g))sql(m[1]);
@@ -127,22 +128,39 @@ try{
  expectFail('Running copy blocked from editing','physical','copy-stopped');
  assert.throws(()=>nativeChecks('physical'));results.push('Student native status check reveals running copy');
  run('pg_ctl',['-D',physical,'-m','fast','-w','stop']);physicalStarted=false;
- // New student repository: exact published INI, not the instructor repo.
- fs.mkdirSync(c.root+'/repo');
- const ini=fs.readFileSync(guide+'06-pgbackrest-pitr.md','utf8').match(/```ini\n([\s\S]*?)\n```/)[1];
- fs.writeFileSync(c.root+'/pgbackrest.conf',ini+'\n');
- env.PGBACKREST_CONFIG=c.root+'/pgbackrest.conf';env.PGBACKREST_STANZA='shop';
- run('pgbackrest',['stanza-create']);
- sql(`ALTER SYSTEM SET archive_command = '/usr/bin/pgbackrest --config=${c.root}/pgbackrest.conf --stanza=shop archive-push %p'`);
- sql('SELECT pg_reload_conf()');run('pgbackrest',['check']);
- assert.ok(sql('SHOW archive_command').includes(c.root+'/pgbackrest.conf'));results.push('Prepared-to-student repository transition');
- run('pgbackrest',['--type=full','--start-fast','backup']);
+ // Students, not the sysadmin, supply the exact Lab 6A INI at this stage.
+ const backrestGuide=fs.readFileSync(guide+'06-pgbackrest-pitr.md','utf8');
+ const setup=backrestGuide.split('## Lab 6B')[1].split('## Lab 7')[0];
+ const terminal=[...setup.matchAll(/```bash\n([\s\S]*?)\n```/g)].flatMap(m=>m[1].split('\n'));
+ for(const key of Object.keys(env))if(key.startsWith('PGBACKREST_'))delete env[key];
+ assert.equal(fs.statSync('/etc/pgbackrest/pgbackrest.conf').uid,process.getuid());
+ assert.equal(fs.statSync('/etc/pgbackrest/pgbackrest.conf').mode&0o777,0o640);
+ assert.equal(fs.statSync('/var/lib/pgbackrest').uid,process.getuid());
+ assert.equal(fs.statSync('/var/lib/pgbackrest').mode&0o777,0o700);
+ fs.accessSync('/etc/pgbackrest/pgbackrest.conf',fs.constants.R_OK);
+ fs.accessSync('/etc/pgbackrest/pgbackrest.conf',fs.constants.W_OK);
+ assert.equal(fs.readFileSync('/etc/pgbackrest/pgbackrest.conf','utf8'),'');
+ const ini=backrestGuide.match(/```ini\n([\s\S]*?)\n```/)[1];
+ fs.writeFileSync('/etc/pgbackrest/pgbackrest.conf',ini+'\n');
+ results.push('Postgres user writes exact student INI into the empty standard configuration');
+ for(const m of setup.matchAll(/```sql\n([\s\S]*?)\n```/g)){
+   if(m[1].startsWith('ALTER SYSTEM'))for(const statement of m[1].split('\n'))sql(statement);
+ }
+ assert.equal(sql('SHOW archive_mode'),'off','Setting archive_mode alone must not enable it');
+ for(const command of terminal.filter(c=>c.startsWith('pg_ctl ')))run('bash',['-eu','-c',command]);
+ assert.equal(sql('SHOW archive_mode'),'on');
+ assert.equal(sql('SHOW wal_level'),'replica');
+ assert.equal(sql('SHOW archive_command'),'/usr/bin/pgbackrest --stanza=shop archive-push %p');
+ for(const command of terminal.filter(c=>c.startsWith('pgbackrest ')))run('bash',['-eu','-c',command]);
+ assert.ok(Number(sql('SELECT archived_count FROM pg_stat_archiver'))>0);
+ results.push('Exact Lab 6B SQL and restart enable archiving; student creates stanza and proves WAL archived');
+ run('pgbackrest',['--stanza=shop','--type=full','--start-fast','backup']);
  sql("UPDATE shop.orders SET status='Shipped' WHERE order_id=1001");
- run('pgbackrest',['--type=incr','--start-fast','backup']);
+ run('pgbackrest',['--stanza=shop','--type=incr','--start-fast','backup']);
  sql("UPDATE shop.orders SET status='Shipped' WHERE order_id=1002");
- run('pgbackrest',['--type=diff','--start-fast','backup']);
+ run('pgbackrest',['--stanza=shop','--type=diff','--start-fast','backup']);
  assert.equal(sql("SELECT string_agg(order_id::text||':'||status,',' ORDER BY order_id) FROM shop.orders WHERE order_id IN (1001,1002)"),'1001:Shipped,1002:Shipped');
- const info=JSON.parse(run('pgbackrest',['--output=json','info']));
+ const info=JSON.parse(run('pgbackrest',['--stanza=shop','--output=json','info']));
  const diff=info[0].backup.findLast?info[0].backup.findLast(b=>b.type==='diff'):info[0].backup.filter(b=>b.type==='diff').at(-1);
  assert.ok(diff);results.push('Full incremental differential chain');
  const stateQuery="SELECT json_build_object('ids',array_agg(order_id ORDER BY order_id),'count',count(*),'total',sum(total)) FROM shop.orders";
@@ -154,12 +172,13 @@ try{
  const incidentSQL=[...incident.matchAll(/```sql\n([\s\S]*?)\n```/g)].map(m=>m[1]).join('\n');
  assert.ok(incidentSQL.includes("pg_create_restore_point('suta_before_delete')"));
  run('psql',['-X','-v','ON_ERROR_STOP=1','-d','suta_shop'],incidentSQL);
- run('pgbackrest',['check']);
+ run('pgbackrest',['--stanza=shop','check']);
  const sourceState=JSON.parse(sql(stateQuery));
  assert.deepEqual(sourceState,{ids:[1002,1003,1004,1005],count:4,total:130});
  scenario.push({stage:'source-after-committed-delete-and-new-order',...sourceState});
  results.push('Exact Lab 8A SQL produces the documented incident');
- run('pgbackrest',[`--pg1-path=${pitr}`,`--set=${diff.label}`,'--type=name','--target=suta_before_delete','--target-action=pause','restore']);
+ const restoreCommand=[...backrestGuide.matchAll(/```bash\n([\s\S]*?)\n```/g)].map(m=>m[1]).find(c=>c.endsWith(' restore'));
+ run('bash',['-eu','-c',restoreCommand.replace('DIFF_LABEL',diff.label)]);
  fs.appendFileSync(pitr+'/postgresql.auto.conf','\n'+isolation+'\n');
  report('PITR preflight preserves generated recovery settings',inspect('preflight','pitr'));
  nativeChecks('pitr');results.push('Exact student native PITR commands and generated archive-get target pass');

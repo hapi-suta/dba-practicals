@@ -23,6 +23,17 @@ to guess paths or weaken pg_hba.conf. Local tests do not prove current SSH acces
 
 ## Advanced-lab readiness gate — do not skip
 
+**Prepare prerequisites, not the answer.** Install the tools, create the standalone
+SOURCE cluster, and prepare pgBackRest directories, permissions and an empty
+editable configuration file. Leave `archive_mode=off`, an empty archive
+command/library, no active pgBackRest settings, no stanza and no backup contents.
+Students write the settings, enable archiving with a planned SOURCE restart,
+create the stanza and take backups in Labs 6–7. Test separately, not by completing
+the student's configuration for them.
+
+Existing class work must not be reset to meet this baseline. Use the
+[preservation/transition checklist](CONFIG-TRANSITION.md) before any change.
+
 Labs 5–11 remain instructor-led. Read [the exact tested scope](../../../internal/postgresql/backup-recovery/VALIDATION.md),
 then verify this worksheet against the host before students run commands:
 
@@ -51,9 +62,11 @@ The class edition uses `/var/lib/postgresql/16/lab` as SOURCE and
 55433 and the private recovery socket. There are no `/LAB` or `/SOURCE_PGDATA`
 values to fill in. Only the personal login and generated backup label vary.
 Do not use the old frozen `/opt/suta/dba-practicals` checkout for new instructions.
-Use the updated checkout described in [CHECKS.md](../../../postgresql/backup-recovery/CHECKS.md).
+Students need only the published handouts and PostgreSQL tools; they do not need
+a repository checkout. [CHECKS.md](../../../postgresql/backup-recovery/CHECKS.md)
+contains the direct checks.
 
-Before starting a copy, require the relevant `preflight` checks to pass. A failure
+Before starting a copy, require the relevant before-start checks to pass. A failure
 is a stop sign, not a prompt to disable the check. After startup require identity,
 isolation and data checks; PITR also requires the intended target in current logs.
 

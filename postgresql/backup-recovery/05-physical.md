@@ -354,7 +354,7 @@ rolls back unfinished transactions before shutdown. `-w` waits for shutdown to f
 - Keep the copied files and startup log for review.
 - SOURCE stays running on port 5432; the recovery port is now available for Lab 8.
 
-**Explain:** why is archiving off on COPY but on for SOURCE?
+**Explain:** why must COPY's archiving stay off, even after you enable archiving on SOURCE in Lab 6?
 
 Sources: [configuration precedence](https://www.postgresql.org/docs/16/config-setting.html),
 [postgres -C](https://www.postgresql.org/docs/16/app-postgres.html),

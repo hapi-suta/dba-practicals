@@ -7,15 +7,24 @@
 - Read [the connection map](CLASS-SETUP.md). Your instructor must confirm that the server is prepared for these exercises.
 - The paths below are the actual class paths.
 
-**What changes in this lab?**
+**What you are building from scratch:**
 
-- SOURCE already saves archived WAL in the instructor's backup folder (repository).
-- You will create your own repository and tell SOURCE to use it.
-- Keep the instructor's repository and configuration unchanged.
-- Take a new full backup in your repository. The instructor's backup is not part of your new backup set.
+- Your own pgBackRest settings in `/etc/pgbackrest/pgbackrest.conf`.
+- A stanza using the empty repository directory `/var/lib/pgbackrest`.
+- WAL archiving, followed by your own full, incremental and differential backups.
+- A separate recovery copy to prove those backups work.
+
+The instructor installs the packages and prepares directories, permissions and
+an empty configuration file. You supply the configuration, create the stanza,
+enable archiving and take the backups.
+
+**Already started the older edition?** Do not replace a configuration, move a
+repository or repeat the incident. Read [existing-work guidance](TROUBLESHOOTING.md#existing-pgbackrest-work)
+with your instructor first. The fresh setup below is only for an unused backup setup.
 
 **Returning after a disconnect?** Follow [the steps for reconnecting and checking your previous work](TROUBLESHOOTING.md#returning-after-a-disconnect-or-another-help-page).
-Run the `export` commands again in your new terminal session to select your lab configuration. Do not repeat inserts or incident deletes.
+Use the standard configuration and explicit `--stanza=shop` commands below.
+Do not repeat inserts or incident deletes.
 
 ### Terms used below
 
@@ -30,7 +39,8 @@ Run the `export` commands again in your new terminal session to select your lab 
 
 **The task:** connect two different places in the configuration: SOURCE's data
 directory is what we protect; the repository is where backups and archived WAL
-will be stored. Creating the stanza prepares this setup—it does not take a backup.
+will be stored. You fill in the empty configuration here; Lab 6B enables archiving
+and creates the stanza. Neither step takes a backup.
 
 **What you’ll practise:**
 
@@ -45,11 +55,11 @@ will be stored. Creating the stanza prepares this setup—it does not take a bac
 
 - Point to `pg1-path` and `repo1-path` in your file.
 - Explain which holds the running cluster and which will hold backups.
-- Do not continue to 6B if stanza creation failed.
+- Do not continue to 6B if the configuration or permissions are incorrect.
 
 **Where:**
 
-- Linux terminal as `postgres`.
+- Linux terminal as `postgres`, on your assigned practice server.
 
 ```bash
 cd /var/lib/postgresql/suta-backup-lab
@@ -66,28 +76,53 @@ pgbackrest version
 
 If missing, stop for instructor preparation. Do not install during a recovery incident.
 
-```bash
-mkdir repo
-```
+First confirm SOURCE, rather than copying an unknown path into the configuration:
 
 ```bash
-vi pgbackrest.conf
+psql -X -h /var/run/postgresql -p 5432 -d postgres -c "SHOW data_directory"
 ```
 
-Press `i` to edit. Enter this configuration only for a new setup. If `repo` or `pgbackrest.conf`
-already exists, stop creating files. Open the existing configuration to compare
-its paths with the values below and show any differences to your instructor.
-Do not empty the repository or replace the file. `[shop]` names the cluster's
-backup configuration; it is not the database name `suta_shop`.
+`-X` skips psql startup files; `-h` and `-p` select SOURCE's socket and port;
+`-d` selects the database; `-c` runs the query and returns to the terminal.
+Expect `/var/lib/postgresql/16/lab`. Stop if different.
+
+**Stay in the Linux terminal as `postgres`.** The instructor installs the software,
+creates the directories and prepares an empty, editable configuration file.
+You write the settings yourself.
+
+Check your starting point:
+
+```bash
+ls -l /etc/pgbackrest/pgbackrest.conf
+cat /etc/pgbackrest/pgbackrest.conf
+ls -ld /var/lib/pgbackrest /var/log/pgbackrest
+ls -A /var/lib/pgbackrest
+```
+
+- `ls -l` shows the file's owner and permissions. Expect `postgres postgres` and `-rw-r-----`.
+- `cat` displays its contents. Expect an empty file, not a completed configuration.
+- `ls -ld` shows directory ownership. Both directories must belong to `postgres`;
+  the repository should show `drwx------`, and the log directory `drwxr-x---`.
+- `ls -A` lists entries, including hidden ones. Expect no entries in the fresh repository.
+- Missing file, permission error or existing settings/backups: stop and show the
+  instructor. Do not erase or replace earlier work.
+
+Open the empty file:
+
+```bash
+vi /etc/pgbackrest/pgbackrest.conf
+```
+
+Press `i` to edit. Enter the following yourself, explaining each setting.
+`[shop]` names the cluster's backup configuration, not the database `suta_shop`.
 
 ```ini
 [global]
-repo1-path=/var/lib/postgresql/suta-backup-lab/repo
+repo1-path=/var/lib/pgbackrest
 repo1-retention-full=2
 log-level-console=info
-log-level-file=off
-lock-path=/var/lib/postgresql/suta-backup-lab
-spool-path=/var/lib/postgresql/suta-backup-lab
+log-level-file=info
+log-path=/var/log/pgbackrest
 
 [shop]
 pg1-path=/var/lib/postgresql/16/lab
@@ -98,41 +133,37 @@ pg1-socket-path=/var/run/postgresql
 **Important — these paths have different jobs:**
 
 - `pg1-path=/var/lib/postgresql/16/lab`: the running SOURCE cluster's data files.
-- `repo1-path=/var/lib/postgresql/suta-backup-lab/repo`: the folder for backups.
+- `repo1-path=/var/lib/pgbackrest`: the folder for backups and archived WAL.
 - Do not swap them. Never use `physical-copy`, `pitr-copy` or a placeholder for SOURCE's path.
+- `repo1-retention-full=2` keeps two full backup sets under the retention policy;
+  this is a small lab policy, not a production retention recommendation.
+- `log-level-console` and `log-level-file` choose how much progress is shown and saved.
+- `pg1-port` and `pg1-socket-path` tell pgBackRest how to connect to SOURCE.
 
 Save and quit: press `Esc`, type `:wq`, then press Enter.
 To quit without saving, press `Esc`, type `:q!`, then press Enter.
-Back in the Linux terminal:
+Back in the `postgres` terminal, clear old config overrides if this terminal
+was used with an earlier handout:
 
 ```bash
-export PGBACKREST_CONFIG=/var/lib/postgresql/suta-backup-lab/pgbackrest.conf
+unset PGBACKREST_CONFIG PGBACKREST_CONFIG_PATH PGBACKREST_CONFIG_INCLUDE_PATH PGBACKREST_STANZA
+cat /etc/pgbackrest/pgbackrest.conf
 ```
 
-```bash
-export PGBACKREST_STANZA=shop
-```
-
-**Why:**
-
-- These tell commands in this terminal which configuration and stanza to use.
-- The PostgreSQL service may not receive these terminal settings.
-- Its `archive_command` therefore includes the full configuration options.
-
-```bash
-pgbackrest stanza-create
-```
+`unset` removes these terminal overrides; it does not edit a file or change the
+running server. `cat` displays your file. Expect the settings you just entered,
+without a permission error. This step does not erase older backup setups.
 
 **Expect:**
 
-- Success.
-- If the command fails, save the complete error. For a `pg1-path` error, follow [the source-path correction steps](TROUBLESHOOTING.md#1-stanza-create-fails-pg1-path-is-wrong). For a permissions error, send the named file or folder to your instructor; do not grant access to everyone.
+- Your configuration is readable as `postgres`; the repository is owned by `postgres`.
+- If a path or permission differs, stop before Lab 6B and show the output to the instructor.
 - The local repository is for teaching, not protection against loss of this host/disk.
 
 ## Lab 6B — enable and prove archiving
 
-**The task:** prove PostgreSQL can send completed WAL files to the student
-repository. Keep the instructor repository intact. A successful check here is
+**The task:** enable WAL archiving yourself, create the stanza, then prove
+PostgreSQL can send completed WAL files to your repository. A successful check is
 not a completed recovery: Lab 7 takes backups and Lab 8 tests recovery from them.
 
 **What you’ll practise:**
@@ -146,7 +177,7 @@ not a completed recovery: Lab 7 takes backups and Lab 8 tests recovery from them
 
 **Pause and discuss:**
 
-- Show the effective archive command and a successful `pgbackrest check`.
+- Show the effective archive command and a successful `pgbackrest --stanza=shop check`.
 - Explain why changing a configuration file is not the same as proving PostgreSQL is successfully archiving WAL.
 
 **Where:**
@@ -183,7 +214,7 @@ SHOW wal_level;
 
 **Expect:**
 
-- `replica` on the prepared class source.
+- `replica` on a fresh PostgreSQL 16 cluster. We explicitly set it below.
 
 ```sql
 SHOW archive_mode;
@@ -191,45 +222,106 @@ SHOW archive_mode;
 
 **Expect:**
 
-- `on` on the prepared source.
-- If off, stop for instructor preparation: enabling it needs a source restart.
-- Do not improvise a restart during class.
+- `off` on a fresh setup. You will turn it on and restart this practice SOURCE.
+- If already `on`, stop and review existing-work guidance; do not redirect existing archiving blindly.
 
 ```sql
 SHOW archive_command;
 ```
 
-Record the previous command. On these class servers it initially references
-`/etc/pgbackrest/pgbackrest.conf`. Only after your student stanza-create succeeds:
+With archiving off, PostgreSQL may display `(disabled)` rather than the saved
+empty archive command. Record all three settings. Any existing
+archive destination must be preserved and reviewed before changing it.
 
 ```sql
-ALTER SYSTEM SET archive_command = '/usr/bin/pgbackrest --config=/var/lib/postgresql/suta-backup-lab/pgbackrest.conf --stanza=shop archive-push %p';
+SHOW archive_library;
+```
+
+Expect an empty value. This lab uses a shell archive command, not an archive
+library. If a library is configured, stop and have the instructor review it.
+
+```sql
+ALTER SYSTEM SET wal_level = 'replica';
+ALTER SYSTEM SET archive_mode = 'on';
+ALTER SYSTEM SET archive_command = '/usr/bin/pgbackrest --stanza=shop archive-push %p';
 ```
 
 **Why:**
 
-- Move SOURCE archiving to the student repository.
+- Enable WAL archiving using your standard configuration.
+- `--stanza=shop` selects the cluster configuration. `archive-push` stores the completed WAL file; PostgreSQL replaces `%p` with its path.
 - `ALTER SYSTEM` saves this setting in `postgresql.auto.conf`, which takes priority over the same setting in `postgresql.conf`.
 - Run this change only on your assigned practice SOURCE, with the instructor.
 
-```sql
-SELECT pg_reload_conf();
+```psql
+\q
 ```
 
-**Expect:**
+**Restart only your practice SOURCE — instructor confirms the target first.**
+This briefly disconnects its sessions. Finish or roll back your transactions
+and agree the restart with anyone using this assigned server. Do not do this
+on a shared or production server. A reload cannot enable `archive_mode`.
 
-- `true` means the reload was requested, not that every setting applied.
-- Because archive_mode is already on, changing archive_command needs a reload, not a restart.
-- Recheck:
+**Where:** Linux terminal as `postgres`. This class uses a standalone cluster
+managed with `pg_ctl`, not a service manager. Check its exact directory:
+
+```bash
+pg_ctl -D /var/lib/postgresql/16/lab status
+pg_ctl -D /var/lib/postgresql/16/lab -l /var/lib/postgresql/suta-backup-lab/source-restart.log -m fast -w restart
+```
+
+`-D` selects SOURCE. `-l` saves server messages in the named log file.
+`-m fast` disconnects sessions and rolls back unfinished
+transactions; `-w` waits for restart. Expect the server to start successfully.
+If it fails, save the error and stop; do not initialize another cluster.
+Read `/var/lib/postgresql/suta-backup-lab/source-restart.log` with `less`
+to see the startup error; press `q` to leave the log viewer.
+
+Reconnect to check the settings actually in use:
+
+```bash
+psql -X -h /var/run/postgresql -p 5432 -d suta_shop
+```
 
 ```sql
+SHOW data_directory;
+SHOW wal_level;
+SHOW archive_mode;
 SHOW archive_command;
 ```
 
 **Expect:**
 
-- The command above, pointing to your student config.
-- If it still names the instructor configuration, save the output of `SHOW archive_command;` and any error from the change or reload. Ask the instructor to check these results before you take a backup.
+- SOURCE's path, `replica`, `on`, and the archive command above.
+- If different, stop before backups and show the results to the instructor.
+
+```psql
+\q
+```
+
+**Where:** Linux terminal as `postgres`. Create the stanza now:
+
+```bash
+pgbackrest --stanza=shop stanza-create
+pgbackrest --stanza=shop check
+```
+
+- `stanza-create` writes the repository metadata for this cluster, not a backup.
+- `check` tests the configuration and WAL archiving. Wait for successful completion.
+- Archiving may report a missing stanza between restart and stanza creation.
+  PostgreSQL retries; do not delete WAL or ignore continuing failures.
+- If stanza creation fails, save the complete error and use [path troubleshooting](TROUBLESHOOTING.md#1-stanza-create-fails-pg1-path-is-wrong).
+- Do not start Lab 7 until both commands succeed.
+
+Connect to SOURCE again and record the archiver counters before the test:
+
+```bash
+psql -X -h /var/run/postgresql -p 5432 -d suta_shop
+```
+
+```sql
+SELECT archived_count, last_archived_wal, last_archived_time, failed_count FROM pg_stat_archiver;
+```
 
 ```sql
 SELECT pg_switch_wal();
@@ -256,7 +348,7 @@ SELECT archived_count, last_archived_wal, last_archived_time, failed_count FROM 
 **Where:** back in the Linux terminal as `postgres`.
 
 ```bash
-pgbackrest check
+pgbackrest --stanza=shop check
 ```
 
 **Expect:**
@@ -285,14 +377,14 @@ statuses, not add orders. That lets us see what changed without changing the tot
 - Explain why restoring this differential needs its full backup, but not the earlier incremental.
 
 **Keep safe:** do not remove any backup or archived WAL to prove a dependency.
-Inspect `pgbackrest info`; let pgBackRest select required files during restoration.
+Inspect `pgbackrest --stanza=shop info`; let pgBackRest select required files during restoration.
 
 **This lab ends** with successful backups and the saved differential label.
 It does not prove recovery yet. Lab 8 restores that backup and replays later WAL.
 
 **Success looks like:**
 
-- `pgbackrest info` lists completed backups, and you have recorded the differential backup's label. pgBackRest selects the required files when you restore it in Lab 8.
+- `pgbackrest --stanza=shop info` lists completed backups, and you have recorded the differential backup's label. pgBackRest selects the required files when you restore it in Lab 8.
 
 **Pause and discuss:**
 
@@ -302,12 +394,12 @@ It does not prove recovery yet. Lab 8 restores that backup and replays later WAL
 
 **Where:**
 
-- Linux terminal as `postgres`, with the two `export` commands from Lab 6 still set in this session.
-- If an error says the stanza does not exist, return to [Lab 6A](#lab-6a--configure-the-repository) and check the configuration path and stanza name. Do not switch to the instructor's configuration.
+- Linux terminal as `postgres`, using the configuration created in Lab 6.
+- If an error says the stanza does not exist, return to [Lab 6A](#lab-6a--configure-the-repository) and check the configuration path and stanza name. Do not change repositories to clear an error.
 - Run each backup once and wait for it to finish before moving on.
 
 ```bash
-pgbackrest --type=full backup
+pgbackrest --stanza=shop --type=full backup
 ```
 
 `--type=full` selects a full backup. Later, `--type=incr` selects an incremental
@@ -319,7 +411,7 @@ backup and `--type=diff` selects a differential backup.
 - Wait for successful completion.
 
 ```bash
-pgbackrest info
+pgbackrest --stanza=shop info
 ```
 
 Record the full backup label. Connect to suta_shop and make a known change:
@@ -348,7 +440,7 @@ SELECT order_id, status FROM shop.orders WHERE order_id = 1001;
 ```
 
 ```bash
-pgbackrest --type=incr backup
+pgbackrest --stanza=shop --type=incr backup
 ```
 
 An incremental captures changes since the preceding backup in its chain.
@@ -366,7 +458,7 @@ UPDATE shop.orders SET status = 'Shipped' WHERE order_id = 1002;
 ```
 
 ```bash
-pgbackrest --type=diff backup
+pgbackrest --stanza=shop --type=diff backup
 ```
 
 - A **differential** backup covers changes since the full backup.
@@ -374,7 +466,7 @@ pgbackrest --type=diff backup
 - These are pgBackRest backup types, not PostgreSQL's separate native incremental feature.
 
 ```bash
-pgbackrest info
+pgbackrest --stanza=shop info
 ```
 
 Record the exact completed differential label; call it `DIFF_LABEL` below.
@@ -526,10 +618,10 @@ SELECT pg_switch_wal();
 ```
 
 ```bash
-pgbackrest check
+pgbackrest --stanza=shop check
 ```
 
-Wait for `pgbackrest check` to succeed. If it fails, save the error and stop before
+Wait for `pgbackrest --stanza=shop check` to succeed. If it fails, save the error and stop before
 Lab 8B. Recovery needs the archived WAL; a completed backup alone is not enough.
 
 ## Lab 8B — restore files, then replay WAL
@@ -578,7 +670,7 @@ order 1005. Do not reconnect the shop to the recovery copy or promote it.
 - Linux terminal as `postgres`.
 - Keep SOURCE running; the Lab 5 copy must be stopped.
 - Use a new, absent `pitr-copy` directory.
-- Replace **only `DIFF_LABEL`** below with the exact completed differential label from your own `pgbackrest info`.
+- Replace **only `DIFF_LABEL`** below with the exact completed differential label from your own `pgbackrest --stanza=shop info`.
 - Unlike the paths, that label is unique to your backup and cannot be prefilled.
 
 ```bash
@@ -589,12 +681,15 @@ If you reconnected, follow [the steps to reconnect and set your terminal variabl
 first. This does not mean repeating the incident.
 
 ```bash
-pgbackrest --pg1-path=/var/lib/postgresql/suta-backup-lab/pitr-copy --set=DIFF_LABEL --type=name --target=suta_before_delete --target-action=pause restore
+pgbackrest --config=/etc/pgbackrest/pgbackrest.conf --stanza=shop --pg1-path=/var/lib/postgresql/suta-backup-lab/pitr-copy --set=DIFF_LABEL --type=name --target=suta_before_delete --target-action=pause restore
 ```
 
 This is one command; explain each option before running:
 
 - `--pg1-path`: separate recovery files, NEVER the source PGDATA.
+- `--config`: the standard pgBackRest configuration file. Passing it explicitly
+  keeps the generated WAL-retrieval command independent of your terminal settings.
+- `--stanza=shop`: the backup configuration for SOURCE.
 - `--set`: specific completed backup before the restore point.
 - `--type=name` / `--target`: the safe marker in WAL.
 - `--target-action=pause`: stop replay at the target for inspection, not immediate writes.

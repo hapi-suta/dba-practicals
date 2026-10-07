@@ -8,6 +8,8 @@ the others and “not measured” for any timing you did not record.
 - Student / date:
 - Lab number:
 - PostgreSQL server and client versions:
+- Lab 6: configuration path and why `pg1-path` differs from `repo1-path`:
+- Lab 6: archive settings before/after your restart, stanza-create result and successful WAL archive evidence:
 - Original database and restored-copy names (leave out private server details):
 - Backup filename / format / completion time:
 - What did the backup command show? Record any error:
@@ -31,6 +33,9 @@ Do not mark complete just because a command ran. The student must demonstrate
 the restored result, name a limitation, and explain why the chosen target is safe.
 Signing in, creating a backup, checking its files, starting the copy and checking
 its rows are different results. Record which ones you actually completed.
+For Lab 6, an instructor-installed package or prepared directory is not student
+completion. The student explains their own configuration, demonstrates stanza
+creation and proves archiving works after enabling it.
 
 ## Exit questions
 

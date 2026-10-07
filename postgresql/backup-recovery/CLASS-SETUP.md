@@ -9,8 +9,9 @@ student names and server addresses stay in your private connection sheet.
 - Your `student` SSH account; `sudo -iu postgres` opens the database OS account.
 - The source cluster. Lab 0 creates your shop; it is not already done for you.
 - PostgreSQL tools available from the `postgres` user's terminal, plus pgBackRest 2.50 and the `vi` editor.
-- An **instructor** pgBackRest repository used for setup testing. Lab 6 creates
-  your **student** repository; do not mix their configurations.
+- Empty pgBackRest configuration and repository/log directories, with permissions
+  prepared by the instructor. No active settings, stanza, backups or WAL archiving.
+- You write the configuration, create the stanza and enable archiving in Lab 6.
 
 | Purpose | Exact class value |
 |---|---|
@@ -20,10 +21,12 @@ student names and server addresses stay in your private connection sheet.
 | Physical COPY (Lab 5) | `/var/lib/postgresql/suta-backup-lab/physical-copy` |
 | PITR COPY (Lab 8) | `/var/lib/postgresql/suta-backup-lab/pitr-copy` |
 | COPY socket / port | `/var/lib/postgresql/suta-backup-lab/recovery-socket` / `55433` |
-| Student pgBackRest config | `/var/lib/postgresql/suta-backup-lab/pgbackrest.conf` |
-| Student repository | `/var/lib/postgresql/suta-backup-lab/repo` |
-| Instructor config — keep unchanged | `/etc/pgbackrest/pgbackrest.conf` |
-| Instructor repository — keep unchanged | `/var/lib/postgresql/prepared-backrest/repo` |
+| Empty pgBackRest file you configure | `/etc/pgbackrest/pgbackrest.conf` |
+| Empty backup repository directory | `/var/lib/pgbackrest` |
+| pgBackRest logs | `/var/log/pgbackrest` |
+
+These are the fresh-edition paths. If your server has work from an earlier class,
+do not overwrite it: use [existing-work guidance](TROUBLESHOOTING.md#existing-pgbackrest-work).
 
 There is no `/LAB` or `/SOURCE_PGDATA` directory to create. Those were placeholders
 in the earlier handout. Revised commands use the actual class paths.

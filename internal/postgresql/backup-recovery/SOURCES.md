@@ -1,5 +1,28 @@
 # Sources and version boundaries
 
+## 2026-10-07 — empty-config student setup
+
+- [pgBackRest 2.50 installation and quick start](https://pgbackrest.org/prior/2.50/user-guide.html#installation):
+  package installation, directory preparation and postgres-readable configuration
+  are prerequisites. The official example permits postgres ownership; our lab
+  gives postgres edit access to an initially empty file under `/etc/pgbackrest/`.
+- [Configuration reference](https://pgbackrest.org/prior/2.50/configuration.html):
+  the standard config path and explicit stanza selection. Student commands no
+  longer depend on a custom `PGBACKREST_CONFIG` environment value.
+- [PostgreSQL 16 continuous archiving](https://www.postgresql.org/docs/16/continuous-archiving.html):
+  archive_mode and wal_level must support archiving; archive_mode needs restart.
+  Student flow configures, restarts the identified standalone SOURCE, creates
+  the stanza, checks archiving and then takes backups. COPY archiving stays off.
+- `SHOW archive_command` reports `(disabled)` when archiving is off in the tested
+  PostgreSQL 16 build. That display is not the literal command to put in a file.
+- Same-host repository storage is a classroom limitation, not host-loss protection.
+  Existing backup/WAL chains must not be redirected or reset to match new paths.
+
+The software/directories-versus-student-configuration split is the owner's
+teaching choice. Documentation correctness is separate from the rehearsal evidence.
+
+## Earlier reviews retained
+
 Reviewed 2026-10-05. PostgreSQL 18 official pages and the live pgBackRest guide;
 PostgreSQL 14 official equivalents checked for the local 14.20 rehearsal.
 Source review does not replace execution on the actual class environment.

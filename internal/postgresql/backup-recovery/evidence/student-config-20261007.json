@@ -1,0 +1,109 @@
+{
+  "date": "2026-10-07T22:47:42.319Z",
+  "postgres": "postgres (PostgreSQL) 16.13 (Debian 16.13-1.pgdg13+1)",
+  "pgbackrest": "pgBackRest 2.59.3",
+  "results": [
+    "Exact Labs 0–4 SQL rehearsal",
+    "Absent copy never marked passed",
+    "Unavailable source never marked passed",
+    "Direct safety-check page returns to the existing lab folder",
+    "Sysadmin prepared empty file/directories only; SOURCE has no archiving, stanza or backups",
+    "Progress positive baseline",
+    "Backup file existence is not a restore pass",
+    "Repeated test insert detected",
+    "Duplicate fixture detected",
+    "Physical integrity before edits",
+    "Physical preflight passes exact guide settings",
+    "Exact student native physical before-start commands pass",
+    "Literal placeholder detected",
+    "Student native socket check reveals wrong socket",
+    "Later duplicate archive override detected",
+    "Student native archive check reveals unsafe override",
+    "Unsupported auto.conf directory setting detected",
+    "Student native config inspection reveals auto.conf data redirection",
+    "Source directory redirection detected",
+    "Student native data-directory check reveals source redirection",
+    "Physical startup uses guide command and correct log from another folder",
+    "Physical copy live identity / isolation / data",
+    "Exact student physical SHOW checks match running copy",
+    "Physical copy includes every source database, not just the shop",
+    "Running copy blocked from editing",
+    "Student native status check reveals running copy",
+    "Postgres user writes exact student INI into the empty standard configuration",
+    "Exact Lab 6B SQL and restart enable archiving; student creates stanza and proves WAL archived",
+    "Full incremental differential chain",
+    "Exact Lab 8A SQL produces the documented incident",
+    "PITR preflight preserves generated recovery settings",
+    "Exact student native PITR commands and generated archive-get target pass",
+    "PITR target / paused / expected rows / current log",
+    "Exact student PITR SHOW checks match running paused copy",
+    "Same row count does not hide different IDs; source remains unchanged",
+    "Guide Lab 9 selective merge preserves newer order",
+    "Guide Lab 10 drop / restore disposable database",
+    "Lab 10 older snapshot IDs verified; repaired source preserved",
+    "Lab 10 ignores wrong inherited port and uses an absolute backup path",
+    "Exact Lab 11 wrong-target failure and corrected restore; source and backup unchanged"
+  ],
+  "scenario": [
+    {
+      "stage": "source-after-differential",
+      "ids": [
+        1001,
+        1002,
+        1003
+      ],
+      "count": 3,
+      "total": 195
+    },
+    {
+      "stage": "source-after-committed-delete-and-new-order",
+      "ids": [
+        1002,
+        1003,
+        1004,
+        1005
+      ],
+      "count": 4,
+      "total": 130
+    },
+    {
+      "stage": "paused-recovery-copy",
+      "ids": [
+        1001,
+        1002,
+        1003,
+        1004
+      ],
+      "count": 4,
+      "total": 235
+    },
+    {
+      "stage": "source-after-selective-merge",
+      "ids": [
+        1001,
+        1002,
+        1003,
+        1004,
+        1005
+      ],
+      "count": 5,
+      "total": 250
+    },
+    {
+      "stage": "lab11-corrected-target",
+      "ids": [
+        1001,
+        1002,
+        1003
+      ],
+      "count": 3,
+      "total": 195
+    }
+  ],
+  "scope": "Local isolated container; no student servers restarted or changed. Native CHECKS commands, copy SHOW checks, Labs 0–4, Lab 8A SQL, Lab 9 SQL/psql, Lab 10 and Lab 11 core commands read from handouts. Fast checkpoints and programmatic configuration used; interactive vi/SSH and advanced Lab 11 faults not replayed. Human comparison of expected results remains required.",
+  "inputHashes": {
+    "CHECKS.md": "eb2b57293fa2c87e982a3b2d43a2f43f27368e945647b7bafa0e7ce7c58cc802",
+    "05-physical.md": "741ae161ed771430ab8848911d4e519a70c5e3853effc4787851b88d078c8699",
+    "06-pgbackrest-pitr.md": "273c7d1732c50cdffa27f814cfd361a10af3b2b6e53c954d3d1fc7e8b53ccb0a"
+  }
+}
