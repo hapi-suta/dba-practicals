@@ -3,7 +3,7 @@
 import fs from 'node:fs';
 import assert from 'node:assert/strict';
 import {createHash} from 'node:crypto';
-import {execFileSync} from 'node:child_process';
+import {execFileSync,spawnSync} from 'node:child_process';
 import {fileURLToPath} from 'node:url';
 import {observer,defaults as c} from './check-lab.mjs';
 const guide=fileURLToPath(new URL('../../../postgresql/backup-recovery/',import.meta.url));
@@ -21,6 +21,42 @@ const inspect=(method,copy)=>{const o=observer();o[method](copy);return o.checks
 const expectFail=(label,copy,id)=>{const checks=inspect('preflight',copy);assert.ok(checks.some(x=>x.id===id&&x.status==='MISMATCH'),JSON.stringify(checks));results.push(label);console.log('PASS '+label);};
 let sourceStarted=false,physicalStarted=false,pitrStarted=false;
 const physical=c.root+'/physical-copy',pitr=c.root+'/pitr-copy';
+// Execute the student's actual read-only commands, independently of the observer.
+const nativeGuide=fs.readFileSync(guide+'CHECKS.md','utf8');
+function nativeChecks(kind){
+ const copy=kind==='physical'?physical:pitr;
+ const section=nativeGuide.split('## Before starting a stopped copy')[1].split('### 6. Return')[0];
+ const selected=kind==='physical'?section.split('### 5. Lab 8 only')[0]:section;
+ const commandList=[...selected.matchAll(/```bash\n([\s\S]*?)\n```/g)].flatMap(m=>m[1].split('\n')).filter(c=>!c.startsWith('cd '));
+ const expected={data_directory:copy,config_file:copy+'/postgresql.conf',hba_file:copy+'/pg_hba.conf',ident_file:copy+'/pg_ident.conf',port:'55433',unix_socket_directories:c.root+'/recovery-socket',listen_addresses:'',archive_mode:'off',archive_command:'',primary_conninfo:'',recovery_target_name:'suta_before_delete',recovery_target_action:'pause',recovery_target:'',recovery_target_time:'',recovery_target_xid:'',recovery_target_lsn:''};
+ for(const command of commandList){
+  const r=spawnSync('bash',['-c',command],{cwd:copy,env,encoding:'utf8',timeout:10000});
+  assert.ifError(r.error);const out=r.stdout.trim();
+  if(command.startsWith('grep ')){assert.equal(r.status,1,command);assert.equal(out,'');assert.equal(r.stderr,'');continue;}
+  if(command==='pg_ctl -D . status'){assert.equal(r.status,3);assert.match(out,/no server running/);continue;}
+  assert.equal(r.status,0,command+': '+r.stderr);
+  if(command==='pwd -P')assert.equal(out,copy);
+  else if(command.startsWith('readlink '))assert.deepEqual(out.split('\n'),['postgresql.conf','postgresql.auto.conf','pg_hba.conf','pg_ident.conf','pg_wal'].map(n=>copy+'/'+n));
+  else if(command==='ls -A pg_tblspc')assert.equal(out,'');
+  else if(command==='ls -a'){
+    const names=out.split('\n');assert.ok(!names.includes('postmaster.pid'));assert.ok(!names.includes('standby.signal'));
+    assert.equal(names.includes('recovery.signal'),kind==='pitr');
+  }else if(command.startsWith('ls -ld ')){assert.match(out,/^drwx------\s+\d+\s+postgres\s/);}
+  else if(command==='printenv PGBACKREST_CONFIG PGBACKREST_STANZA')assert.equal(out,c.root+'/pgbackrest.conf\nshop');
+  else if(command.startsWith('postgres -D . -C ')){
+    const setting=command.split(' ').at(-1);
+    if(setting==='restore_command'){assert.match(out,/archive-get/);assert.ok(out.includes('%f'));assert.ok(out.includes('%p'));}
+    else {assert.ok(Object.hasOwn(expected,setting));assert.equal(out,expected[setting],setting);}
+  }else throw Error('Unexpected native command '+command);
+ }
+}
+function nativeLiveChecks(file,kind){
+ const text=fs.readFileSync(guide+file,'utf8');
+ const afterStart=text.slice(text.indexOf(' -w start'));
+ const queries=[...afterStart.matchAll(/```sql\n([\s\S]*?)\n```/g)].flatMap(m=>m[1].split('\n')).filter(q=>q.startsWith('SHOW '));
+ const expected={data_directory:kind==='physical'?physical:pitr,port:'55433',unix_socket_directories:c.root+'/recovery-socket',listen_addresses:'',archive_mode:'off',recovery_target_name:'suta_before_delete',recovery_target_action:'pause'};
+ for(const query of queries){const key=query.slice(5,-1);assert.equal(run('psql',['-XAt','-h',c.root+'/recovery-socket','-p',c.recoveryPort,'-d','suta_shop','-c',query]),expected[key],query);}
+}
 try{
  // Rehearse unchanged + revised early-lab SQL directly from the handouts first.
  const core=run('node',[fileURLToPath(new URL('./rehearse.mjs',import.meta.url))]);console.log(core);results.push('Exact Labs 0–4 SQL rehearsal');
@@ -32,7 +68,7 @@ try{
  const checksGuide=fs.readFileSync(guide+'CHECKS.md','utf8');
  const returnCommand=checksGuide.split('**Return to your lab folder before continuing:**')[1].match(/```bash\n([\s\S]*?)\n```/)[1];
  assert.equal(run('bash',['-eu','-c',`cd /var/lib/postgresql\n${returnCommand}\npwd`]),c.root);
- results.push('Checker detour returns to the existing lab folder');
+ results.push('Direct safety-check page returns to the existing lab folder');
  run('initdb',['-D',c.source,'--auth-local=trust','--auth-host=reject','--no-locale']);
  fs.mkdirSync('/var/lib/postgresql/prepared-backrest/repo',{recursive:true});
  const prepared='[global]\nrepo1-path=/var/lib/postgresql/prepared-backrest/repo\nlog-level-file=off\nlock-path=/var/lib/postgresql/prepared-backrest\n[shop]\npg1-path='+c.source+'\npg1-socket-path='+c.socket+'\n';
@@ -60,16 +96,21 @@ try{
  const original=fs.readFileSync(physical+'/postgresql.auto.conf','utf8');
  fs.writeFileSync(physical+'/postgresql.auto.conf',original+'\n'+isolation+'\n');
  report('Physical preflight passes exact guide settings',inspect('preflight','physical'));
+ nativeChecks('physical');results.push('Exact student native physical before-start commands pass');
  fs.appendFileSync(physical+'/postgresql.auto.conf',"unix_socket_directories='/LAB/recovery-socket'\n");
  expectFail('Literal placeholder detected','physical','copy-socket');
+ assert.throws(()=>nativeChecks('physical'),/unix_socket_directories/);results.push('Student native socket check reveals wrong socket');
  fs.writeFileSync(physical+'/postgresql.auto.conf',original+'\n'+isolation+'\narchive_mode=on\n');
  expectFail('Later duplicate archive override detected','physical','copy-archive-mode');
+ assert.throws(()=>nativeChecks('physical'),/archive_mode/);results.push('Student native archive check reveals unsafe override');
  fs.writeFileSync(physical+'/postgresql.auto.conf',original+'\n'+isolation+`\ndata_directory='${c.source}'\n`);
  expectFail('Unsupported auto.conf directory setting detected','physical','copy-no-auto-data-directory');
+ assert.throws(()=>nativeChecks('physical'),/grep/);results.push('Student native config inspection reveals auto.conf data redirection');
  fs.writeFileSync(physical+'/postgresql.auto.conf',original+'\n'+isolation+'\n');
  const mainConfig=fs.readFileSync(physical+'/postgresql.conf','utf8');
  fs.appendFileSync(physical+'/postgresql.conf',`\ndata_directory='${c.source}'\n`);
  expectFail('Source directory redirection detected','physical','copy-data-directory');
+ assert.throws(()=>nativeChecks('physical'),/data_directory/);results.push('Student native data-directory check reveals source redirection');
  fs.writeFileSync(physical+'/postgresql.conf',mainConfig);
  const startFromGuide=file=>{
    const text=fs.readFileSync(guide+file,'utf8');
@@ -77,12 +118,14 @@ try{
    assert.ok(command);run('bash',['-eu','-c',`cd /var/lib/postgresql\n${command}`]);
  };
  startFromGuide('05-physical.md');physicalStarted=true;
- assert.ok(fs.existsSync(c.root+'/physical-recovery.log'));results.push('Physical startup uses guide command and correct log despite checker detour');
+ assert.ok(fs.existsSync(c.root+'/physical-recovery.log'));results.push('Physical startup uses guide command and correct log from another folder');
  report('Physical copy live identity / isolation / data',inspect('recovery','physical'));
+ nativeLiveChecks('05-physical.md','physical');results.push('Exact student physical SHOW checks match running copy');
  const databases="SELECT string_agg(datname,',' ORDER BY datname) FROM pg_database WHERE NOT datistemplate";
  assert.equal(run('psql',['-XAt','-h',c.root+'/recovery-socket','-p',c.recoveryPort,'-d','postgres','-c',databases]),sql(databases,'postgres'));
  results.push('Physical copy includes every source database, not just the shop');
  expectFail('Running copy blocked from editing','physical','copy-stopped');
+ assert.throws(()=>nativeChecks('physical'));results.push('Student native status check reveals running copy');
  run('pg_ctl',['-D',physical,'-m','fast','-w','stop']);physicalStarted=false;
  // New student repository: exact published INI, not the instructor repo.
  fs.mkdirSync(c.root+'/repo');
@@ -119,12 +162,14 @@ try{
  run('pgbackrest',[`--pg1-path=${pitr}`,`--set=${diff.label}`,'--type=name','--target=suta_before_delete','--target-action=pause','restore']);
  fs.appendFileSync(pitr+'/postgresql.auto.conf','\n'+isolation+'\n');
  report('PITR preflight preserves generated recovery settings',inspect('preflight','pitr'));
+ nativeChecks('pitr');results.push('Exact student native PITR commands and generated archive-get target pass');
  startFromGuide('06-pgbackrest-pitr.md');pitrStarted=true;
  for(let n=0;n<30;n++){
    const state=run('psql',['-XAt','-h',c.root+'/recovery-socket','-p',c.recoveryPort,'-d','suta_shop','-c','SELECT pg_is_wal_replay_paused()']);
    if(state==='t')break;Atomics.wait(new Int32Array(new SharedArrayBuffer(4)),0,0,200);
  }
  report('PITR target / paused / expected rows / current log',inspect('recovery','pitr'));
+ nativeLiveChecks('06-pgbackrest-pitr.md','pitr');results.push('Exact student PITR SHOW checks match running paused copy');
  const copyState=JSON.parse(run('psql',['-XAt','-h',c.root+'/recovery-socket','-p',c.recoveryPort,'-d','suta_shop','-c',stateQuery]));
  assert.deepEqual(copyState,{ids:[1001,1002,1003,1004],count:4,total:235});
  assert.deepEqual(JSON.parse(sql(stateQuery)),sourceState);
@@ -188,7 +233,7 @@ try{
  assert.deepEqual(JSON.parse(sql(stateQuery)),mergedState);assert.equal(backupHash(),beforeHash);
  results.push('Exact Lab 11 wrong-target failure and corrected restore; source and backup unchanged');
  scenario.push({stage:'lab11-corrected-target',...JSON.parse(sql(stateQuery,'suta_fault_restore'))});
- const evidence={date:new Date().toISOString(),postgres:run('postgres',['--version']),pgbackrest:run('pgbackrest',['version']),results,scenario,scope:'Local isolated container; no student servers restarted or changed. Labs 0–4, Lab 8A SQL, Lab 9 SQL/psql, Lab 10 and Lab 11 core commands read from handouts. Fast checkpoints and programmatic configuration used; interactive nano/SSH and advanced Lab 11 faults not replayed.'};
+ const evidence={date:new Date().toISOString(),postgres:run('postgres',['--version']),pgbackrest:run('pgbackrest',['version']),results,scenario,scope:'Local isolated container; no student servers restarted or changed. Native CHECKS commands, copy SHOW checks, Labs 0–4, Lab 8A SQL, Lab 9 SQL/psql, Lab 10 and Lab 11 core commands read from handouts. Fast checkpoints and programmatic configuration used; interactive vi/SSH and advanced Lab 11 faults not replayed. Human comparison of expected results remains required.',inputHashes:Object.fromEntries(['CHECKS.md','05-physical.md','06-pgbackrest-pitr.md'].map(f=>[f,createHash('sha256').update(fs.readFileSync(guide+f)).digest('hex')]))};
  fs.writeFileSync('/var/lib/postgresql/qualification.json',JSON.stringify(evidence,null,2));console.log(JSON.stringify(evidence,null,2));
 }finally{
  for(const [started,dir]of[[pitrStarted,pitr],[physicalStarted,physical],[sourceStarted,c.source]])if(started)run('pg_ctl',['-D',dir,'-m','fast','-w','stop']);

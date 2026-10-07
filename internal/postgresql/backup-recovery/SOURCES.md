@@ -23,7 +23,22 @@ The revised class edition also checks the [pgBackRest 2.50 guide](https://pgback
 These support source/repository distinctions, effective overrides, isolated
 copy startup and recovery-target checks. `data_directory` belongs in the main
 configuration/command line, not postgresql.auto.conf; the checker rejects that
-unsupported placement rather than allowing misleading settings.
+unsupported placement rather than allowing misleading settings. The student
+edition now checks for that setting directly; the observer is instructor-only.
+
+Reviewed again 2026-10-06 for the native-check revision:
+
+- PostgreSQL 16 `postgres -C` reads configuration without starting COPY. It is
+  not proof of a running server's startup overrides; students also use SQL SHOW
+  after startup and must not add unreviewed startup options.
+- [pg_ctl status](https://www.postgresql.org/docs/16/app-pg-ctl.html) distinguishes
+  an already running copy before configuration edits or a new start.
+- [Recovery targets](https://www.postgresql.org/docs/16/runtime-config-wal.html#RUNTIME-CONFIG-WAL-RECOVERY-TARGET)
+  support the named target and pause checks. The lesson retains recovery.signal
+  for archive recovery, and does not create a standby.
+- Native Linux path, listing and search commands are exercised by the isolated
+  Linux rehearsal, including mismatching configuration. See the newest validation
+  entry for versions; this is not a student-host deployment.
 
 No native PostgreSQL incremental-backup commands are taught in this pack;
 pgBackRest full/differential/incremental are its own backup types. Prepared class

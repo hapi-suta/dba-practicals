@@ -1,5 +1,45 @@
 # Qualification — honest scope
 
+## Remove the student tooling dependency; use vi — 2026-10-06
+
+This entry supersedes the older instruction below to clone/pull a student checker.
+The reported failure was `MODULE_NOT_FOUND` for an internal JavaScript path.
+Students now use direct PostgreSQL and Linux checks; no Git checkout or Node.js
+is required. Internal observers remain instructor-only. Every student editor
+command now uses `vi`, with insert, save/quit and discard instructions.
+
+- 17 guide/report tests pass. Regression tests reject internal-tool requirements,
+  nano instructions, missing native safety commands and broken links.
+- A fresh no-network Docker rehearsal passed 38 integration checks, including
+  the actual native before-start commands and running-copy SHOW queries.
+- Wrong socket, unsafe archiving, source-directory redirection and a running
+  copy produce results that fail the documented expectations. These are manual
+  student comparisons, not an automatic guard around a student's shell.
+- Physical recovery, full/incremental/differential backups, named-target PITR,
+  selective recovery and the existing database/error drills passed. SOURCE and
+  COPY IDs differ as intended; newer source work survives the selective merge.
+- Evidence with tested input hashes: [native student checks](evidence/native-student-checks-20261006.json).
+- First rehearsal failed a new harness expectation that the generated
+  restore_command must spell out `--stanza=shop`. Actual pgBackRest 2.59.3 used
+  inherited configuration variables instead. The guide and test now verify those
+  variables explicitly using printenv and require startup from that same terminal.
+  A second fresh rehearsal passed. No student data was used or modified.
+- An initial static mutation test also failed because it removed a directory
+  prefix rather than the exact return command; fixed to test the full command.
+- Test containers: `dba-practicals-native-checks-20261006-v1` (first attempt) and
+  `dba-practicals-native-checks-20261006-v2` (passing run). Data retained; stopped
+  after testing. Original student and test artifacts are preserved.
+
+**Limits:** PostgreSQL 16.13 / pgBackRest 2.59.3 in the disposable Linux image,
+not the class hosts' 16.15 / 2.50. Interactive vi/SSH were not replayed;
+configuration edits were programmatic. Advanced fault extensions remain
+instructor-prepared. This is an author walkthrough and executable rehearsal,
+not proof that every student understands the instructions.
+
+**Next classroom step:** refresh the GitHub lab page. Continue from the last
+verified step using the native checks. Do not repeat a backup, restore or incident
+because the old checker failed. Never install internal tooling as the workaround.
+
 ## Student/instructor/internal separation — 2026-10-06
 
 Student handouts remain at their existing `postgresql/backup-recovery` URLs.

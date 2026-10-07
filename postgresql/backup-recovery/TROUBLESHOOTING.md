@@ -71,10 +71,10 @@ ask the instructor whether to finish or roll back before reconnecting.
 **Where:** Linux terminal as `postgres`.
 
 ```bash
-nano /var/lib/postgresql/suta-backup-lab/pgbackrest.conf
+vi /var/lib/postgresql/suta-backup-lab/pgbackrest.conf
 ```
 
-Under `[shop]`, the exact class setting is:
+Press `i` to edit. Under `[shop]`, the exact class setting is:
 
 ```ini
 pg1-path=/var/lib/postgresql/16/lab
@@ -82,7 +82,8 @@ pg1-path=/var/lib/postgresql/16/lab
 
 This points to SOURCE PGDATA. `/Source_pgdata` and `/SOURCE_PGDATA` are not real
 class paths. `repo1-path` separately names your backup folder; do not point pg1-path
-there or at a restored copy. Save and exit. Restore your shell settings:
+there or at a restored copy. Save and quit with `Esc`, `:wq`, Enter.
+To quit without saving, use `Esc`, `:q!`, Enter. Restore your shell settings:
 
 ```bash
 export PGBACKREST_CONFIG=/var/lib/postgresql/suta-backup-lab/pgbackrest.conf

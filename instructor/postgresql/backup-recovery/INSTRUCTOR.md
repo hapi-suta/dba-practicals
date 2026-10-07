@@ -72,7 +72,9 @@ the expected result. For other errors, stop; don't keep executing later steps.
 
 ## Resume and assess without changing student work
 
-Use [the read-only checker](../../../postgresql/backup-recovery/CHECKS.md) and [teacher snapshot](TEACHER-DASHBOARD.md).
+Students use [direct PostgreSQL checks](../../../postgresql/backup-recovery/CHECKS.md).
+Automated observers are instructor-only; see the [teacher snapshot](TEACHER-DASHBOARD.md).
+Do not ask students to install or run internal JavaScript tools to continue a lab.
 A backup file existing is not completion. Assess the student's explanation and
 restored data, constraints and permissions. For duplicates, inspect IDs/items;
 do not delete rows or reset sequences simply to match the guide.

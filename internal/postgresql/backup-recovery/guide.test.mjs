@@ -11,7 +11,7 @@ const commands=text=>[...text.matchAll(/```(?:bash|sql|psql)\n([\s\S]*?)\n```/g)
 function auditStudentContracts(readFile){
  const issues=[];
  const checks=readFile('CHECKS.md');
- if(!checks.includes('cd /var/lib/postgresql/suta-backup-lab'))issues.push('checker-return-folder');
+ if(!commands(checks).includes('cd /var/lib/postgresql/suta-backup-lab'))issues.push('checks-return-folder');
  for(const file of ['05-physical.md','06-pgbackrest-pitr.md']){
   for(const command of commands(readFile(file)).filter(s=>s.startsWith('pg_ctl ')&&s.endsWith(' start'))){
    if(!/ -l \/var\/lib\/postgresql\/suta-backup-lab\//.test(command))issues.push('absolute-log:'+file);
@@ -32,7 +32,7 @@ test('student handouts contain the actual safety and result checks promised',()=
 });
 test('audit detects reintroduced missing checks and relative-log regressions',()=>{
  const mutations=[
-  ['CHECKS.md','cd /var/lib/postgresql/suta-backup-lab','pwd','checker-return-folder'],
+  ['CHECKS.md','cd /var/lib/postgresql/suta-backup-lab\n','pwd\n','checks-return-folder'],
   ['05-physical.md','-l /var/lib/postgresql/suta-backup-lab/physical-recovery.log','-l physical-recovery.log','absolute-log:05-physical.md'],
   ['03-table.md','SHOW data_directory;','SELECT 1;','lab3-target-check'],
   ['03-table.md','WHERE order_id = 1004','WHERE order_id = 9999','lab3-newer-order-proof'],
@@ -103,11 +103,42 @@ test('student folder contains only handouts; maintained tools are outside it',()
   for(const m of text.matchAll(/\/var\/lib\/postgresql\/dba-practicals\/([^\s`]+\.mjs)/g))assert.ok(fs.existsSync(path.join(repository,m[1])),file+' stale command '+m[1]);
  }
 });
-test('restore startup keeps mandatory preflight before pg_ctl start',()=>{
+test('restore startup keeps direct before-start checks before pg_ctl start',()=>{
  for(const [file,kind]of[['05-physical.md','physical'],['06-pgbackrest-pitr.md','pitr']]){
    const s=fs.readFileSync(path.join(root,file),'utf8');
-   assert.ok(s.indexOf('check-lab.mjs preflight '+kind)<s.indexOf(' -w start'));
+   const check=s.indexOf('CHECKS.md#before-starting-a-stopped-copy');
+   assert.ok(check>=0&&check<s.indexOf(' -w start'));
    assert.match(s,/archive_mode = off/);assert.match(s,/55433/);assert.match(s,/recovery-socket/);
+ }
+});
+const requiredNativeChecks=['pwd -P','pg_ctl -D . status',
+ 'readlink -e postgresql.conf postgresql.auto.conf pg_hba.conf pg_ident.conf pg_wal',
+ "grep -nE '^[[:space:]]*include' postgresql.conf postgresql.auto.conf",
+ "grep -nE '^[[:space:]]*data_directory' postgresql.auto.conf",
+ 'ls -A pg_tblspc','ls -a','ls -ld /var/lib/postgresql/suta-backup-lab/recovery-socket',
+ 'printenv PGBACKREST_CONFIG PGBACKREST_STANZA',
+ ...['data_directory','config_file','hba_file','ident_file','port','unix_socket_directories','listen_addresses',
+ 'archive_mode','archive_command','primary_conninfo','recovery_target_name','recovery_target_action',
+ 'restore_command','recovery_target','recovery_target_time','recovery_target_xid','recovery_target_lsn'].map(s=>'postgres -D . -C '+s)];
+const missingNativeChecks=text=>{
+ const lines=commands(text).flatMap(c=>c.split('\n'));
+ return requiredNativeChecks.filter(c=>!lines.includes(c));
+};
+test('native safety checks remain complete; removing any command is detected',()=>{
+ const text=read('CHECKS.md');
+ assert.deepEqual(missingNativeChecks(text),[]);
+ for(const command of requiredNativeChecks){
+   assert.ok(missingNativeChecks(text.replace(command+'\n','')).includes(command),command);
+ }
+ for(const term of ['postmaster.pid','standby.signal','recovery.signal','drwx------','suta_before_delete'])assert.ok(text.includes(term));
+});
+test('student handouts require neither internal tooling nor nano',()=>{
+ for(const file of files){
+  const text=read(file);
+  assert.doesNotMatch(text,/\bnode\b|Node\.js|check-lab\.mjs|git (?:clone|pull)|\bnano\b|Ctrl\+[OX]/,file);
+  if(commands(text).some(c=>/^vi /m.test(c))){
+   assert.match(text,/`i` to edit/,file);assert.match(text,/:wq/,file);assert.match(text,/:q!/,file);
+  }
  }
 });
 

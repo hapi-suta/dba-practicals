@@ -12,7 +12,7 @@ Read this first; every individual lab also starts with its purpose and end resul
 
 1. Read [your server connection map](CLASS-SETUP.md): SOURCE 5432 versus COPY 55433.
 2. Follow the beginner labs 0–4. Run each write once; record the expected checks.
-3. Use [the progress checker](CHECKS.md) and [help with errors or unfinished work](TROUBLESHOOTING.md).
+3. Use [the direct PostgreSQL checks](CHECKS.md) and [help with errors or unfinished work](TROUBLESHOOTING.md).
 4. Start Labs 5–11 with your instructor after the earlier labs' data checks pass.
 
 Use only your assigned practice server. Never run these deletion and recovery
@@ -37,7 +37,7 @@ available disk space and completed earlier steps.
 
 **Class edition:** commands now use actual StepUP server paths, not `/LAB`
 placeholders. Do not substitute your source directory for a recovery-copy path.
-The checker reports evidence, not automatic completion or a backup guarantee.
+Compare the actual rows and settings with your lab. A file existing is not proof of a successful recovery.
 
 Each command block is one action. `bash` means the Linux terminal; `sql` means
 inside psql. `psql` blocks contain psql commands such as `\q`. Do not type the

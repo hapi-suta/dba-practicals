@@ -1,12 +1,13 @@
 # Teacher dashboard — same evidence, read-only
 
-**What it does:** takes one on-demand SSH snapshot using the exact student
+**What it does:** takes one on-demand SSH snapshot using the instructor-only
 `check-lab.mjs` observer. It creates a private HTML report with counts,
 permissions, mismatches and unknown results. It does not repair data, start
 servers, grade students, install files remotely or monitor continuously.
 
 **Scope:** Labs 0–4 baseline. Lab 7 onward intentionally changes source rows.
-Use the physical/PITR checker on the assigned host for later stages. Compare
+For later stages, review the student's native physical/PITR checks. The internal
+observer is optional instructor tooling, not a student prerequisite. Compare
 results with the student's evidence sheet and explanation before marking a lab.
 
 ## Prepare privately

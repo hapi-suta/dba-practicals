@@ -18,7 +18,7 @@ node --test internal/postgresql/backup-recovery/guide.test.mjs internal/postgres
 ## Database qualification — isolated local environment only
 
 Read [validation and limits](postgresql/backup-recovery/VALIDATION.md) first.
-The destructive test harness is **not** the read-only student checker and must
+The destructive test harness is **not** the read-only instructor observer and must
 never run on student servers. It requires a fresh authorized local Docker
 container, no external network, and the repository mounted read-only at `/course`.
 
@@ -31,5 +31,6 @@ container, no external network, and the repository mounted read-only at `/course
 - Preserve evidence and test data; stop only the test container after completion.
 
 Tools locate student handouts relative to this checkout, not the current shell
-folder. Student SQL and lab data paths are unchanged. After pulling this layout
-revision, use the updated checker commands from [CHECKS](../postgresql/backup-recovery/CHECKS.md).
+folder. Student SQL and lab data paths are unchanged. Students use the direct
+PostgreSQL/Linux commands in [CHECKS](../postgresql/backup-recovery/CHECKS.md),
+not these internal tools. The observer remains available for instructor assessment.

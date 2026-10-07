@@ -196,10 +196,10 @@ cp -n physical-copy/postgresql.auto.conf physical-copy/postgresql.auto.conf.befo
 - Preserve the original settings; `-n` keeps any earlier saved copy.
 
 ```bash
-nano physical-copy/postgresql.auto.conf
+vi physical-copy/postgresql.auto.conf
 ```
 
-**Only edit the STOPPED COPY.** Replace existing entries for these settings and
+Press `i` to edit. **Only edit the STOPPED COPY.** Replace existing entries for these settings and
 add missing entries. Keep unrelated settings. Keep one active entry per setting.
 
 ```conf
@@ -212,7 +212,8 @@ primary_conninfo = ''
 ssl = off
 ```
 
-Save: Ctrl+O, Enter. Exit: Ctrl+X.
+Save and quit: press `Esc`, type `:wq`, then press Enter.
+To quit without saving, press `Esc`, type `:q!`, then press Enter.
 
 **Why:**
 
@@ -226,7 +227,8 @@ Save: Ctrl+O, Enter. Exit: Ctrl+X.
 **Where:**
 
 - Linux terminal as `postgres`.
-- Follow [the checker setup steps](CHECKS.md#get-the-updated-checker-once) first. You run the supplied command; you do not need to read or edit its code.
+- Complete [the before-start checks](CHECKS.md#before-starting-a-stopped-copy), choosing **Lab 5 — physical copy**.
+- These use PostgreSQL and Linux commands already on your server. No extra software or repository checkout is needed.
 
 After that page, return here in the Linux terminal as `postgres`:
 
@@ -234,17 +236,10 @@ After that page, return here in the Linux terminal as `postgres`:
 cd /var/lib/postgresql/suta-backup-lab
 ```
 
-```bash
-node /var/lib/postgresql/dba-practicals/internal/postgresql/backup-recovery/check-lab.mjs preflight physical
-```
-
 **Expect:**
 
-- All safety checks PASS.
-- INFO lines explain what a check can and cannot prove.
-- Any MISMATCH, UNKNOWN or NOT_STARTED: **do not start the copy**.
-- Save the failing check's name, expected value and actual value for your instructor. Correct the named problem before running the checks again.
-- The checker does not modify files or start PostgreSQL.
+- Every result on that page must match its stated expectation.
+- If anything differs or prints an error, **do not start the copy**. Save the command and its output for your instructor.
 
 To inspect the archiving setting yourself:
 
@@ -307,6 +302,19 @@ If this running COPY reports `on`, do not edit its file while it is running.
 Follow [the running-COPY checks](TROUBLESHOOTING.md#3-copy-is-running-but-the-guides-connection-fails) with your instructor first.
 
 ```sql
+SHOW port;
+SHOW unix_socket_directories;
+SHOW listen_addresses;
+```
+
+**Expect, in order:**
+
+- `55433`.
+- `/var/lib/postgresql/suta-backup-lab/recovery-socket`.
+- An empty value: COPY accepts local socket connections only.
+- If anything differs, stop the exercise and show the results to your instructor.
+
+```sql
 SELECT pg_is_in_recovery();
 ```
 
@@ -326,16 +334,7 @@ SELECT count(*), sum(total) FROM shop.orders;
 \q
 ```
 
-**Back in the Linux terminal:**
-
-```bash
-node /var/lib/postgresql/dba-practicals/internal/postgresql/backup-recovery/check-lab.mjs recovery physical
-```
-
-**Expect:**
-
-- Recovery checks PASS.
-- Keep the output as evidence.
+Keep the connection settings and row totals above as your evidence.
 
 ## 6. Stop ONLY this COPY
 

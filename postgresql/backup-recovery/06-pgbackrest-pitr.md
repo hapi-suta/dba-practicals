@@ -71,10 +71,10 @@ mkdir repo
 ```
 
 ```bash
-nano pgbackrest.conf
+vi pgbackrest.conf
 ```
 
-Enter this configuration only for a new setup. If `repo` or `pgbackrest.conf`
+Press `i` to edit. Enter this configuration only for a new setup. If `repo` or `pgbackrest.conf`
 already exists, stop creating files. Open the existing configuration to compare
 its paths with the values below and show any differences to your instructor.
 Do not empty the repository or replace the file. `[shop]` names the cluster's
@@ -101,7 +101,9 @@ pg1-socket-path=/var/run/postgresql
 - `repo1-path=/var/lib/postgresql/suta-backup-lab/repo`: the folder for backups.
 - Do not swap them. Never use `physical-copy`, `pitr-copy` or a placeholder for SOURCE's path.
 
-Save with Ctrl+O, Enter; exit with Ctrl+X. Back in the Linux terminal:
+Save and quit: press `Esc`, type `:wq`, then press Enter.
+To quit without saving, press `Esc`, type `:q!`, then press Enter.
+Back in the Linux terminal:
 
 ```bash
 export PGBACKREST_CONFIG=/var/lib/postgresql/suta-backup-lab/pgbackrest.conf
@@ -611,10 +613,10 @@ cp -n pitr-copy/postgresql.auto.conf pitr-copy/postgresql.auto.conf.before-isola
 `cp -n` saves a copy without replacing an earlier saved file of the same name.
 
 ```bash
-nano pitr-copy/postgresql.auto.conf
+vi pitr-copy/postgresql.auto.conf
 ```
 
-**Preserve all pgBackRest-generated recovery settings**, including restore_command,
+Press `i` to edit. **Preserve all pgBackRest-generated recovery settings**, including restore_command,
 target name and pause action. Do not replace the whole file. Change/add only these
 isolation settings in the STOPPED PITR COPY, keeping one active entry per setting:
 
@@ -628,18 +630,18 @@ primary_conninfo = ''
 ssl = off
 ```
 
-Save with Ctrl+O, Enter; exit with Ctrl+X. The `recovery-socket` folder from Lab 5
-must still exist. The next command checks the settings before you start COPY;
-`preflight` means these before-starting safety checks.
+Save and quit: press `Esc`, type `:wq`, then press Enter.
+To quit without saving, press `Esc`, type `:q!`, then press Enter.
 
-```bash
-node /var/lib/postgresql/dba-practicals/internal/postgresql/backup-recovery/check-lab.mjs preflight pitr
-```
+Complete [the before-start checks](CHECKS.md#before-starting-a-stopped-copy),
+choosing **Lab 8 — PITR copy**, including its named recovery target checks.
+The `recovery-socket` folder from Lab 5 must still exist.
+These are direct PostgreSQL and Linux checks; no extra software or repository checkout is needed.
 
 **Expect:**
 
-- All safety checks PASS.
-- If any safety check does not PASS, save its name, expected value and actual value for your instructor. Do not start COPY until the problem is corrected and these checks pass.
+- Every result must match the expectation on that page.
+- If a result differs or prints an error, save the command and its output for your instructor. Do not start COPY.
 
 ```bash
 pg_ctl -D /var/lib/postgresql/suta-backup-lab/pitr-copy -l /var/lib/postgresql/suta-backup-lab/pitr-recovery.log -w start
@@ -655,7 +657,10 @@ replays it. pg_ctl returning is not proof that the desired target has been reach
 less /var/lib/postgresql/suta-backup-lab/pitr-recovery.log
 ```
 
-Look for reaching the named restore point and pausing recovery. `q` exits.
+Press `G` to go to the end. Check messages from **this startup**, using their timestamps,
+not a successful recovery from an earlier attempt. Look for
+`recovery stopping at restore point "suta_before_delete"` and `recovery has paused`.
+`q` exits.
 Missing WAL or “target not reached” is failure, not an acceptable earlier recovery.
 
 ```bash
@@ -671,6 +676,24 @@ SHOW data_directory;
 
 **Expect:** `/var/lib/postgresql/suta-backup-lab/pitr-copy`.
 If different, leave psql with `\q` and stop. You are not on the verified recovery copy.
+
+```sql
+SHOW port;
+SHOW unix_socket_directories;
+SHOW listen_addresses;
+SHOW archive_mode;
+SHOW recovery_target_name;
+SHOW recovery_target_action;
+```
+
+**Expect, in order:**
+
+- `55433`.
+- `/var/lib/postgresql/suta-backup-lab/recovery-socket`.
+- An empty value for `listen_addresses` (local socket connections only).
+- `off` for archiving: COPY must not archive into SOURCE's backup repository.
+- `suta_before_delete` and `pause` for the recovery target and action.
+- Any difference: stop before exporting data and show the output to your instructor.
 
 ```sql
 SELECT pg_is_in_recovery(), pg_is_wal_replay_paused();
@@ -705,17 +728,9 @@ Do not turn this older copy into the shop's live database; it lacks order 1005.
 \q
 ```
 
-**Back in the Linux terminal:**
-
-```bash
-node /var/lib/postgresql/dba-practicals/internal/postgresql/backup-recovery/check-lab.mjs recovery pitr
-```
-
-**Expect:**
-
-- Target/paused-state/data checks PASS.
-- Keep the logs and check output.
-- Do not resume recovery or promote this copy; Lab 9 exports from the paused copy.
+Keep the current startup log, connection settings, paused-state result and order
+IDs as your evidence. Do not resume recovery or promote this copy; Lab 9 exports
+from the paused copy.
 
 **Reflection:** restore places backup files; recovery replays WAL. Why would the
 differential alone miss order 1004? Why must we NOT replace the source with this copy?

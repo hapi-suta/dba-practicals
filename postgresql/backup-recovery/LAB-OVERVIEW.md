@@ -38,6 +38,6 @@ replay later changes to reach a chosen recovery point.
 3. If it differs, stop and use [troubleshooting](TROUBLESHOOTING.md). Do not reset
    or repeat writes to make the numbers match.
 
-Use the [connection map](CLASS-SETUP.md), [read-only checker](CHECKS.md) and
+Use the [connection map](CLASS-SETUP.md), [direct PostgreSQL checks](CHECKS.md) and
 [evidence sheet](EVIDENCE.md). These exercises are for assigned disposable labs,
 never production. Allow more than one class to finish the full sequence.

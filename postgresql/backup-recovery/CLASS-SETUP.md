@@ -8,7 +8,7 @@ student names and server addresses stay in your private connection sheet.
 
 - Your `student` SSH account; `sudo -iu postgres` opens the database OS account.
 - The source cluster. Lab 0 creates your shop; it is not already done for you.
-- PostgreSQL tools available from the `postgres` user's terminal, plus pgBackRest 2.50 and Node.js.
+- PostgreSQL tools available from the `postgres` user's terminal, plus pgBackRest 2.50 and the `vi` editor.
 - An **instructor** pgBackRest repository used for setup testing. Lab 6 creates
   your **student** repository; do not mix their configurations.
 
@@ -39,7 +39,7 @@ in the earlier handout. Revised commands use the actual class paths.
 | Context | What belongs there | Exit |
 |---|---|---|
 | Laptop terminal | SSH command from private connection sheet | After SSH connects, `exit` leaves the server session |
-| Server Linux terminal as `postgres` | `pg_dump`, `pg_restore`, `nano`, `pg_ctl`, `node` | `exit` |
+| Server Linux terminal as `postgres` | `pg_dump`, `pg_restore`, `vi`, `pg_ctl` | `exit` |
 | Inside `psql` | SQL such as `SELECT` and `SHOW` | `\q` |
 
 `bash` blocks are terminal commands; `sql` blocks are SQL; `conf` and `ini`
