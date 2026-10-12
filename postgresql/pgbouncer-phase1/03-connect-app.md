@@ -8,7 +8,7 @@
 
 ## 1. Change the endpoint
 
-**Where:** APP, Linux terminal as `ubuntu`.
+**Where to run:** APP server, Linux terminal as `ubuntu` (any folder).
 
 ```bash
 cd /opt/suta/pgbouncer-lab
@@ -27,6 +27,8 @@ Expect `Mattermost ready` with route `pooled`. On error, stop and use troublesho
 
 ## 2. Repeat the application test
 
+**Where to run:** APP server, Linux terminal as `ubuntu`, in `/opt/suta/pgbouncer-lab`.
+
 ```bash
 python3 traffic.py run --name session-01 --users 8 --concurrency 8 --seconds 20
 ```
@@ -36,14 +38,14 @@ The script signs in each user, then checks messages by ID, author, channel and t
 
 ## 3. Observe both sides
 
-**Where:** POOLER, Linux terminal as `ubuntu`.
+**Where to run:** POOLER server, Linux terminal as `ubuntu` (any folder).
 
 ```bash
 sudo -iu postgres
 psql -X -w -h 127.0.0.1 -p 6432 -U pooladmin -d pgbouncer
 ```
 
-**In the admin console, while the APP traffic runs:**
+**Where to run:** POOLER server, inside psql connected to `pgbouncer` as `pooladmin`, port `6432`.
 
 ```sql
 SHOW CLIENTS;
@@ -55,7 +57,9 @@ Clients are Mattermost-to-PgBouncer connections. Servers are PgBouncer-to-Postgr
 connections. Look at the `mattermost` row, not the admin-console row.
 `sv_active` means assigned to a client; it does not prove a SQL query is running.
 
-On DB, repeat Exercise 1's `pg_stat_activity` query. Now the application database
+**Where to run:** DB server, inside psql connected to `mattermost` as `postgres`, port `5432`.
+
+Repeat Exercise 1's `pg_stat_activity` query. Now the application database
 connections should originate from POOLER's private address. This proves the route.
 Leave SQL sessions with `\q`, then `exit` from the `postgres` OS account.
 

@@ -10,7 +10,7 @@ or `.pgpass`; they contain credentials.
 
 ## 1. Check the empty starting file
 
-**Where:** POOLER, Linux terminal as `ubuntu`.
+**Where to run:** POOLER server, Linux terminal as `ubuntu` (any folder).
 
 ```bash
 hostname
@@ -22,11 +22,15 @@ work: stop and ask which checkpoint to resume. Do not erase it.
 
 ## 2. Enter the settings
 
+**Where to run:** POOLER server, Linux terminal as `ubuntu` (any folder).
+
 ```bash
 sudo -u postgres vi /etc/pgbouncer/pgbouncer.ini
 ```
 
 Press `i` to enter text. Write:
+
+**Where to run:** POOLER server, inside vi editing `/etc/pgbouncer/pgbouncer.ini` as OS user `postgres`. This is file content, not a shell command.
 
 ```ini
 [databases]
@@ -80,7 +84,7 @@ PgBouncer uses the restricted private lab network without TLS in this phase.
 
 ## 3. Start and inspect PgBouncer
 
-**Still on POOLER, as `ubuntu`:**
+**Where to run:** POOLER server, Linux terminal as `ubuntu` (any folder).
 
 ```bash
 sudo systemctl start pgbouncer
@@ -89,6 +93,8 @@ systemctl is-active pgbouncer
 
 Expect `active`. If not, stop and inspect `sudo journalctl -u pgbouncer -n 30`.
 Do not disable authentication to fix a startup problem.
+
+**Where to run:** POOLER server, Linux terminal as `ubuntu` (any folder).
 
 ```bash
 sudo -iu postgres
@@ -99,7 +105,7 @@ psql -X -w -h 127.0.0.1 -p 6432 -U pooladmin -d pgbouncer
 `-w` refuses an interactive password prompt; it uses the prepared private password
 file. Database `pgbouncer` is the admin console, not an application database.
 
-**In the admin console:**
+**Where to run:** POOLER server, inside psql connected to `pgbouncer` as `pooladmin`, port `6432`.
 
 ```sql
 SHOW VERSION;
@@ -109,13 +115,13 @@ SHOW CONFIG;
 
 Expect PgBouncer 1.22.0, both mappings, and the settings you wrote. Leave with `\q`.
 
-**Back in the POOLER Linux terminal, still as `postgres`:**
+**Where to run:** POOLER server, Linux terminal as `postgres` (any folder).
 
 ```bash
 psql -X -w -h 127.0.0.1 -p 6432 -U labuser -d pool_lab
 ```
 
-**In psql:**
+**Where to run:** POOLER server, inside psql connected to `pool_lab` as `labuser`, port `6432`.
 
 ```sql
 SELECT current_database(), current_user;

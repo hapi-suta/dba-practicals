@@ -9,7 +9,7 @@ This is an instructor-led drill on the isolated lab. It changes no message rows.
 
 ## 1. Use one backend for Mattermost
 
-**Where:** POOLER, Linux as `ubuntu`.
+**Where to run:** POOLER server, Linux terminal as `ubuntu` (any folder).
 
 ```bash
 sudo -u postgres vi /etc/pgbouncer/pgbouncer.ini
@@ -17,16 +17,23 @@ sudo -u postgres vi /etc/pgbouncer/pgbouncer.ini
 
 Change `default_pool_size = 4` to `default_pool_size = 1`. Keep transaction mode.
 
+**Where to run:** POOLER server, Linux terminal as `ubuntu` (any folder).
+
 ```bash
 sudo systemctl reload pgbouncer
 ```
 
-On APP, restart its connections with `sudo python3 /opt/suta/pgbouncer-lab/app-route.py pooled`.
-Previously opened backends can remain after reducing a pool limit. In the admin
-console, use `RECONNECT mattermost;` and inspect `SHOW POOLS;` before measuring.
+**Where to run:** APP server, Linux terminal as `ubuntu` (any folder).
+
+Restart its connections with `sudo python3 /opt/suta/pgbouncer-lab/app-route.py pooled`.
+Previously opened backends can remain after reducing a pool limit.
+
+**Where to run:** POOLER server, inside psql connected to `pgbouncer` as `pooladmin`, port `6432`.
+
+Use `RECONNECT mattermost;` and inspect `SHOW POOLS;` before measuring.
 Expect at most one active Mattermost backend during the controlled test.
 
-**Where:** APP, Linux as `ubuntu`.
+**Where to run:** APP server, Linux terminal as `ubuntu` (any folder).
 
 ```bash
 cd /opt/suta/pgbouncer-lab
@@ -38,14 +45,14 @@ happens; do not invent an error if none occurs.
 
 ## 2. Occupy the one connection
 
-**Where:** POOLER A, Linux as `ubuntu`.
+**Where to run:** POOLER server, terminal A, Linux terminal as `ubuntu` (any folder).
 
 ```bash
 sudo -iu postgres
 psql -X -w -h 127.0.0.1 -p 6432 -U mmuser -d mattermost
 ```
 
-**In psql A, verify the target first:**
+**Where to run:** POOLER server, terminal A, inside psql connected to `mattermost` as `mmuser`, port `6432`.
 
 ```sql
 SELECT current_database(), current_user;
@@ -53,7 +60,7 @@ SELECT current_database(), current_user;
 
 Expect `mattermost` and `mmuser`. Stop if different.
 
-**Where:** APP, Linux as `ubuntu`, in `/opt/suta/pgbouncer-lab`.
+**Where to run:** APP server, Linux terminal as `ubuntu`, in `/opt/suta/pgbouncer-lab`.
 
 ```bash
 python3 traffic.py run --name long-transaction-01 --users 8 --concurrency 8 --seconds 20
@@ -61,6 +68,8 @@ python3 traffic.py run --name long-transaction-01 --users 8 --concurrency 8 --se
 
 Wait about five seconds so the users have signed in and the timed workload has
 started. Then, **in POOLER A psql**, execute this single block:
+
+**Where to run:** POOLER server, terminal A, inside psql connected to `mattermost` as `mmuser`, port `6432`.
 
 ```sql
 BEGIN;
@@ -72,8 +81,11 @@ COMMIT;
 controlled demonstration, not a tuning command. COMMIT releases the connection.
 If interrupted, enter `ROLLBACK;` before leaving the session.
 
-During those six seconds, another POOLER terminal runs `SHOW POOLS;` in the admin
-console. Expect waiting Mattermost clients. On DB, inspect:
+**Where to run:** POOLER server, inside psql connected to `pgbouncer` as `pooladmin`, port `6432`. Use a second POOLER terminal.
+
+During those six seconds, run `SHOW POOLS;`. Expect waiting Mattermost clients. On DB, inspect:
+
+**Where to run:** DB server, inside psql connected to `mattermost` as `postgres`, port `5432`.
 
 ```sql
 SELECT pid, state, wait_event_type, wait_event, query
@@ -90,18 +102,26 @@ must be reported rather than discarded.
 
 Leave A with `\q` and `exit`. On POOLER, as `ubuntu`:
 
+**Where to run:** POOLER server, Linux terminal as `ubuntu` (any folder).
+
 ```bash
 sudo -u postgres vi /etc/pgbouncer/pgbouncer.ini
 ```
 
 Change `default_pool_size` back to `4`, save, then:
 
+**Where to run:** POOLER server, Linux terminal as `ubuntu` (any folder).
+
 ```bash
 sudo systemctl reload pgbouncer
 ```
 
-In the admin console, run `SHOW CONFIG;` and confirm the value is `4`.
+**Where to run:** POOLER server, inside psql connected to `pgbouncer` as `pooladmin`, port `6432`.
+
+Run `SHOW CONFIG;` and confirm the value is `4`.
 On APP, in `/opt/suta/pgbouncer-lab`:
+
+**Where to run:** APP server, Linux terminal as `ubuntu`, in `/opt/suta/pgbouncer-lab`.
 
 ```bash
 python3 traffic.py run --name recovery-01 --users 8 --concurrency 8 --seconds 20

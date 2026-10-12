@@ -10,6 +10,8 @@ Confirm `hostname` on each. A and B run the demo; C is the admin console.
 
 Prepare C first so you can observe the short wait without rushing. On POOLER C:
 
+**Where to run:** POOLER server, terminal C, Linux terminal as `ubuntu` (any folder).
+
 ```bash
 sudo -iu postgres
 psql -X -w -h 127.0.0.1 -p 6432 -U pooladmin -d pgbouncer
@@ -19,14 +21,14 @@ Keep this admin console open.
 
 ## 1. Session pooling: the client must disconnect
 
-**Where:** POOLER A, Linux as `ubuntu`.
+**Where to run:** POOLER server, terminal A, Linux terminal as `ubuntu` (any folder).
 
 ```bash
 sudo -iu postgres
 psql -X -w -h 127.0.0.1 -p 6432 -U labuser -d pool_lab
 ```
 
-**In psql A:**
+**Where to run:** POOLER server, terminal A, inside psql connected to `pool_lab` as `labuser`, port `6432`.
 
 ```sql
 SELECT name FROM lab_identity;
@@ -38,12 +40,16 @@ PostgreSQL process serving this connection. Keep A connected and idle.
 
 In POOLER B, run the same login command, then:
 
+**Where to run:** POOLER server, terminal B, inside psql connected to `pool_lab` as `labuser`, port `6432`.
+
 ```sql
 SELECT pg_backend_pid();
 ```
 
 B should wait because A still owns the only backend. Within 15 seconds, use
 the already-open admin console in POOLER C and run:
+
+**Where to run:** POOLER server, terminal C, inside psql connected to `pgbouncer` as `pooladmin`, port `6432`.
 
 ```sql
 SHOW POOLS;
@@ -57,7 +63,7 @@ Leave B with `\q`. Keep admin terminal C open.
 
 ## 2. Change to transaction pooling
 
-**Where:** a POOLER Linux terminal as `ubuntu` (exit the `postgres` OS shell first).
+**Where to run:** POOLER server, Linux terminal as `ubuntu` (any folder).
 
 ```bash
 sudo -u postgres vi /etc/pgbouncer/pgbouncer.ini
@@ -65,17 +71,24 @@ sudo -u postgres vi /etc/pgbouncer/pgbouncer.ini
 
 Change only `pool_mode = session` to `pool_mode = transaction`. Save with Esc, `:wq`.
 
+**Where to run:** POOLER server, Linux terminal as `ubuntu` (any folder).
+
 ```bash
 sudo systemctl reload pgbouncer
 ```
 
-In admin console C, run `SHOW CONFIG;` and confirm `pool_mode` is `transaction`.
+**Where to run:** POOLER server, terminal C, inside psql connected to `pgbouncer` as `pooladmin`, port `6432`.
+
+Run `SHOW CONFIG;` and confirm `pool_mode` is `transaction`.
 A reload reads your file; checking the effective value proves it took effect.
 Use fresh A/B logins for the next experiment.
 
 ## 3. An open transaction still holds the connection
 
-Reconnect A using the same `labuser` login. **In psql A:**
+In POOLER terminal A, start from the Linux shell as `ubuntu` and repeat Step 1's
+login block: `sudo -iu postgres`, then the `psql` command for `labuser` and `pool_lab`.
+
+**Where to run:** POOLER server, terminal A, inside psql connected to `pool_lab` as `labuser`, port `6432`.
 
 ```sql
 BEGIN;
@@ -85,7 +98,7 @@ SELECT pg_backend_pid();
 Record the PID. Reconnect B and run `SELECT pg_backend_pid();` there.
 B waits. In C run `SHOW POOLS;` to see it.
 
-**Back in A:**
+**Where to run:** POOLER server, terminal A, inside psql connected to `pool_lab` as `labuser`, port `6432`.
 
 ```sql
 COMMIT;
@@ -94,12 +107,13 @@ COMMIT;
 B now completes with A's PID, even though A remains connected to PgBouncer.
 This is transaction pooling: the backend is reusable when the transaction ends.
 
-Repeat with `BEGIN` in A, a query in B, and `ROLLBACK` in A. B must run after rollback too.
+For the repeat, stay inside the `pool_lab` psql sessions: enter `BEGIN` in
+POOLER A, a query in POOLER B, and `ROLLBACK` in POOLER A. B must run after rollback too.
 Close A and B with `\q`. Leave no open transaction.
 
 ## 4. Check the actual application in transaction mode
 
-**Where:** APP, Linux as `ubuntu`.
+**Where to run:** APP server, Linux terminal as `ubuntu` (any folder).
 
 ```bash
 cd /opt/suta/pgbouncer-lab

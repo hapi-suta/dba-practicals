@@ -9,7 +9,7 @@ one dedicated traffic channel. Keep their credentials private. The route is dire
 
 ## 1. Run a small workload
 
-**Where:** APP, Linux terminal as `ubuntu`.
+**Where to run:** APP server, Linux terminal as `ubuntu` (any folder).
 
 ```bash
 cd /opt/suta/pgbouncer-lab
@@ -30,7 +30,9 @@ the report and inspect the error; do not claim the baseline passed.
 
 ## 2. Watch connections while traffic runs
 
-**Where:** DB, Linux terminal as `ubuntu`. Open this before starting another named run.
+Open this DB session before starting another named traffic run on APP.
+
+**Where to run:** DB server, Linux terminal as `ubuntu` (any folder).
 
 ```bash
 sudo -iu postgres
@@ -40,7 +42,7 @@ psql -X -d mattermost
 `sudo -iu postgres` switches to the database OS account. `psql` opens the named
 database. `-X` avoids personal startup settings changing the exercise.
 
-**Now in psql on DB:**
+**Where to run:** DB server, inside psql connected to `mattermost` as `postgres`, port `5432`.
 
 ```sql
 SELECT current_database(), current_user;
@@ -54,6 +56,8 @@ Expect database `mattermost`, user `postgres`, and application connections from
 APP's private address. `active` means executing; `idle` means waiting for another
 client command. Counts may change between observations.
 
+**Where to run:** DB server, inside psql connected to `mattermost` as `postgres`, port `5432`.
+
 ```psql
 \watch 1
 ```
@@ -63,7 +67,7 @@ Type `\q` to leave psql, then `exit` to return from the `postgres` OS account.
 
 ## 3. Read your result
 
-**Where:** APP, Linux terminal as `ubuntu`, in `/opt/suta/pgbouncer-lab`.
+**Where to run:** APP server, Linux terminal as `ubuntu`, in `/opt/suta/pgbouncer-lab`.
 
 ```bash
 cat .runtime/runs/baseline-01/summary.json

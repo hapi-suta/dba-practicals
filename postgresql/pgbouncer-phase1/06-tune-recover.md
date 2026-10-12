@@ -9,7 +9,7 @@ No deliberate sleep or open transaction remains.
 
 ## 1. Change only the application pool
 
-**Where:** APP, Linux as `ubuntu`, in `/opt/suta/pgbouncer-lab`.
+**Where to run:** APP server, Linux terminal as `ubuntu`, in `/opt/suta/pgbouncer-lab`.
 
 ```bash
 sudo python3 app-route.py pooled --open 2 --idle 1
@@ -21,6 +21,8 @@ pool is unchanged. Watch DB connections and PgBouncer clients as before.
 
 Restore the application values and repeat:
 
+**Where to run:** APP server, Linux terminal as `ubuntu`, in `/opt/suta/pgbouncer-lab`.
+
 ```bash
 sudo python3 app-route.py pooled --open 8 --idle 2
 python3 traffic.py run --name app-eight-01 --users 8 --concurrency 8 --seconds 20
@@ -30,6 +32,8 @@ Compare failures, throughput and p95. Repeat with new names if background activi
 makes the result unclear. This small lab is not a production capacity benchmark.
 
 ## 2. Try burst traffic
+
+**Where to run:** APP server, Linux terminal as `ubuntu`, in `/opt/suta/pgbouncer-lab`.
 
 ```bash
 python3 traffic.py run --name burst-01 --users 8 --concurrency 8 --seconds 20 --profile burst
@@ -41,7 +45,7 @@ reduce its achieved request rate. It does not simulate unlimited arriving traffi
 
 ## 3. Diagnose a wrong password without changing any account
 
-**Where:** POOLER, Linux as `ubuntu`.
+**Where to run:** POOLER server, Linux terminal as `ubuntu` (any folder).
 
 ```bash
 sudo -iu postgres
@@ -54,6 +58,8 @@ Inspect the error: this is a login failure, not a waiting-pool problem.
 
 Retry with the correct prepared password file:
 
+**Where to run:** POOLER server, Linux terminal as `postgres` (any folder).
+
 ```bash
 psql -X -w -h 127.0.0.1 -p 6432 -U labuser -d pool_lab -c 'SELECT name FROM lab_identity;'
 ```
@@ -63,7 +69,7 @@ Type `exit` to return to `ubuntu`.
 
 ## 4. Practise the direct rollback route
 
-**Where:** APP, Linux as `ubuntu`, in `/opt/suta/pgbouncer-lab`.
+**Where to run:** APP server, Linux terminal as `ubuntu`, in `/opt/suta/pgbouncer-lab`.
 
 ```bash
 sudo python3 app-route.py direct
@@ -75,12 +81,18 @@ not a database restore. Check the DB source address and a passing traffic report
 
 Return to the final working pooled route:
 
+**Where to run:** APP server, Linux terminal as `ubuntu`, in `/opt/suta/pgbouncer-lab`.
+
 ```bash
 sudo python3 app-route.py pooled
 python3 traffic.py run --name final-01 --users 8 --concurrency 8 --seconds 20
 ```
 
 ## 5. Present your evidence
+
+**Where to run:** APP server, Linux terminal as `ubuntu`, in
+`/opt/suta/pgbouncer-lab`. Read the saved reports there and fill in this table
+in your own notes.
 
 | Run | Route/mode | App open/idle | PgBouncer pool | Requests | Failures | p95 | Verified messages |
 |---|---|---|---|---|---|---|---|
@@ -93,6 +105,8 @@ python3 traffic.py run --name final-01 --users 8 --concurrency 8 --seconds 20
 Use your actual reports. Do not copy the instructor's performance numbers.
 On APP, still in `/opt/suta/pgbouncer-lab`, verify every earlier acknowledged
 message by ID, author, channel and content:
+
+**Where to run:** APP server, Linux terminal as `ubuntu`, in `/opt/suta/pgbouncer-lab`.
 
 ```bash
 python3 verify-messages.py

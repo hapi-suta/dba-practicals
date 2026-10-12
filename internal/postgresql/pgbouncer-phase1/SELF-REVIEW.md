@@ -36,3 +36,13 @@ source-only review; it is not a browser walkthrough of Mattermost. Found and fix
 a reporting gap: final verification-login/search failure could prevent summary
 creation. Three failure/success regression tests and a fresh native 20-second run
 passed. Public evidence was sanitized before staging.
+
+## Explicit execution locations — 2026-10-12 follow-up
+
+At the user's request, every student command/configuration block now has its own
+“Where to run” line. All 49 blocks name the server and terminal/editor; SQL blocks
+name the database, login and port. Relative file commands name the working folder.
+Inline server changes, reconnect instructions and the troubleshooting table also
+state the location. Compared all fenced blocks with release d6d3be5: commands and
+configuration are byte-for-byte unchanged. This is a documentation-only update;
+no database rehearsal was repeated. Existing live evidence still applies.
