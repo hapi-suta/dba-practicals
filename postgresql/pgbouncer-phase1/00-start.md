@@ -13,7 +13,7 @@ supplies these; do not guess an IP or copy a classmate's credentials.
 
 In each Linux terminal, run:
 
-**Where to run:** Each assigned APP, POOLER and DB server, Linux terminal as `ubuntu`, after SSH login.
+**Where to run:** Each assigned server: APP (`suta-pgb-app`), POOLER (`suta-pgb-pooler`) and DB (`suta-pgb-db`), Linux terminal as `ubuntu`, after SSH login.
 
 ```bash
 hostname
@@ -33,7 +33,7 @@ be labelled A and B so you can keep two SQL connections open.
 
 ## 2. Save terminal output
 
-**Where to run:** Each assigned APP, POOLER and DB server, Linux terminal as `ubuntu` (any folder).
+**Where to run:** Each assigned server: APP (`suta-pgb-app`), POOLER (`suta-pgb-pooler`) and DB (`suta-pgb-db`), Linux terminal as `ubuntu` (any folder).
 
 ```bash
 mkdir -p ~/pgbouncer-evidence
@@ -49,7 +49,7 @@ Do not type it inside psql: use `\q` there first.
 
 ## 3. Check the starting application
 
-**Where to run:** APP server, Linux terminal as `ubuntu` (any folder).
+**Where to run:** APP server (`suta-pgb-app`), Linux terminal as `ubuntu` (any folder).
 
 ```bash
 cd /opt/suta/pgbouncer-lab

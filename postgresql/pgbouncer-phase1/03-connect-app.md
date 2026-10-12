@@ -8,7 +8,7 @@
 
 ## 1. Change the endpoint
 
-**Where to run:** APP server, Linux terminal as `ubuntu` (any folder).
+**Where to run:** APP server (`suta-pgb-app`), Linux terminal as `ubuntu` (any folder).
 
 ```bash
 cd /opt/suta/pgbouncer-lab
@@ -27,7 +27,7 @@ Expect `Mattermost ready` with route `pooled`. On error, stop and use troublesho
 
 ## 2. Repeat the application test
 
-**Where to run:** APP server, Linux terminal as `ubuntu`, in `/opt/suta/pgbouncer-lab`.
+**Where to run:** APP server (`suta-pgb-app`), Linux terminal as `ubuntu`, in `/opt/suta/pgbouncer-lab`.
 
 ```bash
 python3 traffic.py run --name session-01 --users 8 --concurrency 8 --seconds 20
@@ -38,14 +38,14 @@ The script signs in each user, then checks messages by ID, author, channel and t
 
 ## 3. Observe both sides
 
-**Where to run:** POOLER server, Linux terminal as `ubuntu` (any folder).
+**Where to run:** POOLER server (`suta-pgb-pooler`), Linux terminal as `ubuntu` (any folder).
 
 ```bash
 sudo -iu postgres
 psql -X -w -h 127.0.0.1 -p 6432 -U pooladmin -d pgbouncer
 ```
 
-**Where to run:** POOLER server, inside psql connected to `pgbouncer` as `pooladmin`, port `6432`.
+**Where to run:** POOLER server (`suta-pgb-pooler`), inside psql connected to `pgbouncer` as `pooladmin`, port `6432`.
 
 ```sql
 SHOW CLIENTS;
@@ -57,7 +57,7 @@ Clients are Mattermost-to-PgBouncer connections. Servers are PgBouncer-to-Postgr
 connections. Look at the `mattermost` row, not the admin-console row.
 `sv_active` means assigned to a client; it does not prove a SQL query is running.
 
-**Where to run:** DB server, inside psql connected to `mattermost` as `postgres`, port `5432`.
+**Where to run:** DB server (`suta-pgb-db`), inside psql connected to `mattermost` as `postgres`, port `5432`.
 
 Repeat Exercise 1's `pg_stat_activity` query. Now the application database
 connections should originate from POOLER's private address. This proves the route.

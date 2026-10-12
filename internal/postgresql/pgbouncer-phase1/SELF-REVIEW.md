@@ -46,3 +46,8 @@ Inline server changes, reconnect instructions and the troubleshooting table also
 state the location. Compared all fenced blocks with release d6d3be5: commands and
 configuration are byte-for-byte unchanged. This is a documentation-only update;
 no database rehearsal was repeated. Existing live evidence still applies.
+
+Hostname follow-up: every command/configuration location now includes the actual
+`suta-pgb-app`, `suta-pgb-pooler` or `suta-pgb-db` hostname alongside its role.
+Troubleshooting locations also use hostnames. All 49 blocks checked; executable
+content unchanged. Documentation-only review; no new server rehearsal.
