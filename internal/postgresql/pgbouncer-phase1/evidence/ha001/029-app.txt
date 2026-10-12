@@ -1,0 +1,4 @@
+WHERE: app
+COMMAND: sudo python3 /opt/suta/pgbouncer-lab/app-route.py pooled
+EXIT: 1
+API not ready. Save journal output; do not reset database.

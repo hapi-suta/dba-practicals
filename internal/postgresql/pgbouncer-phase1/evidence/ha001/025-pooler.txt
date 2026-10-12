@@ -1,0 +1,5 @@
+WHERE: pooler
+COMMAND: sudo -u postgres psql -X -w --csv -h 127.0.0.1 -p 6432 -U labuser -d pool_lab -c 'SELECT pg_backend_pid();'
+EXIT: 0
+pg_backend_pid
+5679

@@ -1,0 +1,92 @@
+{
+  "summary": {
+    "name": "long-transaction-overlap",
+    "run_id": "d787fc7b35b4",
+    "started_at_utc": "2026-10-12T23:18:28.344844+00:00",
+    "route": "pooled",
+    "app_max_open": 8,
+    "app_max_idle": 2,
+    "profile": "steady",
+    "users": 8,
+    "concurrency": 8,
+    "requested_seconds": 20,
+    "actual_seconds": 20.162,
+    "interrupted": false,
+    "requests": 710,
+    "successes": 710,
+    "failures": 0,
+    "requests_per_second": 35.21,
+    "latency_ms": {
+      "p50": 63.05,
+      "p95": 126.44,
+      "max": 6050.07
+    },
+    "acknowledged_posts": 477,
+    "verified_posts": 477,
+    "verification_failures": [],
+    "search_found_run": true,
+    "errors": []
+  },
+  "samples": [
+    {
+      "elapsed_utc": 1791847105.867786,
+      "database_sessions": "state,count\nidle,1\n",
+      "pools": "database,user,cl_active,cl_waiting,cl_active_cancel_req,cl_waiting_cancel_req,sv_active,sv_active_cancel,sv_being_canceled,sv_idle,sv_used,sv_tested,sv_login,maxwait,maxwait_us,pool_mode\nmattermost,mmuser,2,0,0,0,1,0,0,0,0,0,0,0,0,transaction\npgbouncer,pgbouncer,1,0,0,0,0,0,0,0,0,0,0,0,0,statement\npool_lab,labuser,0,0,0,0,0,0,0,0,0,0,0,0,0,transaction\n"
+    },
+    {
+      "elapsed_utc": 1791847108.051786,
+      "database_sessions": "state,count\nidle,1\n",
+      "pools": "database,user,cl_active,cl_waiting,cl_active_cancel_req,cl_waiting_cancel_req,sv_active,sv_active_cancel,sv_being_canceled,sv_idle,sv_used,sv_tested,sv_login,maxwait,maxwait_us,pool_mode\nmattermost,mmuser,2,4,0,0,1,0,0,0,0,0,0,0,8998,transaction\npgbouncer,pgbouncer,1,0,0,0,0,0,0,0,0,0,0,0,0,statement\npool_lab,labuser,0,0,0,0,0,0,0,0,0,0,0,0,0,transaction\n"
+    },
+    {
+      "elapsed_utc": 1791847110.156079,
+      "database_sessions": "state,count\nidle,1\n",
+      "pools": "database,user,cl_active,cl_waiting,cl_active_cancel_req,cl_waiting_cancel_req,sv_active,sv_active_cancel,sv_being_canceled,sv_idle,sv_used,sv_tested,sv_login,maxwait,maxwait_us,pool_mode\nmattermost,mmuser,1,8,0,0,1,0,0,0,0,0,0,0,357422,transaction\npgbouncer,pgbouncer,1,0,0,0,0,0,0,0,0,0,0,0,0,statement\npool_lab,labuser,0,0,0,0,0,0,0,0,0,0,0,0,0,transaction\n"
+    },
+    {
+      "elapsed_utc": 1791847112.261446,
+      "database_sessions": "state,count\nactive,1\n",
+      "pools": "database,user,cl_active,cl_waiting,cl_active_cancel_req,cl_waiting_cancel_req,sv_active,sv_active_cancel,sv_being_canceled,sv_idle,sv_used,sv_tested,sv_login,maxwait,maxwait_us,pool_mode\nmattermost,mmuser,1,8,0,0,1,0,0,0,0,0,0,2,441735,transaction\npgbouncer,pgbouncer,1,0,0,0,0,0,0,0,0,0,0,0,0,statement\npool_lab,labuser,0,0,0,0,0,0,0,0,0,0,0,0,0,transaction\n"
+    },
+    {
+      "elapsed_utc": 1791847114.342117,
+      "database_sessions": "state,count\nactive,1\n",
+      "pools": "database,user,cl_active,cl_waiting,cl_active_cancel_req,cl_waiting_cancel_req,sv_active,sv_active_cancel,sv_being_canceled,sv_idle,sv_used,sv_tested,sv_login,maxwait,maxwait_us,pool_mode\nmattermost,mmuser,1,8,0,0,1,0,0,0,0,0,0,4,547428,transaction\npgbouncer,pgbouncer,1,0,0,0,0,0,0,0,0,0,0,0,0,statement\npool_lab,labuser,0,0,0,0,0,0,0,0,0,0,0,0,0,transaction\n"
+    },
+    {
+      "elapsed_utc": 1791847116.5837839,
+      "database_sessions": "state,count\nidle,1\n",
+      "pools": "database,user,cl_active,cl_waiting,cl_active_cancel_req,cl_waiting_cancel_req,sv_active,sv_active_cancel,sv_being_canceled,sv_idle,sv_used,sv_tested,sv_login,maxwait,maxwait_us,pool_mode\nmattermost,mmuser,2,0,0,0,0,0,0,1,0,0,0,0,0,transaction\npgbouncer,pgbouncer,1,0,0,0,0,0,0,0,0,0,0,0,0,statement\npool_lab,labuser,0,0,0,0,0,0,0,0,0,0,0,0,0,transaction\n"
+    },
+    {
+      "elapsed_utc": 1791847118.710526,
+      "database_sessions": "state,count\nidle,1\n",
+      "pools": "database,user,cl_active,cl_waiting,cl_active_cancel_req,cl_waiting_cancel_req,sv_active,sv_active_cancel,sv_being_canceled,sv_idle,sv_used,sv_tested,sv_login,maxwait,maxwait_us,pool_mode\nmattermost,mmuser,4,3,0,0,1,0,0,0,0,0,0,0,24105,transaction\npgbouncer,pgbouncer,1,0,0,0,0,0,0,0,0,0,0,0,0,statement\npool_lab,labuser,0,0,0,0,0,0,0,0,0,0,0,0,0,transaction\n"
+    },
+    {
+      "elapsed_utc": 1791847120.873918,
+      "database_sessions": "state,count\nidle,1\n",
+      "pools": "database,user,cl_active,cl_waiting,cl_active_cancel_req,cl_waiting_cancel_req,sv_active,sv_active_cancel,sv_being_canceled,sv_idle,sv_used,sv_tested,sv_login,maxwait,maxwait_us,pool_mode\nmattermost,mmuser,2,0,0,0,1,0,0,0,0,0,0,0,0,transaction\npgbouncer,pgbouncer,1,0,0,0,0,0,0,0,0,0,0,0,0,statement\npool_lab,labuser,0,0,0,0,0,0,0,0,0,0,0,0,0,transaction\n"
+    },
+    {
+      "elapsed_utc": 1791847123.009706,
+      "database_sessions": "state,count\nidle in transaction,1\n",
+      "pools": "database,user,cl_active,cl_waiting,cl_active_cancel_req,cl_waiting_cancel_req,sv_active,sv_active_cancel,sv_being_canceled,sv_idle,sv_used,sv_tested,sv_login,maxwait,maxwait_us,pool_mode\nmattermost,mmuser,4,2,0,0,1,0,0,0,0,0,0,0,2419,transaction\npgbouncer,pgbouncer,1,0,0,0,0,0,0,0,0,0,0,0,0,statement\npool_lab,labuser,0,0,0,0,0,0,0,0,0,0,0,0,0,transaction\n"
+    },
+    {
+      "elapsed_utc": 1791847125.167628,
+      "database_sessions": "state,count\nactive,1\n",
+      "pools": "database,user,cl_active,cl_waiting,cl_active_cancel_req,cl_waiting_cancel_req,sv_active,sv_active_cancel,sv_being_canceled,sv_idle,sv_used,sv_tested,sv_login,maxwait,maxwait_us,pool_mode\nmattermost,mmuser,4,1,0,0,1,0,0,0,0,0,0,0,5470,transaction\npgbouncer,pgbouncer,1,0,0,0,0,0,0,0,0,0,0,0,0,statement\npool_lab,labuser,0,0,0,0,0,0,0,0,0,0,0,0,0,transaction\n"
+    },
+    {
+      "elapsed_utc": 1791847127.2994251,
+      "database_sessions": "state,count\nidle,1\n",
+      "pools": "database,user,cl_active,cl_waiting,cl_active_cancel_req,cl_waiting_cancel_req,sv_active,sv_active_cancel,sv_being_canceled,sv_idle,sv_used,sv_tested,sv_login,maxwait,maxwait_us,pool_mode\nmattermost,mmuser,1,1,0,0,1,0,0,0,0,0,0,0,195,transaction\npgbouncer,pgbouncer,1,0,0,0,0,0,0,0,0,0,0,0,0,statement\npool_lab,labuser,0,0,0,0,0,0,0,0,0,0,0,0,0,transaction\n"
+    },
+    {
+      "elapsed_utc": 1791847129.4446862,
+      "database_sessions": "state,count\nactive,1\n",
+      "pools": "database,user,cl_active,cl_waiting,cl_active_cancel_req,cl_waiting_cancel_req,sv_active,sv_active_cancel,sv_being_canceled,sv_idle,sv_used,sv_tested,sv_login,maxwait,maxwait_us,pool_mode\nmattermost,mmuser,2,0,0,0,1,0,0,0,0,0,0,0,0,transaction\npgbouncer,pgbouncer,1,0,0,0,0,0,0,0,0,0,0,0,0,statement\npool_lab,labuser,0,0,0,0,0,0,0,0,0,0,0,0,0,transaction\n"
+    }
+  ]
+}

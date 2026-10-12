@@ -1,0 +1,31 @@
+WHERE: app
+COMMAND: cat /opt/suta/pgbouncer-lab/.runtime/runs/burst-profile-final/summary.json
+EXIT: 0
+{
+  "name": "burst-profile-final",
+  "run_id": "fd56c7414b7f",
+  "started_at_utc": "2026-10-12T23:19:58.615337+00:00",
+  "route": "pooled",
+  "app_max_open": 8,
+  "app_max_idle": 2,
+  "profile": "burst",
+  "users": 8,
+  "concurrency": 8,
+  "requested_seconds": 12,
+  "actual_seconds": 12.471,
+  "interrupted": false,
+  "requests": 494,
+  "successes": 494,
+  "failures": 0,
+  "requests_per_second": 39.61,
+  "latency_ms": {
+    "p50": 63.85,
+    "p95": 140.14,
+    "max": 205.05
+  },
+  "acknowledged_posts": 332,
+  "verified_posts": 332,
+  "verification_failures": [],
+  "search_found_run": true,
+  "errors": []
+}

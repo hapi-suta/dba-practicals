@@ -1,0 +1,8 @@
+WHERE: db
+COMMAND: sudo -u postgres psql -X --csv -d mattermost -c "SELECT pid,state,wait_event_type,wait_event,query FROM pg_stat_activity WHERE usename='mmuser';"
+EXIT: 0
+pid,state,wait_event_type,wait_event,query
+9052,idle,Client,ClientRead,"SELECT Id, Type, Priority, CreateAt, StartAt, LastActivityAt, Status, Progress, Data FROM Jobs WHERE Status IN ($1) AND Type = $2 ORDER BY CreateAt DESC LIMIT 1"
+9104,idle,Client,ClientRead,"WITH c AS ( SELECT Id, LastPostAt, TotalMsgCount, TotalMsgCountRoot FROM Channels WHERE Id IN ($1) ) , updated AS ( UPDATE ChannelMembers cm SET MentionCount = $2, MentionCountRoot = $3, UrgentMentionCount = $4, MsgCount = greatest(cm.MsgCount, c.TotalMsgCount), MsgCountRoot = greatest(cm.MsgCountRoot, c.TotalMsgCountRoot), LastViewedAt = greatest(cm.LastViewedAt, c.LastPostAt), LastUpdateAt = greatest(cm.LastViewedAt, c.LastPostAt) FROM c WHERE cm.UserId = $5 AND c.Id = cm.ChannelId ) SELECT Id, LastPostAt FROM c"
+11500,active,Timeout,PgSleep,BEGIN; SELECT pg_sleep(6); COMMIT;
+11501,idle,Client,ClientRead,"UPDATE ChannelMembers SET MentionCount = MentionCount + 1, MentionCountRoot = MentionCountRoot + $1, UrgentMentionCount = UrgentMentionCount + $2, LastUpdateAt = $3 WHERE ChannelId = $4 AND (1=0)"

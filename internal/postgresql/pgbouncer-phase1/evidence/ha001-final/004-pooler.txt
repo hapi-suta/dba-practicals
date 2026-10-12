@@ -1,0 +1,4 @@
+WHERE: pooler
+COMMAND: sudo -u postgres psql -X -w --csv -h 127.0.0.1 -p 6432 -U pooladmin -d pgbouncer -c 'RECONNECT mattermost;'
+EXIT: 0
+RECONNECT

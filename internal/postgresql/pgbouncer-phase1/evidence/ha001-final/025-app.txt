@@ -1,0 +1,31 @@
+WHERE: app
+COMMAND: cat /opt/suta/pgbouncer-lab/.runtime/runs/final-recovery-complete/summary.json
+EXIT: 0
+{
+  "name": "final-recovery-complete",
+  "run_id": "fc05152061f0",
+  "started_at_utc": "2026-10-12T23:20:31.838036+00:00",
+  "route": "pooled",
+  "app_max_open": 8,
+  "app_max_idle": 2,
+  "profile": "steady",
+  "users": 8,
+  "concurrency": 8,
+  "requested_seconds": 6,
+  "actual_seconds": 6.08,
+  "interrupted": false,
+  "requests": 364,
+  "successes": 364,
+  "failures": 0,
+  "requests_per_second": 59.87,
+  "latency_ms": {
+    "p50": 25.53,
+    "p95": 93.92,
+    "max": 123.88
+  },
+  "acknowledged_posts": 245,
+  "verified_posts": 245,
+  "verification_failures": [],
+  "search_found_run": true,
+  "errors": []
+}

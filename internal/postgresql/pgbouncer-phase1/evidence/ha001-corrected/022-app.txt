@@ -1,0 +1,31 @@
+WHERE: app
+COMMAND: cd /opt/suta/pgbouncer-lab && python3 traffic.py run --name long-transaction --seconds 12 --users 8 --concurrency 8 --profile steady
+EXIT: 0
+{
+  "name": "long-transaction",
+  "run_id": "8e78a48cbee8",
+  "started_at_utc": "2026-10-12T23:16:50.084850+00:00",
+  "route": "pooled",
+  "app_max_open": 8,
+  "app_max_idle": 2,
+  "profile": "steady",
+  "users": 8,
+  "concurrency": 8,
+  "requested_seconds": 12,
+  "actual_seconds": 12.242,
+  "interrupted": false,
+  "requests": 611,
+  "successes": 611,
+  "failures": 0,
+  "requests_per_second": 49.91,
+  "latency_ms": {
+    "p50": 50.1,
+    "p95": 151.77,
+    "max": 252.07
+  },
+  "acknowledged_posts": 410,
+  "verified_posts": 410,
+  "verification_failures": [],
+  "search_found_run": true,
+  "errors": []
+}

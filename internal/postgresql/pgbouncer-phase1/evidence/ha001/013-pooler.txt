@@ -1,0 +1,4 @@
+WHERE: pooler
+COMMAND: sudo -u postgres env PGPASSWORD=deliberately-wrong-lab-password psql -X -w -h 127.0.0.1 -p 6432 -U labuser -d pool_lab -c 'SELECT 1;'
+EXIT: 2
+psql: error: connection to server at "127.0.0.1", port 6432 failed: FATAL:  SASL authentication failed

@@ -1,0 +1,5 @@
+WHERE: pooler
+COMMAND: sudo -u postgres psql -X -w --csv -h 127.0.0.1 -p 6432 -U labuser -d pool_lab -c 'SELECT name FROM lab_identity;'
+EXIT: 0
+name
+suta-pgbouncer-phase1

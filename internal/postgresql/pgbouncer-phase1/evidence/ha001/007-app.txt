@@ -1,0 +1,31 @@
+WHERE: app
+COMMAND: cd /opt/suta/pgbouncer-lab && python3 traffic.py run --name direct-baseline --seconds 12 --users 8 --concurrency 8 --profile steady
+EXIT: 0
+{
+  "name": "direct-baseline",
+  "run_id": "df62e943894f",
+  "started_at_utc": "2026-10-12T23:11:58.406313+00:00",
+  "route": "direct",
+  "app_max_open": 8,
+  "app_max_idle": 2,
+  "profile": "steady",
+  "users": 8,
+  "concurrency": 8,
+  "requested_seconds": 12,
+  "actual_seconds": 12.124,
+  "interrupted": false,
+  "requests": 649,
+  "successes": 649,
+  "failures": 0,
+  "requests_per_second": 53.53,
+  "latency_ms": {
+    "p50": 24.5,
+    "p95": 202.97,
+    "max": 772.52
+  },
+  "acknowledged_posts": 436,
+  "verified_posts": 436,
+  "verification_failures": [],
+  "search_found_run": true,
+  "errors": []
+}

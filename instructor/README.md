@@ -10,6 +10,8 @@ This area is for preparing and running the class, not extra student assignments.
 - [Tested scope and limitations](../internal/postgresql/backup-recovery/VALIDATION.md)
 - [Official references](../internal/postgresql/backup-recovery/SOURCES.md)
 
+- [PgBouncer Phase 1 preparation and teaching notes](postgresql/pgbouncer-phase1/README.md)
+
 This folder is public. Never store student credentials or completed personal
 connection sheets here. Starting servers or collecting live progress requires
 the owner's authorization.

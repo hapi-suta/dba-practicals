@@ -1,0 +1,4 @@
+WHERE: db
+COMMAND: systemctl is-active postgresql@16-main
+EXIT: 0
+active

@@ -1,0 +1,4 @@
+WHERE: pooler
+COMMAND: systemctl is-active pgbouncer
+EXIT: 0
+active

@@ -1,0 +1,4 @@
+WHERE: app
+COMMAND: systemctl is-active mattermost
+EXIT: 0
+active

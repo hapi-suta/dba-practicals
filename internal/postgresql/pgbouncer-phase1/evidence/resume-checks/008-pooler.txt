@@ -1,0 +1,10 @@
+WHERE: pooler
+COMMAND: sudo -u postgres psql -X -w -v ON_ERROR_STOP=1 -h 127.0.0.1 -p 6432 -U mmuser -d mattermost -c 'BEGIN; SELECT pg_sleep(6); COMMIT;'
+EXIT: 0
+BEGIN
+ pg_sleep
+----------
+
+(1 row)
+
+COMMIT

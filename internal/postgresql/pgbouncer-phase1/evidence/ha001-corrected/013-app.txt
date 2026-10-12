@@ -1,0 +1,31 @@
+WHERE: app
+COMMAND: cd /opt/suta/pgbouncer-lab && python3 traffic.py run --name transaction-corrected --seconds 12 --users 8 --concurrency 8 --profile steady
+EXIT: 0
+{
+  "name": "transaction-corrected",
+  "run_id": "36e91c79fee4",
+  "started_at_utc": "2026-10-12T23:16:02.236142+00:00",
+  "route": "pooled",
+  "app_max_open": 8,
+  "app_max_idle": 2,
+  "profile": "steady",
+  "users": 8,
+  "concurrency": 8,
+  "requested_seconds": 12,
+  "actual_seconds": 12.056,
+  "interrupted": false,
+  "requests": 673,
+  "successes": 673,
+  "failures": 0,
+  "requests_per_second": 55.82,
+  "latency_ms": {
+    "p50": 35.47,
+    "p95": 98.05,
+    "max": 214.11
+  },
+  "acknowledged_posts": 451,
+  "verified_posts": 451,
+  "verification_failures": [],
+  "search_found_run": true,
+  "errors": []
+}

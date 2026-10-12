@@ -1,0 +1,3 @@
+WHERE: pooler
+COMMAND: sudo systemctl reload pgbouncer
+EXIT: 0

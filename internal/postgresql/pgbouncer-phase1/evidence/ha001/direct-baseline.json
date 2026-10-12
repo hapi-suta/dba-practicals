@@ -1,0 +1,72 @@
+{
+  "summary": {
+    "name": "direct-baseline",
+    "run_id": "df62e943894f",
+    "started_at_utc": "2026-10-12T23:11:58.406313+00:00",
+    "route": "direct",
+    "app_max_open": 8,
+    "app_max_idle": 2,
+    "profile": "steady",
+    "users": 8,
+    "concurrency": 8,
+    "requested_seconds": 12,
+    "actual_seconds": 12.124,
+    "interrupted": false,
+    "requests": 649,
+    "successes": 649,
+    "failures": 0,
+    "requests_per_second": 53.53,
+    "latency_ms": {
+      "p50": 24.5,
+      "p95": 202.97,
+      "max": 772.52
+    },
+    "acknowledged_posts": 436,
+    "verified_posts": 436,
+    "verification_failures": [],
+    "search_found_run": true,
+    "errors": []
+  },
+  "samples": [
+    {
+      "elapsed_utc": 1791846715.407539,
+      "database_sessions": "state,count\nidle,2\n"
+    },
+    {
+      "elapsed_utc": 1791846716.974404,
+      "database_sessions": "state,count\nidle,2\n"
+    },
+    {
+      "elapsed_utc": 1791846718.6025898,
+      "database_sessions": "state,count\nidle,2\n"
+    },
+    {
+      "elapsed_utc": 1791846720.379563,
+      "database_sessions": "state,count\nactive,2\nidle,2\n"
+    },
+    {
+      "elapsed_utc": 1791846723.4036841,
+      "database_sessions": "state,count\nactive,3\nidle,1\nidle in transaction,1\n"
+    },
+    {
+      "elapsed_utc": 1791846725.084361,
+      "database_sessions": "state,count\nactive,2\nidle,1\n"
+    },
+    {
+      "elapsed_utc": 1791846726.856076,
+      "database_sessions": "state,count\nidle,2\n"
+    },
+    {
+      "elapsed_utc": 1791846728.4691231,
+      "database_sessions": "state,count\nactive,3\nidle in transaction,1\n"
+    },
+    {
+      "elapsed_utc": 1791846730.049424,
+      "database_sessions": "state,count\nidle,1\nidle in transaction,1\n"
+    },
+    {
+      "elapsed_utc": 1791846731.641679,
+      "database_sessions": "state,count\nidle,2\n"
+    }
+  ]
+}

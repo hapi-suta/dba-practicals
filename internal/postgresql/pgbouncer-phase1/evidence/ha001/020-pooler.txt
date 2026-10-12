@@ -1,0 +1,7 @@
+WHERE: pooler
+COMMAND: sudo -u postgres psql -X -w --csv -h 127.0.0.1 -p 6432 -U pooladmin -d pgbouncer -c 'SHOW POOLS;'
+EXIT: 0
+database,user,cl_active,cl_waiting,cl_active_cancel_req,cl_waiting_cancel_req,sv_active,sv_active_cancel,sv_being_canceled,sv_idle,sv_used,sv_tested,sv_login,maxwait,maxwait_us,pool_mode
+mattermost,mmuser,2,0,0,0,2,0,0,0,0,0,0,0,0,session
+pgbouncer,pgbouncer,1,0,0,0,0,0,0,0,0,0,0,0,0,statement
+pool_lab,labuser,1,1,0,0,1,0,0,0,0,0,0,1,970984,session

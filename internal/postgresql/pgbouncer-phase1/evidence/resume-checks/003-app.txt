@@ -1,0 +1,15 @@
+WHERE: app
+COMMAND: cd /opt/suta/pgbouncer-lab && python3 traffic.py run --name direct-corrected --seconds 1
+EXIT: 1
+Traceback (most recent call last):
+  File "/opt/suta/pgbouncer-lab/traffic.py", line 190, in <module>
+    raise SystemExit(main())
+                     ^^^^^^
+  File "/opt/suta/pgbouncer-lab/traffic.py", line 187, in main
+    return run(args)
+           ^^^^^^^^^
+  File "/opt/suta/pgbouncer-lab/traffic.py", line 95, in run
+    out.mkdir(parents=True, exist_ok=False)
+  File "/usr/lib/python3.12/pathlib.py", line 1313, in mkdir
+    os.mkdir(self, mode)
+FileExistsError: [Errno 17] File exists: '/opt/suta/pgbouncer-lab/.runtime/runs/direct-corrected'

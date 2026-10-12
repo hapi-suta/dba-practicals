@@ -1,0 +1,5 @@
+WHERE: pooler
+COMMAND: hostname; sudo cat /etc/suta/lab-id
+EXIT: 0
+suta-pgb-pooler
+suta-pgbouncer-phase1

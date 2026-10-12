@@ -1,0 +1,31 @@
+WHERE: app
+COMMAND: cat /opt/suta/pgbouncer-lab/.runtime/runs/tuned-pool-final/summary.json
+EXIT: 0
+{
+  "name": "tuned-pool-final",
+  "run_id": "c13a68d8192e",
+  "started_at_utc": "2026-10-12T23:18:56.828295+00:00",
+  "route": "pooled",
+  "app_max_open": 8,
+  "app_max_idle": 2,
+  "profile": "steady",
+  "users": 8,
+  "concurrency": 8,
+  "requested_seconds": 12,
+  "actual_seconds": 12.142,
+  "interrupted": false,
+  "requests": 649,
+  "successes": 649,
+  "failures": 0,
+  "requests_per_second": 53.45,
+  "latency_ms": {
+    "p50": 47.64,
+    "p95": 100.47,
+    "max": 257.37
+  },
+  "acknowledged_posts": 435,
+  "verified_posts": 435,
+  "verification_failures": [],
+  "search_found_run": true,
+  "errors": []
+}

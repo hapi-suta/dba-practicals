@@ -21,6 +21,14 @@ each step matters, and checks that show whether the result is correct.
 | [6–8 · WAL and PITR](postgresql/backup-recovery/06-pgbackrest-pitr.md) | pgBackRest backup chains and recovery before a delete | Instructor setup/rehearsal required |
 | [9–11 · Incident drills](postgresql/backup-recovery/09-drills.md) | Return missing rows, recover a database, measure recovery | Advanced procedures; host rehearsal required |
 
+## PostgreSQL PgBouncer — Phase 1
+
+**Students: [open the Mattermost → PgBouncer → PostgreSQL lab](postgresql/pgbouncer-phase1/README.md).**
+
+Six exercises cover a direct baseline, PgBouncer configuration, application routing,
+session versus transaction pooling, waiting, tuning and recovery. Rehearsed on
+three native lab servers; [tested scope and captured results](internal/postgresql/pgbouncer-phase1/VALIDATION.md).
+
 ## For instructors
 
 - [Class preparation and instructor resources](instructor/README.md)

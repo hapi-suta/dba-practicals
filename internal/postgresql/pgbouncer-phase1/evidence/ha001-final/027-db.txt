@@ -1,0 +1,5 @@
+WHERE: db
+COMMAND: sudo -u postgres psql -X --csv -d mattermost -c "SELECT usename,client_addr,state,count(*) FROM pg_stat_activity WHERE usename='mmuser' GROUP BY usename,client_addr,state;"
+EXIT: 0
+usename,client_addr,state,count
+mmuser,[POOLER_PRIVATE_IP],idle,4

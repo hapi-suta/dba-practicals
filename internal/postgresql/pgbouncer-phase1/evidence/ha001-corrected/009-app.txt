@@ -1,0 +1,31 @@
+WHERE: app
+COMMAND: cat /opt/suta/pgbouncer-lab/.runtime/runs/session-corrected/summary.json
+EXIT: 0
+{
+  "name": "session-corrected",
+  "run_id": "d33d6e02b478",
+  "started_at_utc": "2026-10-12T23:15:38.079342+00:00",
+  "route": "pooled",
+  "app_max_open": 8,
+  "app_max_idle": 2,
+  "profile": "steady",
+  "users": 8,
+  "concurrency": 8,
+  "requested_seconds": 12,
+  "actual_seconds": 12.123,
+  "interrupted": false,
+  "requests": 710,
+  "successes": 710,
+  "failures": 0,
+  "requests_per_second": 58.57,
+  "latency_ms": {
+    "p50": 29.51,
+    "p95": 88.1,
+    "max": 153.97
+  },
+  "acknowledged_posts": 476,
+  "verified_posts": 476,
+  "verification_failures": [],
+  "search_found_run": true,
+  "errors": []
+}

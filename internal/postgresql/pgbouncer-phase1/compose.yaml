@@ -1,0 +1,51 @@
+name: suta-pgbouncer-phase1
+services:
+  db:
+    image: postgres@sha256:2586e2a95d1c9b31cb2967feb562948f7d364854453d703039b6efa45fe48417
+    environment:
+      POSTGRES_PASSWORD_FILE: /run/secrets/postgres-password
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./.runtime/postgres-password:/run/secrets/postgres-password:ro
+      - ./.runtime/init.sql:/docker-entrypoint-initdb.d/01-lab.sql:ro
+    networks: [lab]
+    healthcheck:
+      test: [CMD-SHELL, "pg_isready -U postgres -d postgres"]
+      interval: 2s
+      timeout: 2s
+      retries: 30
+    labels:
+      co.stepup.lab: pgbouncer-phase1
+  pooler:
+    image: edoburu/pgbouncer@sha256:85d1e38593617af1b5f7f285e97d407e56c29939683cc7cfe4c8f6dc19f1268b
+    entrypoint: ["/bin/sh", "-c", "exec sleep infinity"]
+    environment:
+      PGPASSFILE: /run/secrets/pgpass
+    volumes:
+      - ./.runtime/pgbouncer:/etc/pgbouncer:ro
+      - ./.runtime/pgpass:/run/secrets/pgpass:ro
+    networks: [lab]
+    labels:
+      co.stepup.lab: pgbouncer-phase1
+  app:
+    image: mattermost/mattermost-team-edition@sha256:618956b80399873f5c404d5dfc21ef07c3bad1169d603108a7a14cb932af5de7
+    platform: linux/amd64
+    env_file: ./.runtime/app.env
+    ports: ["127.0.0.1:18065:8065"]
+    volumes:
+      - mmdata:/mattermost/data
+      - mmconfig:/mattermost/config
+    networks: [lab, frontend]
+    depends_on:
+      db:
+        condition: service_healthy
+    labels:
+      co.stepup.lab: pgbouncer-phase1
+networks:
+  lab:
+    internal: true
+  frontend:
+volumes:
+  pgdata:
+  mmdata:
+  mmconfig:

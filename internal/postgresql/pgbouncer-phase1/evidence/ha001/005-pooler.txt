@@ -1,0 +1,9 @@
+WHERE: pooler
+COMMAND: pgbouncer --version; dpkg-query -W pgbouncer
+EXIT: 0
+PgBouncer 1.22.0
+libevent 2.1.12-stable
+adns: c-ares 1.27.0
+tls: OpenSSL 3.0.13 30 Jan 2024
+systemd: yes
+pgbouncer	1.22.0-1build4

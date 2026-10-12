@@ -1,0 +1,5 @@
+WHERE: db
+COMMAND: hostname; sudo cat /etc/suta/lab-id
+EXIT: 0
+suta-pgb-db
+suta-pgbouncer-phase1

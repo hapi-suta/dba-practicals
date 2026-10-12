@@ -1,0 +1,4 @@
+WHERE: app
+COMMAND: curl -fsS http://127.0.0.1:8065/api/v4/system/ping; cat /opt/suta/pgbouncer-lab/.runtime/state.json
+EXIT: 0
+{"ActiveSearchBackend":"database","AndroidLatestVersion":"","AndroidMinVersion":"","IosLatestVersion":"","IosMinVersion":"","status":"OK"}{"project": "suta-pgbouncer-phase1", "base_url": "http://127.0.0.1:8065", "route": "pooled", "max_open": 8, "max_idle": 2}

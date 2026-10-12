@@ -1,0 +1,77 @@
+{
+  "summary": {
+    "name": "session-corrected",
+    "run_id": "d33d6e02b478",
+    "started_at_utc": "2026-10-12T23:15:38.079342+00:00",
+    "route": "pooled",
+    "app_max_open": 8,
+    "app_max_idle": 2,
+    "profile": "steady",
+    "users": 8,
+    "concurrency": 8,
+    "requested_seconds": 12,
+    "actual_seconds": 12.123,
+    "interrupted": false,
+    "requests": 710,
+    "successes": 710,
+    "failures": 0,
+    "requests_per_second": 58.57,
+    "latency_ms": {
+      "p50": 29.51,
+      "p95": 88.1,
+      "max": 153.97
+    },
+    "acknowledged_posts": 476,
+    "verified_posts": 476,
+    "verification_failures": [],
+    "search_found_run": true,
+    "errors": []
+  },
+  "samples": [
+    {
+      "elapsed_utc": 1791846935.066208,
+      "database_sessions": "state,count\nidle,4\n",
+      "pools": "database,user,cl_active,cl_waiting,cl_active_cancel_req,cl_waiting_cancel_req,sv_active,sv_active_cancel,sv_being_canceled,sv_idle,sv_used,sv_tested,sv_login,maxwait,maxwait_us,pool_mode\nmattermost,mmuser,2,0,0,0,2,0,0,2,0,0,0,0,0,session\npgbouncer,pgbouncer,1,0,0,0,0,0,0,0,0,0,0,0,0,statement\npool_lab,labuser,0,0,0,0,0,0,0,0,0,0,0,0,0,session\n"
+    },
+    {
+      "elapsed_utc": 1791846937.153811,
+      "database_sessions": "state,count\nidle,4\n",
+      "pools": "database,user,cl_active,cl_waiting,cl_active_cancel_req,cl_waiting_cancel_req,sv_active,sv_active_cancel,sv_being_canceled,sv_idle,sv_used,sv_tested,sv_login,maxwait,maxwait_us,pool_mode\nmattermost,mmuser,2,0,0,0,2,0,0,2,0,0,0,0,0,session\npgbouncer,pgbouncer,1,0,0,0,0,0,0,0,0,0,0,0,0,statement\npool_lab,labuser,0,0,0,0,0,0,0,0,0,0,0,0,0,session\n"
+    },
+    {
+      "elapsed_utc": 1791846939.303276,
+      "database_sessions": "state,count\nidle,4\n",
+      "pools": "database,user,cl_active,cl_waiting,cl_active_cancel_req,cl_waiting_cancel_req,sv_active,sv_active_cancel,sv_being_canceled,sv_idle,sv_used,sv_tested,sv_login,maxwait,maxwait_us,pool_mode\nmattermost,mmuser,5,2,0,0,4,0,0,0,0,0,0,0,21103,session\npgbouncer,pgbouncer,1,0,0,0,0,0,0,0,0,0,0,0,0,statement\npool_lab,labuser,0,0,0,0,0,0,0,0,0,0,0,0,0,session\n"
+    },
+    {
+      "elapsed_utc": 1791846941.487024,
+      "database_sessions": "state,count\nidle,3\nidle in transaction,1\n",
+      "pools": "database,user,cl_active,cl_waiting,cl_active_cancel_req,cl_waiting_cancel_req,sv_active,sv_active_cancel,sv_being_canceled,sv_idle,sv_used,sv_tested,sv_login,maxwait,maxwait_us,pool_mode\nmattermost,mmuser,2,0,0,0,2,0,0,2,0,0,0,0,0,session\npgbouncer,pgbouncer,1,0,0,0,0,0,0,0,0,0,0,0,0,statement\npool_lab,labuser,0,0,0,0,0,0,0,0,0,0,0,0,0,session\n"
+    },
+    {
+      "elapsed_utc": 1791846943.5994601,
+      "database_sessions": "state,count\nactive,1\nidle,3\n",
+      "pools": "database,user,cl_active,cl_waiting,cl_active_cancel_req,cl_waiting_cancel_req,sv_active,sv_active_cancel,sv_being_canceled,sv_idle,sv_used,sv_tested,sv_login,maxwait,maxwait_us,pool_mode\nmattermost,mmuser,2,0,0,0,2,0,0,2,0,0,0,0,0,session\npgbouncer,pgbouncer,1,0,0,0,0,0,0,0,0,0,0,0,0,statement\npool_lab,labuser,0,0,0,0,0,0,0,0,0,0,0,0,0,session\n"
+    },
+    {
+      "elapsed_utc": 1791846945.74541,
+      "database_sessions": "state,count\nidle,4\n",
+      "pools": "database,user,cl_active,cl_waiting,cl_active_cancel_req,cl_waiting_cancel_req,sv_active,sv_active_cancel,sv_being_canceled,sv_idle,sv_used,sv_tested,sv_login,maxwait,maxwait_us,pool_mode\nmattermost,mmuser,2,0,0,0,2,0,0,2,0,0,0,0,0,session\npgbouncer,pgbouncer,1,0,0,0,0,0,0,0,0,0,0,0,0,statement\npool_lab,labuser,0,0,0,0,0,0,0,0,0,0,0,0,0,session\n"
+    },
+    {
+      "elapsed_utc": 1791846948.3420959,
+      "database_sessions": "state,count\nidle,4\n",
+      "pools": "database,user,cl_active,cl_waiting,cl_active_cancel_req,cl_waiting_cancel_req,sv_active,sv_active_cancel,sv_being_canceled,sv_idle,sv_used,sv_tested,sv_login,maxwait,maxwait_us,pool_mode\nmattermost,mmuser,4,1,0,0,4,0,0,0,0,0,0,0,15808,session\npgbouncer,pgbouncer,1,0,0,0,0,0,0,0,0,0,0,0,0,statement\npool_lab,labuser,0,0,0,0,0,0,0,0,0,0,0,0,0,session\n"
+    },
+    {
+      "elapsed_utc": 1791846950.472967,
+      "database_sessions": "state,count\nidle,4\n",
+      "pools": "database,user,cl_active,cl_waiting,cl_active_cancel_req,cl_waiting_cancel_req,sv_active,sv_active_cancel,sv_being_canceled,sv_idle,sv_used,sv_tested,sv_login,maxwait,maxwait_us,pool_mode\nmattermost,mmuser,2,0,0,0,2,0,0,2,0,0,0,0,0,session\npgbouncer,pgbouncer,1,0,0,0,0,0,0,0,0,0,0,0,0,statement\npool_lab,labuser,0,0,0,0,0,0,0,0,0,0,0,0,0,session\n"
+    },
+    {
+      "elapsed_utc": 1791846952.595559,
+      "database_sessions": "state,count\nidle,4\n",
+      "pools": "database,user,cl_active,cl_waiting,cl_active_cancel_req,cl_waiting_cancel_req,sv_active,sv_active_cancel,sv_being_canceled,sv_idle,sv_used,sv_tested,sv_login,maxwait,maxwait_us,pool_mode\nmattermost,mmuser,2,0,0,0,2,0,0,2,0,0,0,0,0,session\npgbouncer,pgbouncer,1,0,0,0,0,0,0,0,0,0,0,0,0,statement\npool_lab,labuser,0,0,0,0,0,0,0,0,0,0,0,0,0,session\n"
+    }
+  ]
+}

@@ -1,0 +1,31 @@
+WHERE: app
+COMMAND: cd /opt/suta/pgbouncer-lab && python3 traffic.py run --name small-pool --seconds 12 --users 8 --concurrency 8 --profile steady
+EXIT: 0
+{
+  "name": "small-pool",
+  "run_id": "d035505d102b",
+  "started_at_utc": "2026-10-12T23:16:24.509904+00:00",
+  "route": "pooled",
+  "app_max_open": 8,
+  "app_max_idle": 2,
+  "profile": "steady",
+  "users": 8,
+  "concurrency": 8,
+  "requested_seconds": 12,
+  "actual_seconds": 12.121,
+  "interrupted": false,
+  "requests": 571,
+  "successes": 571,
+  "failures": 0,
+  "requests_per_second": 47.11,
+  "latency_ms": {
+    "p50": 69.45,
+    "p95": 152.56,
+    "max": 236.76
+  },
+  "acknowledged_posts": 383,
+  "verified_posts": 383,
+  "verification_failures": [],
+  "search_found_run": true,
+  "errors": []
+}

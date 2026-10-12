@@ -1,0 +1,4 @@
+WHERE: pooler
+COMMAND: sudo wc -c /etc/pgbouncer/pgbouncer.ini
+EXIT: 0
+0 /etc/pgbouncer/pgbouncer.ini

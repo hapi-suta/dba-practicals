@@ -1,0 +1,8 @@
+WHERE: app
+COMMAND: /opt/mattermost/bin/mattermost version
+EXIT: 0
+Version: 11.7.12
+Build Number: 37652628685
+Build Date: Wed Oct  7 16:37:51 UTC 2026
+Build Hash: cfd96852253e982d4a8f4984e346740fdc1b102a
+Build Enterprise Ready: false

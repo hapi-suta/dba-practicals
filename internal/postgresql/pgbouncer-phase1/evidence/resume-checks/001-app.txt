@@ -1,0 +1,9 @@
+WHERE: app
+COMMAND: cd /opt/suta/pgbouncer-lab && python3 traffic.py setup --users 8
+EXIT: 0
+{
+  "users_ready": 8,
+  "team_id": "gsb4zr5rz38mxjuc5166j4p8th",
+  "channel_id": "uhf46ib6riy4zpsa4gd7k753yy",
+  "credentials": "private .runtime/accounts.json; never copy into evidence"
+}

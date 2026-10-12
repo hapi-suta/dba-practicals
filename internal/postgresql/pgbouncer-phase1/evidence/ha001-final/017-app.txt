@@ -1,0 +1,31 @@
+WHERE: app
+COMMAND: cat /opt/suta/pgbouncer-lab/.runtime/runs/app-pool-eight-final/summary.json
+EXIT: 0
+{
+  "name": "app-pool-eight-final",
+  "run_id": "e2fa2bbc7048",
+  "started_at_utc": "2026-10-12T23:19:38.890702+00:00",
+  "route": "pooled",
+  "app_max_open": 8,
+  "app_max_idle": 2,
+  "profile": "steady",
+  "users": 8,
+  "concurrency": 8,
+  "requested_seconds": 12,
+  "actual_seconds": 12.077,
+  "interrupted": false,
+  "requests": 715,
+  "successes": 715,
+  "failures": 0,
+  "requests_per_second": 59.21,
+  "latency_ms": {
+    "p50": 29.8,
+    "p95": 81.95,
+    "max": 117.12
+  },
+  "acknowledged_posts": 480,
+  "verified_posts": 480,
+  "verification_failures": [],
+  "search_found_run": true,
+  "errors": []
+}

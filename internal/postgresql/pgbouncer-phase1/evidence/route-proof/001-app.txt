@@ -1,0 +1,4 @@
+WHERE: app
+COMMAND: sudo python3 /opt/suta/pgbouncer-lab/app-route.py direct
+EXIT: 0
+Mattermost ready: route=direct, host=pg-db, port=5432, max_open=8, max_idle=2

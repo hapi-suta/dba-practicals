@@ -1,0 +1,195 @@
+[
+  {
+    "name": "direct-corrected API, readback, search",
+    "pass": true,
+    "detail": {
+      "name": "direct-corrected",
+      "run_id": "da23f3304f59",
+      "started_at_utc": "2026-10-12T23:15:16.752631+00:00",
+      "route": "direct",
+      "app_max_open": 8,
+      "app_max_idle": 2,
+      "profile": "steady",
+      "users": 8,
+      "concurrency": 8,
+      "requested_seconds": 12,
+      "actual_seconds": 12.141,
+      "interrupted": false,
+      "requests": 801,
+      "successes": 801,
+      "failures": 0,
+      "requests_per_second": 65.97,
+      "latency_ms": {
+        "p50": 13.13,
+        "p95": 53.94,
+        "max": 117.49
+      },
+      "acknowledged_posts": 536,
+      "verified_posts": 536,
+      "verification_failures": [],
+      "search_found_run": true,
+      "errors": []
+    }
+  },
+  {
+    "name": "Effective mode session size 4",
+    "pass": true,
+    "detail": {
+      "mode": "session",
+      "size": 4
+    }
+  },
+  {
+    "name": "session-corrected API, readback, search",
+    "pass": true,
+    "detail": {
+      "name": "session-corrected",
+      "run_id": "d33d6e02b478",
+      "started_at_utc": "2026-10-12T23:15:38.079342+00:00",
+      "route": "pooled",
+      "app_max_open": 8,
+      "app_max_idle": 2,
+      "profile": "steady",
+      "users": 8,
+      "concurrency": 8,
+      "requested_seconds": 12,
+      "actual_seconds": 12.123,
+      "interrupted": false,
+      "requests": 710,
+      "successes": 710,
+      "failures": 0,
+      "requests_per_second": 58.57,
+      "latency_ms": {
+        "p50": 29.51,
+        "p95": 88.1,
+        "max": 153.97
+      },
+      "acknowledged_posts": 476,
+      "verified_posts": 476,
+      "verification_failures": [],
+      "search_found_run": true,
+      "errors": []
+    }
+  },
+  {
+    "name": "Effective mode transaction size 4",
+    "pass": true,
+    "detail": {
+      "mode": "transaction",
+      "size": 4
+    }
+  },
+  {
+    "name": "transaction-corrected API, readback, search",
+    "pass": true,
+    "detail": {
+      "name": "transaction-corrected",
+      "run_id": "36e91c79fee4",
+      "started_at_utc": "2026-10-12T23:16:02.236142+00:00",
+      "route": "pooled",
+      "app_max_open": 8,
+      "app_max_idle": 2,
+      "profile": "steady",
+      "users": 8,
+      "concurrency": 8,
+      "requested_seconds": 12,
+      "actual_seconds": 12.056,
+      "interrupted": false,
+      "requests": 673,
+      "successes": 673,
+      "failures": 0,
+      "requests_per_second": 55.82,
+      "latency_ms": {
+        "p50": 35.47,
+        "p95": 98.05,
+        "max": 214.11
+      },
+      "acknowledged_posts": 451,
+      "verified_posts": 451,
+      "verification_failures": [],
+      "search_found_run": true,
+      "errors": []
+    }
+  },
+  {
+    "name": "Effective mode transaction size 1",
+    "pass": true,
+    "detail": {
+      "mode": "transaction",
+      "size": 1
+    }
+  },
+  {
+    "name": "small-pool API, readback, search",
+    "pass": true,
+    "detail": {
+      "name": "small-pool",
+      "run_id": "d035505d102b",
+      "started_at_utc": "2026-10-12T23:16:24.509904+00:00",
+      "route": "pooled",
+      "app_max_open": 8,
+      "app_max_idle": 2,
+      "profile": "steady",
+      "users": 8,
+      "concurrency": 8,
+      "requested_seconds": 12,
+      "actual_seconds": 12.121,
+      "interrupted": false,
+      "requests": 571,
+      "successes": 571,
+      "failures": 0,
+      "requests_per_second": 47.11,
+      "latency_ms": {
+        "p50": 69.45,
+        "p95": 152.56,
+        "max": 236.76
+      },
+      "acknowledged_posts": 383,
+      "verified_posts": 383,
+      "verification_failures": [],
+      "search_found_run": true,
+      "errors": []
+    }
+  },
+  {
+    "name": "long-transaction API, readback, search",
+    "pass": true,
+    "detail": {
+      "name": "long-transaction",
+      "run_id": "8e78a48cbee8",
+      "started_at_utc": "2026-10-12T23:16:50.084850+00:00",
+      "route": "pooled",
+      "app_max_open": 8,
+      "app_max_idle": 2,
+      "profile": "steady",
+      "users": 8,
+      "concurrency": 8,
+      "requested_seconds": 12,
+      "actual_seconds": 12.242,
+      "interrupted": false,
+      "requests": 611,
+      "successes": 611,
+      "failures": 0,
+      "requests_per_second": 49.91,
+      "latency_ms": {
+        "p50": 50.1,
+        "p95": 151.77,
+        "max": 252.07
+      },
+      "acknowledged_posts": 410,
+      "verified_posts": 410,
+      "verification_failures": [],
+      "search_found_run": true,
+      "errors": []
+    }
+  },
+  {
+    "name": "Long transaction caused measurable delay",
+    "pass": false,
+    "detail": {
+      "p50": 50.1,
+      "p95": 151.77,
+      "max": 252.07
+    }
+  }
+]

@@ -34,3 +34,15 @@ Tools locate student handouts relative to this checkout, not the current shell
 folder. Student SQL and lab data paths are unchanged. Students use the direct
 PostgreSQL/Linux commands in [CHECKS](../postgresql/backup-recovery/CHECKS.md),
 not these internal tools. The observer remains available for instructor assessment.
+
+## PgBouncer Phase 1
+
+[Validation](postgresql/pgbouncer-phase1/VALIDATION.md) ·
+[Captured outputs](postgresql/pgbouncer-phase1/OUTPUTS.md) ·
+[Student guide](../postgresql/pgbouncer-phase1/README.md)
+
+Run the bounded reporting regression tests locally, without a database:
+
+```bash
+python3 -m unittest discover -s internal/postgresql/pgbouncer-phase1 -p 'test_traffic.py' -v
+```

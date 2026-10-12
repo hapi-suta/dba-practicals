@@ -1,0 +1,8 @@
+Traceback (most recent call last):
+  File "[PRIVATE_HARNESS]/rehearse.py", line 140, in <module>
+    try:main()
+  File "[PRIVATE_HARNESS]/rehearse.py", line 111, in main
+    run('app','sudo python3 /opt/suta/pgbouncer-lab/app-route.py pooled')
+  File "[PRIVATE_HARNESS]/rehearse.py", line 15, in run
+    if check and r.returncode:raise RuntimeError(f'{role} command failed: '+clean(r.stderr))
+RuntimeError: app command failed: API not ready. Save journal output; do not reset database.

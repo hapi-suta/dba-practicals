@@ -1,0 +1,32 @@
+WHERE: app
+COMMAND: cat /opt/suta/pgbouncer-lab/.runtime/runs/release-20261012/summary.json
+EXIT: 0
+{
+  "name": "release-20261012",
+  "run_id": "34db657149a4",
+  "started_at_utc": "2026-10-12T23:35:10.037291+00:00",
+  "route": "pooled",
+  "app_max_open": 8,
+  "app_max_idle": 2,
+  "profile": "steady",
+  "users": 8,
+  "concurrency": 8,
+  "requested_seconds": 20,
+  "actual_seconds": 20.11,
+  "interrupted": false,
+  "requests": 1197,
+  "successes": 1197,
+  "failures": 0,
+  "requests_per_second": 59.52,
+  "latency_ms": {
+    "p50": 28.98,
+    "p95": 76.6,
+    "max": 150.09
+  },
+  "acknowledged_posts": 798,
+  "verified_posts": 798,
+  "verification_failures": [],
+  "verification_errors": [],
+  "search_found_run": true,
+  "errors": []
+}

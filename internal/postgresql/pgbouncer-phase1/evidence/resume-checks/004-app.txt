@@ -1,0 +1,4 @@
+WHERE: app
+COMMAND: sha256sum /opt/suta/pgbouncer-lab/.runtime/runs/direct-corrected/summary.json
+EXIT: 0
+3f741b57313abaf72010659c8588eb0bbf7a130ef37b1b012f6686f1ce951773  /opt/suta/pgbouncer-lab/.runtime/runs/direct-corrected/summary.json

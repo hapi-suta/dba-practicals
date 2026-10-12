@@ -1,0 +1,4 @@
+WHERE: pooler
+COMMAND: sudo systemctl start pgbouncer; systemctl is-active pgbouncer
+EXIT: 0
+active

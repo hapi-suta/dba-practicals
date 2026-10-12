@@ -1,0 +1,5 @@
+WHERE: pooler
+COMMAND: sudo -u postgres psql -X -w --csv -h 127.0.0.1 -p 6432 -U pooladmin -d pgbouncer -c 'SHOW VERSION;'
+EXIT: 0
+version
+PgBouncer 1.22.0

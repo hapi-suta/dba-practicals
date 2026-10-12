@@ -1,0 +1,7 @@
+WHERE: app
+COMMAND: cd /opt/suta/pgbouncer-lab && python3 verify-messages.py
+EXIT: 0
+{
+  "verified_messages": 6715,
+  "failures": []
+}

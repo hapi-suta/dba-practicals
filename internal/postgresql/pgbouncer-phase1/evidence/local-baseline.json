@@ -1,0 +1,28 @@
+{
+  "name": "direct-baseline",
+  "run_id": "859eb1874923",
+  "started_at_utc": "2026-10-12T23:05:50.976199+00:00",
+  "route": "direct",
+  "app_max_open": 8,
+  "app_max_idle": 2,
+  "profile": "steady",
+  "users": 8,
+  "concurrency": 8,
+  "requested_seconds": 15,
+  "actual_seconds": 15.102,
+  "interrupted": false,
+  "requests": 1026,
+  "successes": 1026,
+  "failures": 0,
+  "requests_per_second": 67.94,
+  "latency_ms": {
+    "p50": 9.34,
+    "p95": 33.92,
+    "max": 300.61
+  },
+  "acknowledged_posts": 687,
+  "verified_posts": 687,
+  "verification_failures": [],
+  "search_found_run": true,
+  "errors": []
+}

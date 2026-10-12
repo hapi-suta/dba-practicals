@@ -1,0 +1,31 @@
+WHERE: app
+COMMAND: cat /opt/suta/pgbouncer-lab/.runtime/runs/pooled-session/summary.json
+EXIT: 0
+{
+  "name": "pooled-session",
+  "run_id": "6bf873863afa",
+  "started_at_utc": "2026-10-12T23:12:22.243924+00:00",
+  "route": "pooled",
+  "app_max_open": 8,
+  "app_max_idle": 2,
+  "profile": "steady",
+  "users": 8,
+  "concurrency": 8,
+  "requested_seconds": 12,
+  "actual_seconds": 12.115,
+  "interrupted": false,
+  "requests": 673,
+  "successes": 673,
+  "failures": 0,
+  "requests_per_second": 55.55,
+  "latency_ms": {
+    "p50": 38.82,
+    "p95": 97.13,
+    "max": 163.43
+  },
+  "acknowledged_posts": 451,
+  "verified_posts": 451,
+  "verification_failures": [],
+  "search_found_run": true,
+  "errors": []
+}

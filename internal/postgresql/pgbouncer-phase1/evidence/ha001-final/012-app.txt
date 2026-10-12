@@ -1,0 +1,4 @@
+WHERE: app
+COMMAND: sudo python3 /opt/suta/pgbouncer-lab/app-route.py pooled --open 2 --idle 1
+EXIT: 0
+Mattermost ready: route=pooled, host=pg-pooler, port=6432, max_open=2, max_idle=1

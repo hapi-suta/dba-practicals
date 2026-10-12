@@ -1,0 +1,31 @@
+WHERE: app
+COMMAND: cat /opt/suta/pgbouncer-lab/.runtime/runs/interrupted-final/summary.json
+EXIT: 0
+{
+  "name": "interrupted-final",
+  "run_id": "e68e6fbb05f1",
+  "started_at_utc": "2026-10-12T23:21:21.310201+00:00",
+  "route": "pooled",
+  "app_max_open": 8,
+  "app_max_idle": 2,
+  "profile": "quiet",
+  "users": 8,
+  "concurrency": 8,
+  "requested_seconds": 30,
+  "actual_seconds": 4.031,
+  "interrupted": true,
+  "requests": 47,
+  "successes": 47,
+  "failures": 0,
+  "requests_per_second": 11.66,
+  "latency_ms": {
+    "p50": 13.38,
+    "p95": 82.24,
+    "max": 87.09
+  },
+  "acknowledged_posts": 32,
+  "verified_posts": 32,
+  "verification_failures": [],
+  "search_found_run": true,
+  "errors": []
+}

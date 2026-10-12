@@ -1,0 +1,12 @@
+[
+  {
+    "name": "direct source address",
+    "pass": true,
+    "detail": "client_addr,state,count\n[APP_PRIVATE_IP],idle,2\n[POOLER_PRIVATE_IP],idle,1\n"
+  },
+  {
+    "name": "pooled source address",
+    "pass": true,
+    "detail": "client_addr,state,count\n[POOLER_PRIVATE_IP],idle,2\n"
+  }
+]

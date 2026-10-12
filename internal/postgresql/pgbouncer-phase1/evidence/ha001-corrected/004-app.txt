@@ -1,0 +1,31 @@
+WHERE: app
+COMMAND: cat /opt/suta/pgbouncer-lab/.runtime/runs/direct-corrected/summary.json
+EXIT: 0
+{
+  "name": "direct-corrected",
+  "run_id": "da23f3304f59",
+  "started_at_utc": "2026-10-12T23:15:16.752631+00:00",
+  "route": "direct",
+  "app_max_open": 8,
+  "app_max_idle": 2,
+  "profile": "steady",
+  "users": 8,
+  "concurrency": 8,
+  "requested_seconds": 12,
+  "actual_seconds": 12.141,
+  "interrupted": false,
+  "requests": 801,
+  "successes": 801,
+  "failures": 0,
+  "requests_per_second": 65.97,
+  "latency_ms": {
+    "p50": 13.13,
+    "p95": 53.94,
+    "max": 117.49
+  },
+  "acknowledged_posts": 536,
+  "verified_posts": 536,
+  "verification_failures": [],
+  "search_found_run": true,
+  "errors": []
+}

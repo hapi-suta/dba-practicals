@@ -1,0 +1,67 @@
+[
+  {
+    "name": "Existing users resume without replacement",
+    "pass": true,
+    "detail": "Setup completed against saved IDs; login validates each identity."
+  },
+  {
+    "name": "Duplicate run refuses overwrite",
+    "pass": true,
+    "detail": "Existing report SHA256 unchanged"
+  },
+  {
+    "name": "Interrupted traffic saves verified report",
+    "pass": true,
+    "detail": {
+      "name": "interrupted-final",
+      "run_id": "e68e6fbb05f1",
+      "started_at_utc": "2026-10-12T23:21:21.310201+00:00",
+      "route": "pooled",
+      "app_max_open": 8,
+      "app_max_idle": 2,
+      "profile": "quiet",
+      "users": 8,
+      "concurrency": 8,
+      "requested_seconds": 30,
+      "actual_seconds": 4.031,
+      "interrupted": true,
+      "requests": 47,
+      "successes": 47,
+      "failures": 0,
+      "requests_per_second": 11.66,
+      "latency_ms": {
+        "p50": 13.38,
+        "p95": 82.24,
+        "max": 87.09
+      },
+      "acknowledged_posts": 32,
+      "verified_posts": 32,
+      "verification_failures": [],
+      "search_found_run": true,
+      "errors": []
+    }
+  },
+  {
+    "name": "DB observation identifies deliberate hold",
+    "pass": true,
+    "detail": "pid,state,wait_event_type,wait_event,query\n9052,idle,Client,ClientRead,\"SELECT Id, Type, Priority, CreateAt, StartAt, LastActivityAt, Status, Progress, Data FROM Jobs WHERE Status IN ($1) AND Type = $2 ORDER BY CreateAt DESC LIMIT 1\"\n9104,idle,Client,ClientRead,\"WITH c AS ( SELECT Id, LastPostAt, TotalMsgCount, TotalMsgCountRoot FROM Channels WHERE Id IN ($1) ) , updated AS ( UPDATE ChannelMembers cm SET MentionCount = $2, MentionCountRoot = $3, UrgentMentionCount = $4, MsgCount = greatest(cm.MsgCount, c.TotalMsgCount), MsgCountRoot = greatest(cm.MsgCountRoot, c.TotalMsgCountRoot), LastViewedAt = greatest(cm.LastViewedAt, c.LastPostAt), LastUpdateAt = greatest(cm.LastViewedAt, c.LastPostAt) FROM c WHERE cm.UserId = $5 AND c.Id = cm.ChannelId ) SELECT Id, LastPostAt FROM c\"\n11500,active,Timeout,PgSleep,BEGIN; SELECT pg_sleep(6); COMMIT;\n11501,idle,Client,ClientRead,\"UPDATE ChannelMembers SET MentionCount = MentionCount + 1, MentionCountRoot = MentionCountRoot + $1, UrgentMentionCount = UrgentMentionCount + $2, LastUpdateAt = $3 WHERE ChannelId = $4 AND (1=0)\"\n"
+  },
+  {
+    "name": "Final effective settings",
+    "pass": true,
+    "detail": {
+      "pool_mode": "transaction",
+      "default_pool_size": "4",
+      "max_client_conn": "50",
+      "query_wait_timeout": "15"
+    }
+  },
+  {
+    "name": "All earlier messages survive resume tests",
+    "pass": true,
+    "detail": {
+      "verified_messages": 5917,
+      "failures": []
+    }
+  }
+]
