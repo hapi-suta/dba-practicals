@@ -1,75 +1,142 @@
-# Start — know where you are
+# Exercise 0: Connect to your servers
 
-**The task:** identify your three machines and start saving your work.
-**Why:** the same command can mean something different on another server.
-**Success:** you can name each server's job and find your saved output.
+**Goal:** log in and check that you are on the correct server.
+You will use these same three servers throughout the lab.
 
-## 1. Open your assigned connections
+**You need:** your private login sheet with three IP addresses, username `ubuntu`,
+and your server password. Ask the teacher if you do not have it.
 
-**Where to run:** your own computer, in its terminal, before connecting to a server.
+## Step 1: Open three terminal tabs
 
-Use the exact SSH commands on your **private connection sheet**. The teacher
-supplies these; do not guess an IP or copy a classmate's credentials.
+**On your own computer:** open Terminal, PowerShell, or your usual SSH program.
+Open one tab for each server and label them **APP**, **POOLER**, and **DB**.
 
-In each Linux terminal, run:
+Use the SSH command in your private connection sheet. If typing it yourself, use
+`ssh ubuntu@` followed immediately by that server's IP address.
 
-**Where to run:** Each assigned server: APP (`suta-pgb-app`), POOLER (`suta-pgb-pooler`) and DB (`suta-pgb-db`), Linux terminal as `ubuntu`, after SSH login.
+Enter your server password when asked. **Nothing appears while you type the password.**
+This is normal. Press Enter when finished.
+
+If login fails, check the IP and server password with the teacher. Your Mattermost
+website password and database passwords are different from your SSH password.
+
+## Step 2: Check each server name
+
+**On APP, POOLER, and DB — Linux terminal, as `ubuntu`:**
 
 ```bash
 hostname
+```
+
+**Expected:** the name for that tab in this table.
+
+| Tab | Expected name | Job |
+|---|---|---|
+| APP | `suta-pgb-app` | Runs Mattermost |
+| POOLER | `suta-pgb-pooler` | Shares database connections |
+| DB | `suta-pgb-db` | Stores messages |
+
+If a name is wrong, stop. Reconnect using the correct IP from your login sheet.
+
+**On each of those same servers — Linux terminal:**
+
+```bash
 whoami
 ```
 
-| Machine | Expected hostname | Login user | Job |
-|---|---|---|---|
-| APP | `suta-pgb-app` | `ubuntu` | Mattermost and traffic script |
-| POOLER | `suta-pgb-pooler` | `ubuntu` | PgBouncer |
-| DB | `suta-pgb-db` | `ubuntu` | PostgreSQL |
+**Expected:** `ubuntu`.
 
-If either value differs, stop and ask the instructor to check your connection.
-APP means `suta-pgb-app`; POOLER means `suta-pgb-pooler`; DB means `suta-pgb-db`.
-Keep the terminals labelled APP, POOLER and DB. Later, two POOLER terminals will
-be labelled A and B so you can keep two SQL connections open.
+## Step 3: Check that Mattermost is running
 
-## 2. Save terminal output
-
-**Where to run:** Each assigned server: APP (`suta-pgb-app`), POOLER (`suta-pgb-pooler`) and DB (`suta-pgb-db`), Linux terminal as `ubuntu` (any folder).
-
-```bash
-mkdir -p ~/pgbouncer-evidence
-script -q -a ~/pgbouncer-evidence/terminal.txt
-```
-
-`script` records this terminal session. `-a` adds to the file rather than replacing
-previous work. Do not display credentials or type passwords while recording.
-The lab already has private password files for SQL connections.
-
-When you finish recording, type `exit` at the **Linux prompt**. The file remains.
-Do not type it inside psql: use `\q` there first.
-
-## 3. Check the starting application
-
-**Where to run:** APP server (`suta-pgb-app`), Linux terminal as `ubuntu` (any folder).
+**On APP (`suta-pgb-app`) — Linux terminal, as `ubuntu`:**
 
 ```bash
 cd /opt/suta/pgbouncer-lab
+```
+
+This is the folder containing the prepared lab scripts. Successful `cd` prints nothing.
+
+**On APP (`suta-pgb-app`) — Linux terminal, as `ubuntu`:**
+
+```bash
 curl -fsS http://127.0.0.1:8065/api/v4/system/ping
+```
+
+**Expected:** a response containing `"status":"OK"` (spacing may differ).
+If you get an error, stop and show it to the teacher.
+
+## Step 4: Check the starting route
+
+**On APP (`suta-pgb-app`) — Linux terminal, as `ubuntu`, in `/opt/suta/pgbouncer-lab`:**
+
+```bash
 cat .runtime/state.json
 ```
 
-Expect `status: OK` in the JSON response and `route: direct` in the state file.
-The state file records the helper's last requested route; actual connections are
-verified in the next lab. If the app is unavailable or the route is already pooled,
-ask the instructor to identify the previous checkpoint. Do not reinstall or reset.
+**Expected:** `"route": "direct"`.
+This means the helper last selected **Mattermost → PostgreSQL**, without PgBouncer.
+The next exercise checks the actual connection too.
+
+If the route is already `pooled`, you may be returning to a partially completed lab.
+Ask where to resume. Do not reset it.
+
+## Know which prompt you are using
+
+| What you see (example) | Where you are | What to type here |
+|---|---|---|
+| `ubuntu@suta-pgb-app:~$` | Linux, as ubuntu | Linux commands such as `cd` |
+| `postgres@suta-pgb-pooler:~$` | Linux, as postgres | The `psql` login command |
+| `mattermost=#` | PostgreSQL through psql | SQL commands |
+| `pgbouncer=#` | PgBouncer admin console | Commands such as `SHOW POOLS;` |
+
+Prompt text can vary. Do not copy the prompt itself.
+
+- `\q` leaves psql and returns to Linux.
+- `exit` leaves the current Linux account. After `sudo -iu postgres`, one `exit` returns to `ubuntu`.
+- **Ctrl+C** stops a repeating `\watch` display. It does not leave psql.
+- If a results page shows `(END)`, press **q** to close that page.
+
+## Keep your results
+
+Traffic reports are saved automatically on APP. Keep screenshots of the checks the
+teacher asks to see. Do not include passwords in screenshots.
+
+<details>
+<summary>Optional: record your terminal session</summary>
+
+Start recording after SSH login, before switching Linux users.
+
+**On the server you want to record — Linux terminal, as `ubuntu`:**
+
+```bash
+mkdir -p ~/pgbouncer-evidence
+```
+
+**On that same server — Linux terminal, as `ubuntu`:**
+
+```bash
+script -q -a ~/pgbouncer-evidence/terminal.txt
+```
+
+This adds output to a file. Do not display passwords or private configuration files
+while recording. To finish, leave psql with `\q`, return to `ubuntu` if needed,
+then type `exit` once to end the recording.
+
+</details>
 
 ## Returning after a disconnect
 
-**Where to run:** reconnect from your own computer, then use the assigned server's Linux terminal as `ubuntu`.
+Reconnect using your private sheet. Check `hostname` and `whoami` again.
+Start at the step you were doing, not at the beginning of the course.
+On APP, return to `/opt/suta/pgbouncer-lab` before running scripts.
+Use a new traffic run name each time; keep earlier reports.
 
-Reconnect using your private sheet, run `hostname`, and return to the folder
-shown in the current step. On APP that is `/opt/suta/pgbouncer-lab`.
-Open a new recording with `script -q -a` if needed. Read existing reports before
-running traffic again. Every new run needs a new name.
+## Checkpoint
 
-**Show:** all three hostnames and the application health response.
-**Discuss:** Which machine runs the traffic generator? Which holds the messages?
+- [ ] My three tabs show the correct server names and `ubuntu`.
+- [ ] Mattermost reports `OK`.
+- [ ] The starting route is `direct`.
+
+**Tell the teacher:** which server runs the app? Which server stores its messages?
+
+**Next:** [Exercise 1 — send test messages](01-baseline.md).

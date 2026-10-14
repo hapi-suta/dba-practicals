@@ -106,3 +106,17 @@ and HA routing. AWS needs an appropriate VIP/route failover design; ordinary LAN
 Keepalived address takeover must not be assumed to work on EC2. HAProxy routes
 connections to configured read/write endpoints; it does not automatically inspect
 and split every SQL statement sent by an application.
+
+## Beginner delivery — 2026-10-14
+
+Use Exercises 0–3 as the first lesson, then pause for students to demonstrate the
+working route. Teach Exercise 4 separately: the teacher watches POOLER C while the
+student uses A and B. In Exercise 5, prepare both refreshing monitors first; the
+teacher runs the brief hold while the student observes waiting. Do not ask beginners
+to read new instructions while switching among three screens within 15 seconds.
+The INI and runtime scripts are unchanged. Resume each student's actual checkpoint;
+never clear their configuration just to match the opening page.
+
+The original HA001 rehearsal instances were terminated at the teacher's request on
+2026-10-13. Do not direct students to those old addresses. Use their individual
+private connection sheets. See the validation record for historical test evidence.

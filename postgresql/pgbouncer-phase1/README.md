@@ -1,35 +1,57 @@
-# Phase 1 — understand PgBouncer with Mattermost
+# PgBouncer with Mattermost
 
-**StepUP Tech Academy · SUTA Labs**
+Learn how PgBouncer lets applications reuse PostgreSQL connections.
 
-Your team uses Mattermost to send messages. You will place PgBouncer between
-Mattermost and PostgreSQL, watch connections being reused, and investigate waiting.
+You have three servers. The teacher has already installed the software and created
+all accounts. You do not need to install packages or create databases.
 
-**The connection path:** Mattermost → PgBouncer → PostgreSQL.
-
-| Order | Exercise | What you will show |
+| Server | Name shown after login | What it does |
 |---|---|---|
-| 0 | [Get ready](00-start.md) | Correct machines, tools and saved output |
-| 1 | [Measure direct traffic](01-baseline.md) | A working app and a baseline |
-| 2 | [Configure PgBouncer](02-configure.md) | Your configuration reaches the right database |
-| 3 | [Connect Mattermost](03-connect-app.md) | Messages pass through the pooler |
-| 4 | [Prove connection reuse](04-pooling-modes.md) | Session versus transaction behaviour |
-| 5 | [Diagnose waiting](05-waiting.md) | A queue and its actual cause |
-| 6 | [Tune and recover](06-tune-recover.md) | Measured changes and restored application access |
+| APP | `suta-pgb-app` | Runs Mattermost and sends test messages |
+| POOLER | `suta-pgb-pooler` | Runs PgBouncer |
+| DB | `suta-pgb-db` | Stores the messages in PostgreSQL |
 
-**Before class:** know how to SSH, edit a file, run a SELECT, and distinguish a
-Linux terminal from a SQL prompt. Review BEGIN, COMMIT and ROLLBACK with the teacher.
+Use the IP addresses and passwords on **your private login sheet**.
+The hostnames are the same for every student; the IP addresses are different.
 
-Use only the three assigned lab machines. The instructor installs packages,
-creates credentials and databases, and supplies an **empty** PgBouncer configuration.
-You write the pooling settings. Do not change another student's environment.
+## First lesson: get the application working through PgBouncer
 
-Tested software: Ubuntu 24.04, PostgreSQL 16.15, PgBouncer 1.22.0 and Mattermost
-Team Edition 11.7.12. Read [the instructor validation record](../../internal/postgresql/pgbouncer-phase1/VALIDATION.md)
-for executed checks and limits. The earlier local-container run used a different
-PgBouncer version; it does not replace the native-server evidence.
+Start here. Do one page at a time.
 
-A browser user is not a database connection. Mattermost has its own connection
-pool; PgBouncer has another. We will observe both.
+| Step | Guide | You will see |
+|---|---|---|
+| 0 | [Connect to your servers](00-start.md) | The correct server names |
+| 1 | [Send test messages](01-baseline.md) | Mattermost talking directly to PostgreSQL |
+| 2 | [Configure PgBouncer](02-configure.md) | PgBouncer running and accepting a connection |
+| 3 | [Send messages through PgBouncer](03-connect-app.md) | The new connection path working |
 
-[If something differs](TROUBLESHOOTING.md) · [Instructor preparation](../../instructor/postgresql/pgbouncer-phase1/README.md)
+**Pause after Exercise 3.** Show your teacher the result before continuing.
+You have changed the path from **APP → DB** to **APP → POOLER → DB**.
+
+## Second lesson: understand connection reuse
+
+[Exercise 4 — session and transaction pooling](04-pooling-modes.md).
+Work with the teacher for the short two-connection demonstration.
+
+## Then practise diagnosis and recovery
+
+These are follow-up exercises. Do them after you can explain Exercise 4.
+
+- [Exercise 5 — why requests wait](05-waiting.md): teacher-led timing exercise.
+- [Exercise 6 — tune and recover](06-tune-recover.md): compare settings and restore access.
+
+If a check fails, stop at that step and use [Troubleshooting](TROUBLESHOOTING.md).
+Do not reset your server or erase work to start again.
+
+## How to read these guides
+
+Each step names the server and the user, gives the command, and tells you what to expect.
+Only copy command boxes. Text labelled **Expected** describes the result.
+
+`ubuntu` is your Linux login. `postgres` is another Linux account used for database
+commands. A psql prompt means you are inside the database command tool.
+[Exercise 0](00-start.md) explains how to move between them.
+
+Tested: Ubuntu 24.04, PostgreSQL 16.15, PgBouncer 1.22.0, Mattermost 11.7.12.
+[Instructor preparation](../../instructor/postgresql/pgbouncer-phase1/README.md) ·
+[Validation and limits](../../internal/postgresql/pgbouncer-phase1/VALIDATION.md)

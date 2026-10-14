@@ -81,3 +81,12 @@ volumes retained. No existing backup lab or unrelated instance was changed.
 - Public evidence substitutes role labels for private host addresses and paths;
   originals remain private. No credentials, private connection sheet or runtime
   account files are included in the release.
+
+## Status update — 2026-10-14
+
+The HA001 rehearsal servers described above were terminated on 2026-10-13 at the
+teacher's request. Earlier results remain historical evidence, not current server
+health. Student labs are separate environments. The beginner documentation rewrite
+changed presentation and monitor sequencing without changing runtime code or INI.
+See SELF-REVIEW.md for checks and the limit: no fresh server rehearsal or learner
+trial of the revised sequence.

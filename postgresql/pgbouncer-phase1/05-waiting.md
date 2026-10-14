@@ -1,91 +1,134 @@
-# Exercise 5 — find why requests wait
+# Exercise 5: Find why requests wait
 
-**The task:** observe a small pool, then occupy it with one long transaction.
-**Why:** a waiting request needs a diagnosis, not an automatic increase in connections.
-**Success:** identify the waiting clients and see them recover when the transaction ends.
+**Goal:** see requests wait while one long transaction uses the available connection.
+Then restore normal access. We do not change any message rows.
 
-**Before:** transaction mode is active, previous SQL sessions are closed, APP works.
-This is an instructor-led drill on the isolated lab. It changes no message rows.
+**Before:** finish Exercise 4. Transaction pooling is active, the pool size is 4,
+and the practice sessions are closed.
 
-## 1. Use one backend for Mattermost
+> **Teacher-led exercise.** Prepare the monitors before starting traffic.
+> The teacher runs the six-second hold in POOLER A. The student watches C.
+> This is a later lesson, not part of the first setup session.
 
-**Where to run:** POOLER server (`suta-pgb-pooler`), Linux terminal as `ubuntu` (any folder).
+## Step 1: Prepare the tabs
+
+Keep APP open. Open two fresh SSH tabs to POOLER, labelled **A** and **C**, and
+one to DB. Use your private sheet. Start each at the Linux prompt as `ubuntu`.
+Check `hostname` and `whoami` before continuing.
+
+| Tab | Hostname | Purpose |
+|---|---|---|
+| APP | `suta-pgb-app` | Send messages |
+| A | `suta-pgb-pooler` | Run the teacher's long transaction |
+| C | `suta-pgb-pooler` | Watch waiting clients |
+| DB | `suta-pgb-db` | Watch the database query |
+
+Stop if a hostname differs. Use only your assigned lab servers.
+
+## Step 2: Reduce the Mattermost pool to one connection
+
+**On POOLER (`suta-pgb-pooler`), tab A — Linux, as `ubuntu`:**
 
 ```bash
 sudo -u postgres vi /etc/pgbouncer/pgbouncer.ini
 ```
 
-Change `default_pool_size = 4` to `default_pool_size = 1`. Keep transaction mode.
+Find `default_pool_size = 4`. Press **i**, change `4` to `1`, then press
+**Esc**, type `:wq`, and press **Enter**. Keep `pool_mode = transaction`.
 
-**Where to run:** POOLER server (`suta-pgb-pooler`), Linux terminal as `ubuntu` (any folder).
+**On POOLER (`suta-pgb-pooler`), tab A — Linux, as `ubuntu`:**
 
 ```bash
 sudo systemctl reload pgbouncer
 ```
 
-**Where to run:** APP server (`suta-pgb-app`), Linux terminal as `ubuntu` (any folder).
-
-Restart its connections with `sudo python3 /opt/suta/pgbouncer-lab/app-route.py pooled`.
-Previously opened backends can remain after reducing a pool limit.
-
-**Where to run:** POOLER server (`suta-pgb-pooler`), inside psql connected to `pgbouncer` as `pooladmin`, port `6432`.
-
-Use `RECONNECT mattermost;` and inspect `SHOW POOLS;` before measuring.
-Expect at most one active Mattermost backend during the controlled test.
-
-**Where to run:** APP server (`suta-pgb-app`), Linux terminal as `ubuntu` (any folder).
+**On APP (`suta-pgb-app`) — Linux, as `ubuntu`:**
 
 ```bash
 cd /opt/suta/pgbouncer-lab
-python3 traffic.py run --name small-pool-01 --users 8 --concurrency 8 --seconds 20
 ```
 
-A one-connection pool may still serve short transactions well. Record what actually
-happens; do not invent an error if none occurs.
+**On APP (`suta-pgb-app`) — Linux, as `ubuntu`, in `/opt/suta/pgbouncer-lab`:**
 
-## 2. Occupy the one connection
+```bash
+sudo python3 app-route.py pooled
+```
 
-**Where to run:** POOLER server (`suta-pgb-pooler`), terminal A, Linux terminal as `ubuntu` (any folder).
+**Expected:** `Mattermost ready`. This restarts the app connections.
+
+## Step 3: Prepare the pool monitor
+
+**On POOLER (`suta-pgb-pooler`), tab C — Linux, as `ubuntu`:**
 
 ```bash
 sudo -iu postgres
-psql -X -w -h 127.0.0.1 -p 6432 -U mmuser -d mattermost
 ```
 
-**Where to run:** POOLER server (`suta-pgb-pooler`), terminal A, inside psql connected to `mattermost` as `mmuser`, port `6432`.
-
-```sql
-SELECT current_database(), current_user;
-```
-
-Expect `mattermost` and `mmuser`. Stop if different.
-
-**Where to run:** APP server (`suta-pgb-app`), Linux terminal as `ubuntu`, in `/opt/suta/pgbouncer-lab`.
+**On POOLER (`suta-pgb-pooler`), tab C — Linux, as `postgres`:**
 
 ```bash
-python3 traffic.py run --name long-transaction-01 --users 8 --concurrency 8 --seconds 20
+psql -X -w -h 127.0.0.1 -p 6432 -U pooladmin -d pgbouncer
 ```
 
-Wait about five seconds so the users have signed in and the timed workload has
-started. Then, **in POOLER A psql**, execute this single block:
-
-**Where to run:** POOLER server (`suta-pgb-pooler`), terminal A, inside psql connected to `mattermost` as `mmuser`, port `6432`.
+**On POOLER (`suta-pgb-pooler`), tab C — psql, `pgbouncer`, user `pooladmin`, port `6432`:**
 
 ```sql
-BEGIN;
-SELECT pg_sleep(6);
-COMMIT;
+SHOW CONFIG;
 ```
 
-`pg_sleep(6)` deliberately waits six seconds while holding this backend. This is a
-controlled demonstration, not a tuning command. COMMIT releases the connection.
-If interrupted, enter `ROLLBACK;` before leaving the session.
+**Expected:** `default_pool_size` is `1` and `pool_mode` is `transaction`.
+If not, stop and check the edited file. Press **q** if a results page shows `(END)`.
 
-**Where to run:** POOLER server (`suta-pgb-pooler`), inside psql connected to `pgbouncer` as `pooladmin`, port `6432`. Use a second POOLER terminal.
+**On POOLER (`suta-pgb-pooler`), tab C — psql, `pgbouncer`, user `pooladmin`, port `6432`:**
 
-During those six seconds, run `SHOW POOLS;`. Expect waiting Mattermost clients. On DB, inspect:
+```sql
+RECONNECT mattermost;
+```
 
-**Where to run:** DB server (`suta-pgb-db`), inside psql connected to `mattermost` as `postgres`, port `5432`.
+This retires old database connections, which may remain after lowering the limit.
+
+**On POOLER (`suta-pgb-pooler`), tab C — psql, `pgbouncer`, user `pooladmin`, port `6432`:**
+
+```sql
+SHOW POOLS;
+```
+
+**On POOLER (`suta-pgb-pooler`), tab C — psql, `pgbouncer`, user `pooladmin`, port `6432`:**
+
+```psql
+\watch 1
+```
+
+Leave C refreshing. Watch the `mattermost` row; the controlled run should use
+at most one active backend (`sv_active`). If more remain, ask the teacher before continuing.
+
+## Step 4: Test the small pool before adding a delay
+
+**On APP (`suta-pgb-app`) — Linux, as `ubuntu`, in `/opt/suta/pgbouncer-lab`:**
+
+```bash
+python3 traffic.py run --name small-pool-01 --users 8 --concurrency 8 --seconds 20
+```
+
+Wait for it to finish. Record failures and message checks from the report.
+One connection may handle short transactions successfully. Do not invent a failure
+if there is none. Stop on unexpected errors; keep the report.
+
+## Step 5: Prepare the database activity display
+
+**On DB (`suta-pgb-db`) — Linux, as `ubuntu`:**
+
+```bash
+sudo -iu postgres
+```
+
+**On DB (`suta-pgb-db`) — Linux, as `postgres`:**
+
+```bash
+psql -X -d mattermost
+```
+
+**On DB (`suta-pgb-db`) — psql, `mattermost`, user `postgres`, port `5432`:**
 
 ```sql
 SELECT pid, state, wait_event_type, wait_event, query
@@ -93,43 +136,140 @@ FROM pg_stat_activity
 WHERE usename = 'mmuser';
 ```
 
-Run that query inside DB's `sudo -iu postgres` → `psql -X -d mattermost` session.
-You should be able to identify the deliberate sleep. Save observations before and
-after it completes. Traffic response times should show the delay; failures, if any,
-must be reported rather than discarded.
+**On DB (`suta-pgb-db`) — psql, `mattermost`, user `postgres`, port `5432`:**
 
-## 3. Restore the working size
+```psql
+\watch 1
+```
 
-Leave A with `\q` and `exit`. On POOLER, as `ubuntu`:
+Leave DB refreshing. The teacher will look for `pg_sleep(6)` during the hold.
 
-**Where to run:** POOLER server (`suta-pgb-pooler`), Linux terminal as `ubuntu` (any folder).
+## Step 6: Prepare the teacher’s connection
+
+**On POOLER (`suta-pgb-pooler`), tab A — Linux, as `ubuntu`:**
+
+```bash
+sudo -iu postgres
+```
+
+**On POOLER (`suta-pgb-pooler`), tab A — Linux, as `postgres`:**
+
+```bash
+psql -X -w -h 127.0.0.1 -p 6432 -U mmuser -d mattermost
+```
+
+**On POOLER (`suta-pgb-pooler`), tab A — psql, `mattermost`, user `mmuser`, port `6432`:**
+
+```sql
+SELECT current_database(), current_user;
+```
+
+**Expected:** `mattermost` and `mmuser`. Stop if different. Do not begin the hold yet.
+
+## Step 7: Send traffic, then hold the connection
+
+**On APP (`suta-pgb-app`) — Linux, as `ubuntu`, in `/opt/suta/pgbouncer-lab`:**
+
+```bash
+python3 traffic.py run --name long-transaction-01 --users 8 --concurrency 8 --seconds 20
+```
+
+Start this APP command first. After about five seconds, the teacher runs the whole
+block below in A. It must overlap the running traffic. Copy all three lines
+together so the transaction commits immediately after the sleep.
+
+**On POOLER (`suta-pgb-pooler`), tab A — psql, `mattermost`, user `mmuser`, port `6432`:**
+
+```sql
+BEGIN;
+SELECT pg_sleep(6);
+COMMIT;
+```
+
+**During the six seconds:**
+
+- In C, look for `cl_waiting` greater than zero on the `mattermost` row.
+- On DB, look for the deliberate `pg_sleep(6)` query.
+- After COMMIT, waiting should clear and traffic should continue.
+
+Save screenshots. If the short window is missed, it is not a pass: prepare both
+monitors again and repeat with a new traffic run name. Do not extend the sleep or
+change timeout settings. If interrupted in A, enter `ROLLBACK;` in that same psql
+session before leaving it.
+
+## Step 8: Restore four connections
+
+**On POOLER (`suta-pgb-pooler`), tab A — psql, `mattermost`, user `mmuser`, port `6432`:**
+
+```psql
+\q
+```
+
+**On POOLER (`suta-pgb-pooler`), tab A — Linux, as `postgres`:**
+
+```bash
+exit
+```
+
+**On POOLER (`suta-pgb-pooler`), tab A — Linux, as `ubuntu`:**
 
 ```bash
 sudo -u postgres vi /etc/pgbouncer/pgbouncer.ini
 ```
 
-Change `default_pool_size` back to `4`, save, then:
+Change `default_pool_size = 1` back to `default_pool_size = 4`.
+Save with **Esc**, `:wq`, **Enter**.
 
-**Where to run:** POOLER server (`suta-pgb-pooler`), Linux terminal as `ubuntu` (any folder).
+**On POOLER (`suta-pgb-pooler`), tab A — Linux, as `ubuntu`:**
 
 ```bash
 sudo systemctl reload pgbouncer
 ```
 
-**Where to run:** POOLER server (`suta-pgb-pooler`), inside psql connected to `pgbouncer` as `pooladmin`, port `6432`.
+In C, press **Ctrl+C**.
 
-Run `SHOW CONFIG;` and confirm the value is `4`.
-On APP, in `/opt/suta/pgbouncer-lab`:
+**On POOLER (`suta-pgb-pooler`), tab C — psql, `pgbouncer`, user `pooladmin`, port `6432`:**
 
-**Where to run:** APP server (`suta-pgb-app`), Linux terminal as `ubuntu`, in `/opt/suta/pgbouncer-lab`.
+```sql
+SHOW CONFIG;
+```
+
+**Expected:** `default_pool_size` is `4`. Stop if it is not.
+
+**On APP (`suta-pgb-app`) — Linux, as `ubuntu`, in `/opt/suta/pgbouncer-lab`:**
 
 ```bash
 python3 traffic.py run --name recovery-01 --users 8 --concurrency 8 --seconds 20
 ```
 
-Expect successful requests and matching message verification counts. Leave no
-transaction open.
+**Expected:** zero failures, matching positive message counts, successful search,
+and empty `verification_failures` and `verification_errors`.
+Keep both the delayed report and the recovery report. Do not discard failures.
 
-**Show:** the waiting snapshot, blocking query, delayed report and recovery report.
-**Discuss:** What caused the delay? Why is adding connections different from fixing
-a long transaction or a lock?
+## Step 9: Close the monitors
+
+On DB, press **Ctrl+C** first. C has already stopped watching.
+
+**On POOLER C (`suta-pgb-pooler`) and DB (`suta-pgb-db`) — each psql session:**
+
+```psql
+\q
+```
+
+**On POOLER C (`suta-pgb-pooler`) and DB (`suta-pgb-db`) — Linux, as `postgres`:**
+
+```bash
+exit
+```
+
+## Checkpoint
+
+- [ ] I saw waiting clients and the sleep query during the same hold.
+- [ ] I kept the delayed report, including any errors.
+- [ ] Pool size is back to 4 and the recovery report passes.
+- [ ] No transaction or monitor remains open.
+
+**Discuss:** what held the connection? Why would increasing a connection limit
+not fix the underlying long-running transaction?
+
+**Next:** [Exercise 6 — tune and recover](06-tune-recover.md).

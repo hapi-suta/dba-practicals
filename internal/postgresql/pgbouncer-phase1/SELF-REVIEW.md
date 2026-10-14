@@ -51,3 +51,35 @@ Hostname follow-up: every command/configuration location now includes the actual
 `suta-pgb-app`, `suta-pgb-pooler` or `suta-pgb-db` hostname alongside its role.
 Troubleshooting locations also use hostnames. All 49 blocks checked; executable
 content unchanged. Documentation-only review; no new server rehearsal.
+
+## Beginner rewrite — 2026-10-14
+
+Trigger: the teacher reported that students found the guides too complex.
+Reviewed the local stepup-guides examples: SQL Fundamentals / SELECT basics,
+Streaming Replication / Configure the Primary, and Voleon / PgBouncer and Redis.
+Adapted their numbered action, command, expected result and checkpoint structure;
+not their platform-specific configuration or credential examples.
+
+| Finding | Repair |
+|---|---|
+| First lesson mixed setup, measurement, connection semantics and timed diagnosis | First lesson ends after Exercise 3; reuse and diagnosis have separate lesson boundaries |
+| Student had to infer Linux/psql context and remember earlier logins | Full connection blocks, explicit account exits and prompt examples |
+| Exercise 4 left A/B as postgres but told them to restart as ubuntu | Added the missing exit steps and fresh-login sequence |
+| Short queue/sleep windows required several simultaneous terminal switches | Prepare refreshing monitors first and explicitly share observation with the teacher |
+| Dense setting and reporting explanations competed with the current action | Four-setting introduction, small result table, optional reference sections |
+| Recording added another shell layer before students understood the prompt | Recording is optional; traffic reports and checkpoint screenshots remain required |
+
+Verification: 18 existing backup-course documentation/report tests and 3 PgBouncer
+reporting tests passed. These do not prove learner comprehension. A separate
+Markdown audit checked 129 fenced blocks for execution context, local links and
+heading anchors, unchanged INI against the tested fixture and previous release,
+and private credential patterns/known student passwords. A local HTML preview was
+rendered and inspected in the browser (structure, tables, collapsed references,
+and a screenshot of the introduction). This was not GitHub's renderer.
+
+The changes affect prose, step grouping, explicit login/exit/readback commands,
+and when existing monitoring commands run. Runtime code and the PgBouncer INI
+are unchanged. No new server rehearsal or student trial was performed. The HA001
+rehearsal servers were terminated on the teacher's request on 2026-10-13; existing
+student environments were not changed or used for destructive rehearsal. The
+revised timing/teaching sequence still needs a teacher-led student trial.

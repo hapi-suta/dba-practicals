@@ -1,4 +1,4 @@
-# Exercise 2 — write your PgBouncer configuration
+# Exercise 2: Configure PgBouncer
 
 **The task:** tell PgBouncer where PostgreSQL is and how many connections to use.
 **Why:** an installed package does not know your database route or pooling policy.
@@ -8,19 +8,26 @@
 private credentials and supplied an empty configuration. Do not print `userlist.txt`
 or `.pgpass`; they contain credentials.
 
-## 1. Check the empty starting file
+## Step 1: Check the starting file
 
 **Where to run:** POOLER server (`suta-pgb-pooler`), Linux terminal as `ubuntu` (any folder).
 
 ```bash
 hostname
+```
+
+**Expected:** `suta-pgb-pooler`. Then check the file size.
+
+**On POOLER (`suta-pgb-pooler`) — Linux, as `ubuntu`:**
+
+```bash
 sudo wc -c /etc/pgbouncer/pgbouncer.ini
 ```
 
-Expect `suta-pgb-pooler` and **0 bytes**. If the file has contents, it is existing
+**Expected:** `0 /etc/pgbouncer/pgbouncer.ini` — the file is empty. If the file has contents, it is existing
 work: stop and ask which checkpoint to resume. Do not erase it.
 
-## 2. Enter the settings
+## Step 2: Open the configuration file
 
 **Where to run:** POOLER server (`suta-pgb-pooler`), Linux terminal as `ubuntu` (any folder).
 
@@ -59,6 +66,22 @@ max_prepared_statements = 100
 Press **Esc**, type `:wq`, then press **Enter** to save and leave the editor.
 To leave without saving, press Esc and type `:q!`.
 
+For now, focus on these four settings:
+
+| Setting | Meaning |
+|---|---|
+| `listen_port = 6432` | The port clients use to reach PgBouncer |
+| `pool_mode = session` | Keep a database connection until the client disconnects |
+| `default_pool_size = 4` | Allow up to four PostgreSQL connections per database/user pool |
+| `max_client_conn = 50` | Allow up to 50 incoming client connections overall |
+
+`pg-db` is a prepared private name for your DB server. Do not replace it with a
+public IP. `pool_lab` is a small practice database; its pool is limited to one
+connection so we can demonstrate sharing later.
+
+<details>
+<summary>Reference: the remaining settings</summary>
+
 What the settings mean:
 
 - `[databases]` maps a name requested by a client to a real PostgreSQL database.
@@ -82,26 +105,44 @@ What the settings mean:
 These small values are teaching settings, not production sizing advice. APP to
 PgBouncer uses the restricted private lab network without TLS in this phase.
 
-## 3. Start and inspect PgBouncer
+</details>
+
+## Step 3: Start PgBouncer
 
 **Where to run:** POOLER server (`suta-pgb-pooler`), Linux terminal as `ubuntu` (any folder).
 
 ```bash
 sudo systemctl start pgbouncer
+```
+
+Now check that it started.
+
+**On POOLER (`suta-pgb-pooler`) — Linux, as `ubuntu`:**
+
+```bash
 systemctl is-active pgbouncer
 ```
 
 Expect `active`. If not, stop and inspect `sudo journalctl -u pgbouncer -n 30`.
 Do not disable authentication to fix a startup problem.
 
+## Step 4: Open the PgBouncer admin console
+
 **Where to run:** POOLER server (`suta-pgb-pooler`), Linux terminal as `ubuntu` (any folder).
 
 ```bash
 sudo -iu postgres
+```
+
+**On POOLER (`suta-pgb-pooler`) — Linux terminal, now as `postgres`:**
+
+```bash
 psql -X -w -h 127.0.0.1 -p 6432 -U pooladmin -d pgbouncer
 ```
 
-`-h` selects this machine; `-p` selects PgBouncer. `-U` selects the database login.
+**Expected:** the `pgbouncer=#` prompt. No password prompt is needed.
+
+`-X` ignores personal psql startup settings. `-h` selects this machine; `-p` selects PgBouncer. `-U` selects the database login.
 `-w` refuses an interactive password prompt; it uses the prepared private password
 file. Database `pgbouncer` is the admin console, not an application database.
 
@@ -109,11 +150,36 @@ file. Database `pgbouncer` is the admin console, not an application database.
 
 ```sql
 SHOW VERSION;
+```
+
+**Expected:** PgBouncer `1.22.0`.
+
+**On POOLER (`suta-pgb-pooler`) — same admin psql session, `pooladmin`, port `6432`:**
+
+```sql
 SHOW DATABASES;
+```
+
+**Expected:** rows for `mattermost` and `pool_lab`.
+
+**On POOLER (`suta-pgb-pooler`) — same admin psql session:**
+
+```sql
 SHOW CONFIG;
 ```
 
-Expect PgBouncer 1.22.0, both mappings, and the settings you wrote. Leave with `\q`.
+**Expected:** `pool_mode` is `session` and `default_pool_size` is `4`.
+If the output opens a page showing `(END)`, press **q** to return to the prompt.
+
+**On POOLER (`suta-pgb-pooler`) — inside admin psql:**
+
+```psql
+\q
+```
+
+You are back in Linux as `postgres`.
+
+## Step 5: Test a connection to the practice database
 
 **Where to run:** POOLER server (`suta-pgb-pooler`), Linux terminal as `postgres` (any folder).
 
@@ -125,12 +191,42 @@ psql -X -w -h 127.0.0.1 -p 6432 -U labuser -d pool_lab
 
 ```sql
 SELECT current_database(), current_user;
+```
+
+**Expected:** `pool_lab` and `labuser`. Stop if different.
+
+**On POOLER (`suta-pgb-pooler`) — psql, `pool_lab`, user `labuser`, port `6432`:**
+
+```sql
 SELECT name FROM lab_identity;
 ```
 
-Expect `pool_lab`, `labuser`, and `suta-pgbouncer-phase1`.
-Leave with `\q`, then `exit` to return to `ubuntu`.
+**Expected:** `suta-pgbouncer-phase1`.
 
-**Show:** your configuration, running service, version and identity query.
+**On POOLER (`suta-pgb-pooler`) — inside `pool_lab` psql:**
+
+```psql
+\q
+```
+
+**On POOLER (`suta-pgb-pooler`) — Linux terminal, as `postgres`:**
+
+```bash
+exit
+```
+
+You are back at `ubuntu`. If a connection check failed, stop here and use
+[Troubleshooting](TROUBLESHOOTING.md). Do not change the prepared passwords.
+
+## Checkpoint
+
+- [ ] PgBouncer reports `active`.
+- [ ] The admin console shows my settings.
+- [ ] The practice query returns `suta-pgbouncer-phase1`.
+
+Show these results to your teacher.
+
 **Discuss:** What is the difference between ports 5432 and 6432? Why is the
 client limit different from the server pool size?
+
+**Next:** [Exercise 3 — connect Mattermost](03-connect-app.md).

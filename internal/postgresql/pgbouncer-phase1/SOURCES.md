@@ -25,3 +25,10 @@ A successful startup on an already initialized database does not prove a future
 schema upgrade works through transaction pooling. Plugins and upgrades require
 separate qualification. Backend TLS uses require without certificate identity
 validation; client-to-pooler private traffic is not TLS-protected in Phase 1.
+
+## Beginner wording check — 2026-10-14
+
+Reopened the version-pinned PgBouncer 1.22.0 admin-console source above, sections
+SHOW POOLS and pooling modes. Used it to check the short explanations of
+cl_active (includes idle clients), cl_waiting, sv_active and sv_idle. These columns
+are not a count of browser users or necessarily a count of executing SQL queries.

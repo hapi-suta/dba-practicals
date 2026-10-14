@@ -1,68 +1,151 @@
-# Exercise 3 — send Mattermost traffic through PgBouncer
+# Exercise 3: Send messages through PgBouncer
 
-**The task:** change the application's database endpoint and verify the full path.
-**Why:** a successful SQL login alone does not prove the application works.
-**Success:** login, posting, reading, replies and search pass through PgBouncer.
+**Goal:** change the connection path to **APP → POOLER → DB** and prove it works.
+**Before:** Exercise 2 passed. Keep your earlier reports and messages.
 
-**Before:** Exercise 2 passed. Keep the direct baseline and existing messages.
+## Step 1: Point Mattermost at PgBouncer
 
-## 1. Change the endpoint
-
-**Where to run:** APP server (`suta-pgb-app`), Linux terminal as `ubuntu` (any folder).
+**On APP (`suta-pgb-app`) — Linux terminal, as `ubuntu`:**
 
 ```bash
 cd /opt/suta/pgbouncer-lab
+```
+
+**On APP (`suta-pgb-app`) — Linux terminal, as `ubuntu`, in `/opt/suta/pgbouncer-lab`:**
+
+```bash
 sudo python3 app-route.py pooled
 ```
 
-This instructor-installed helper updates Mattermost's protected `SqlSettings.DataSource`
-from `pg-db:5432` to `pg-pooler:6432`, keeps the password private, sets its pool to
-8 open/2 idle connections, restarts Mattermost and waits for its API.
-The helper also sets `binary_parameters=yes`, required by the tested Mattermost
-driver/PgBouncer combination when we later use transaction mode. Omitting it caused
-real startup errors during rehearsal; the corrected helper was retested.
-A brief interruption is expected. It changes no messages or database passwords.
+The prepared script changes the database address from `pg-db:5432` to
+`pg-pooler:6432` and restarts Mattermost. It does not delete messages.
 
-Expect `Mattermost ready` with route `pooled`. On error, stop and use troubleshooting.
+**Expected:** `Mattermost ready` with route `pooled`.
+If it fails, stop and show the teacher the error.
 
-## 2. Repeat the application test
+<details>
+<summary>Extra: what does the script configure?</summary>
 
-**Where to run:** APP server (`suta-pgb-app`), Linux terminal as `ubuntu`, in `/opt/suta/pgbouncer-lab`.
+It keeps the password private, sets Mattermost's pool to 8 open/2 idle connections,
+and waits for the app to start. It also keeps the tested `binary_parameters=yes`
+connection option, needed by this Mattermost/PgBouncer combination.
+
+</details>
+
+## Step 2: Open the pool monitor
+
+**On POOLER (`suta-pgb-pooler`) — Linux terminal, as `ubuntu`:**
+
+```bash
+sudo -iu postgres
+```
+
+**On POOLER (`suta-pgb-pooler`) — Linux terminal, as `postgres`:**
+
+```bash
+psql -X -w -h 127.0.0.1 -p 6432 -U pooladmin -d pgbouncer
+```
+
+**Expected:** `pgbouncer=#`. You are in the admin console on port `6432`.
+
+**On POOLER (`suta-pgb-pooler`) — admin psql, user `pooladmin`, database `pgbouncer`, port `6432`:**
+
+```sql
+SHOW POOLS;
+```
+
+Look for the `mattermost` row. Ignore the `pgbouncer` admin row.
+
+| Column | What it tells you |
+|---|---|
+| `cl_active` | Clients linked to a server, or idle with no query waiting |
+| `cl_waiting` | Clients waiting for a server connection |
+| `sv_active` | PostgreSQL connections assigned to clients |
+| `sv_idle` | PostgreSQL connections available for reuse |
+
+An assigned connection does not necessarily mean a query is running.
+
+**On POOLER (`suta-pgb-pooler`) — same admin psql session:**
+
+```psql
+\watch 1
+```
+
+Leave this display running. Switch to APP to send messages.
+
+## Step 3: Send another batch of messages
+
+**On APP (`suta-pgb-app`) — Linux terminal, as `ubuntu`, in `/opt/suta/pgbouncer-lab`:**
 
 ```bash
 python3 traffic.py run --name session-01 --users 8 --concurrency 8 --seconds 20
 ```
 
-Expect zero failures, all acknowledged messages verified, and successful search.
-The script signs in each user, then checks messages by ID, author, channel and text.
+Watch POOLER while the run is active. Save a screenshot of the `mattermost` pool.
+Then wait for the APP command to finish.
 
-## 3. Observe both sides
+**On APP (`suta-pgb-app`) — same Linux terminal and folder:**
 
-**Where to run:** POOLER server (`suta-pgb-pooler`), Linux terminal as `ubuntu` (any folder).
+```bash
+cat .runtime/runs/session-01/summary.json
+```
+
+**Expected:** `failures: 0`, equal positive `acknowledged_posts` and `verified_posts`,
+`search_found_run: true`, and empty `verification_failures` and `verification_errors`.
+If you repeat the run, use `session-02` in both commands. Keep failed reports too.
+
+## Step 4: Prove the database sees POOLER
+
+**On DB (`suta-pgb-db`) — Linux terminal, as `ubuntu`:**
 
 ```bash
 sudo -iu postgres
-psql -X -w -h 127.0.0.1 -p 6432 -U pooladmin -d pgbouncer
 ```
 
-**Where to run:** POOLER server (`suta-pgb-pooler`), inside psql connected to `pgbouncer` as `pooladmin`, port `6432`.
+**On DB (`suta-pgb-db`) — Linux terminal, as `postgres`:**
+
+```bash
+psql -X -d mattermost
+```
+
+**On DB (`suta-pgb-db`) — psql, database `mattermost`, user `postgres`, port `5432`:**
 
 ```sql
-SHOW CLIENTS;
-SHOW SERVERS;
-SHOW POOLS;
+SELECT application_name, client_addr, state, count(*)
+FROM pg_stat_activity
+WHERE usename = 'mmuser'
+GROUP BY application_name, client_addr, state;
 ```
 
-Clients are Mattermost-to-PgBouncer connections. Servers are PgBouncer-to-PostgreSQL
-connections. Look at the `mattermost` row, not the admin-console row.
-`sv_active` means assigned to a client; it does not prove a SQL query is running.
+**Expected:** `client_addr` is now POOLER's private IP from your connection sheet.
+Previously it was APP's private IP. That change proves the new route.
+If it is still APP's address, stop and ask the teacher to check the route.
 
-**Where to run:** DB server (`suta-pgb-db`), inside psql connected to `mattermost` as `postgres`, port `5432`.
+## Step 5: Close the monitors
 
-Repeat Exercise 1's `pg_stat_activity` query. Now the application database
-connections should originate from POOLER's private address. This proves the route.
-Leave SQL sessions with `\q`, then `exit` from the `postgres` OS account.
+On POOLER, press **Ctrl+C** to stop watching first.
 
-**Show:** the passing traffic report, a pool snapshot and the changed database source address.
-**Discuss:** Why did the database connection source change? Does reaching the login
-page alone prove that sending messages works?
+**On POOLER (`suta-pgb-pooler`) and DB (`suta-pgb-db`) — each open psql session:**
+
+```psql
+\q
+```
+
+**On POOLER (`suta-pgb-pooler`) and DB (`suta-pgb-db`) — Linux terminal, as `postgres`:**
+
+```bash
+exit
+```
+
+Both tabs should now be at a Linux prompt as `ubuntu`.
+
+## Checkpoint — pause here
+
+- [ ] Messages still pass all checks after changing the route.
+- [ ] I can show the `mattermost` pool in PgBouncer.
+- [ ] PostgreSQL sees connections from POOLER's private IP.
+
+**Discuss:** what changed between Exercises 1 and 3? Where are messages still stored?
+
+**Stop here for the first lesson.** Show your teacher the results.
+When ready, continue to [Exercise 4 — connection reuse](04-pooling-modes.md).
