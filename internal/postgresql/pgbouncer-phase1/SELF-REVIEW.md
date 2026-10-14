@@ -83,3 +83,13 @@ are unchanged. No new server rehearsal or student trial was performed. The HA001
 rehearsal servers were terminated on the teacher's request on 2026-10-13; existing
 student environments were not changed or used for destructive rehearsal. The
 revised timing/teaching sequence still needs a teacher-led student trial.
+
+## Command explanations — 2026-10-14 follow-up
+
+Teacher requested explanations of commands and individual flags, including wc and
+-c, beside each step. Added command/option breakdowns throughout Exercises 0–6.
+Separated hostname and whoami into individual blocks; all executable lines and
+INI remain unchanged when concatenated in order per page. Each command block
+retains its execution context. No server rehearsal was repeated for these prose
+changes. The deliberate six-second transaction remains an explained teacher-led
+three-line unit so reading pauses do not prolong the hold.

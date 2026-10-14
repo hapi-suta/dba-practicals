@@ -14,6 +14,14 @@ The teacher has already created eight test users. The script logs in as those us
 sudo -iu postgres
 ```
 
+**What this means:**
+
+- `sudo` lets you run as another Linux user.
+- `-i` starts that user’s login environment, including their home folder.
+- `-u postgres` selects the Linux user `postgres`. Here `-i` and `-u` are written together as `-iu`.
+- After this command, you are in a new Linux shell as `postgres`. You have not opened a database yet.
+
+
 You are now using the Linux account that manages PostgreSQL.
 
 **On DB (`suta-pgb-db`) — Linux terminal, as `postgres`:**
@@ -21,6 +29,14 @@ You are now using the Linux account that manages PostgreSQL.
 ```bash
 psql -X -d mattermost
 ```
+
+**What this means:**
+
+- `psql` opens the PostgreSQL command tool. It also connects to the PgBouncer admin console.
+- `-X` ignores personal psql startup settings.
+- `-d mattermost` selects the database.
+- Without `-h`, this command uses a local connection on DB. The lab PostgreSQL server uses port `5432`.
+
 
 **Expected:** the psql prompt `mattermost=#`. This is the `mattermost` database on port `5432`.
 `-X` ignores personal psql startup settings; `-d` selects the database.
@@ -37,6 +53,14 @@ WHERE usename = 'mmuser'
 GROUP BY application_name, client_addr, state;
 ```
 
+**What this means:**
+
+- `SELECT` chooses the columns to show; `count(*)` counts connections in each group.
+- `FROM pg_stat_activity` reads PostgreSQL’s current connection activity.
+- `WHERE usename = 'mmuser'` shows only Mattermost’s database login.
+- `GROUP BY` combines rows with the same app name, client address and state. This is one read-only query written over several lines.
+
+
 `mmuser` is Mattermost's database login. `client_addr` shows the private IP of
 the connecting server. `count` is the number of connections in that row.
 
@@ -50,6 +74,12 @@ This is different from the public IP used for SSH.
 \watch 1
 ```
 
+**What this means:**
+
+- `\watch` repeats the last query in this psql session.
+- `1` means repeat once every second. Press **Ctrl+C** to stop repeating and return to psql.
+
+
 The result refreshes once a second. **Leave it running and switch to your APP tab.**
 
 ## Step 3: Send messages
@@ -60,11 +90,27 @@ The result refreshes once a second. **Leave it running and switch to your APP ta
 cd /opt/suta/pgbouncer-lab
 ```
 
+**What this means:**
+
+- `cd` means change directory (folder).
+- `/opt/suta/pgbouncer-lab` is the folder containing the lab scripts. This command only moves you into that folder.
+
+
 **On APP (`suta-pgb-app`) — Linux terminal, as `ubuntu`, in `/opt/suta/pgbouncer-lab`:**
 
 ```bash
 python3 traffic.py run --name baseline-01 --users 8 --concurrency 8 --seconds 20
 ```
+
+**What this means:**
+
+- `python3` runs a Python program. `traffic.py` is the prepared message generator.
+- `run` starts a workload using the existing test accounts.
+- `--name baseline-01` names the saved report folder. Choose a new name for every repeat.
+- `--users 8` logs in eight test users.
+- `--concurrency 8` allows at most eight requests to be in progress together.
+- `--seconds 20` starts requests for 20 seconds, then finishes pending work and verifies messages.
+
 
 This signs in eight test users, then sends, reads, and replies to messages for
 20 seconds. Final message checks take additional time. Wait for the Linux prompt
@@ -83,6 +129,12 @@ and in the report path below. Never delete an earlier report to reuse its name.
 ```bash
 cat .runtime/runs/baseline-01/summary.json
 ```
+
+**What this means:**
+
+- `cat` displays a file’s contents without changing it.
+- `.runtime/runs/baseline-01/summary.json` is the report or state file to read. The path is relative to your current lab folder.
+
 
 Find these fields. Counts vary; do not try to match someone else's count.
 
@@ -117,11 +169,21 @@ Failures are counted separately.
 \q
 ```
 
+**What this means:**
+
+- `\q` closes psql and returns you to the Linux prompt. It does not stop PostgreSQL or PgBouncer.
+
+
 **On DB (`suta-pgb-db`) — Linux terminal, as `postgres`:**
 
 ```bash
 exit
 ```
+
+**What this means:**
+
+- `exit` leaves the current Linux shell. After `sudo -iu postgres`, it returns you to `ubuntu`. It is not a SQL command.
+
 
 You are back at the Linux prompt as `ubuntu`.
 

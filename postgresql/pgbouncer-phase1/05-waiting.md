@@ -33,6 +33,13 @@ Stop if a hostname differs. Use only your assigned lab servers.
 sudo -u postgres vi /etc/pgbouncer/pgbouncer.ini
 ```
 
+**What this means:**
+
+- `sudo -u postgres` runs this one command as the Linux user `postgres`.
+- `vi` opens a text editor.
+- `/etc/pgbouncer/pgbouncer.ini` is the file to edit. When you leave the editor, you are still `ubuntu`.
+
+
 Find `default_pool_size = 4`. Press **i**, change `4` to `1`, then press
 **Esc**, type `:wq`, and press **Enter**. Keep `pool_mode = transaction`.
 
@@ -42,17 +49,39 @@ Find `default_pool_size = 4`. Press **i**, change `4` to `1`, then press
 sudo systemctl reload pgbouncer
 ```
 
+**What this means:**
+
+- `sudo` gives this command administrator permission.
+- `systemctl` manages background services.
+- `reload` asks the running service to reread its configuration.
+- `pgbouncer` is the service name.
+
+
 **On APP (`suta-pgb-app`) — Linux, as `ubuntu`:**
 
 ```bash
 cd /opt/suta/pgbouncer-lab
 ```
 
+**What this means:**
+
+- `cd` means change directory (folder).
+- `/opt/suta/pgbouncer-lab` is the folder containing the lab scripts. This command only moves you into that folder.
+
+
 **On APP (`suta-pgb-app`) — Linux, as `ubuntu`, in `/opt/suta/pgbouncer-lab`:**
 
 ```bash
 sudo python3 app-route.py pooled
 ```
+
+**What this means:**
+
+- `sudo` gives permission to update Mattermost’s protected configuration.
+- `python3` runs the prepared `app-route.py` helper.
+- `pooled` selects APP → POOLER → DB.
+- The helper restarts Mattermost and checks that it responds. Database passwords stay private; it does not delete messages.
+
 
 **Expected:** `Mattermost ready`. This restarts the app connections.
 
@@ -64,17 +93,41 @@ sudo python3 app-route.py pooled
 sudo -iu postgres
 ```
 
+**What this means:**
+
+- `sudo` lets you run as another Linux user.
+- `-i` starts that user’s login environment, including their home folder.
+- `-u postgres` selects the Linux user `postgres`. Here `-i` and `-u` are written together as `-iu`.
+- After this command, you are in a new Linux shell as `postgres`. You have not opened a database yet.
+
+
 **On POOLER (`suta-pgb-pooler`), tab C — Linux, as `postgres`:**
 
 ```bash
 psql -X -w -h 127.0.0.1 -p 6432 -U pooladmin -d pgbouncer
 ```
 
+**What this means:**
+
+- `psql` opens the PostgreSQL command tool. It also connects to the PgBouncer admin console.
+- `-X` ignores personal psql startup settings.
+- `-w` never prompts for a password; the prepared password file supplies it for normal lab logins.
+- `-h 127.0.0.1` selects the server address. `127.0.0.1` means this POOLER server.
+- `-p 6432` selects the port.
+- `-U pooladmin` selects the database login role.
+- `-d pgbouncer` selects the database.
+
+
 **On POOLER (`suta-pgb-pooler`), tab C — psql, `pgbouncer`, user `pooladmin`, port `6432`:**
 
 ```sql
 SHOW CONFIG;
 ```
+
+**What this means:**
+
+- `SHOW CONFIG` lists the settings PgBouncer is currently using. Check this after reloading the configuration file.
+
 
 **Expected:** `default_pool_size` is `1` and `pool_mode` is `transaction`.
 If not, stop and check the edited file. Press **q** if a results page shows `(END)`.
@@ -85,6 +138,12 @@ If not, stop and check the edited file. Press **q** if a results page shows `(EN
 RECONNECT mattermost;
 ```
 
+**What this means:**
+
+- `RECONNECT` tells PgBouncer to retire server connections when they can be released safely.
+- `mattermost` limits this action to that database mapping. New work will get fresh server connections.
+
+
 This retires old database connections, which may remain after lowering the limit.
 
 **On POOLER (`suta-pgb-pooler`), tab C — psql, `pgbouncer`, user `pooladmin`, port `6432`:**
@@ -93,11 +152,22 @@ This retires old database connections, which may remain after lowering the limit
 SHOW POOLS;
 ```
 
+**What this means:**
+
+- `SHOW POOLS` lists PgBouncer’s connection pools. Each pool belongs to a database/user pair. Look at the row named in this step.
+
+
 **On POOLER (`suta-pgb-pooler`), tab C — psql, `pgbouncer`, user `pooladmin`, port `6432`:**
 
 ```psql
 \watch 1
 ```
+
+**What this means:**
+
+- `\watch` repeats the last query in this psql session.
+- `1` means repeat once every second. Press **Ctrl+C** to stop repeating and return to psql.
+
 
 Leave C refreshing. Watch the `mattermost` row; the controlled run should use
 at most one active backend (`sv_active`). If more remain, ask the teacher before continuing.
@@ -109,6 +179,16 @@ at most one active backend (`sv_active`). If more remain, ask the teacher before
 ```bash
 python3 traffic.py run --name small-pool-01 --users 8 --concurrency 8 --seconds 20
 ```
+
+**What this means:**
+
+- `python3` runs a Python program. `traffic.py` is the prepared message generator.
+- `run` starts a workload using the existing test accounts.
+- `--name small-pool-01` names the saved report folder. Choose a new name for every repeat.
+- `--users 8` logs in eight test users.
+- `--concurrency 8` allows at most eight requests to be in progress together.
+- `--seconds 20` starts requests for 20 seconds, then finishes pending work and verifies messages.
+
 
 Wait for it to finish. Record failures and message checks from the report.
 One connection may handle short transactions successfully. Do not invent a failure
@@ -122,11 +202,27 @@ if there is none. Stop on unexpected errors; keep the report.
 sudo -iu postgres
 ```
 
+**What this means:**
+
+- `sudo` lets you run as another Linux user.
+- `-i` starts that user’s login environment, including their home folder.
+- `-u postgres` selects the Linux user `postgres`. Here `-i` and `-u` are written together as `-iu`.
+- After this command, you are in a new Linux shell as `postgres`. You have not opened a database yet.
+
+
 **On DB (`suta-pgb-db`) — Linux, as `postgres`:**
 
 ```bash
 psql -X -d mattermost
 ```
+
+**What this means:**
+
+- `psql` opens the PostgreSQL command tool. It also connects to the PgBouncer admin console.
+- `-X` ignores personal psql startup settings.
+- `-d mattermost` selects the database.
+- Without `-h`, this command uses a local connection on DB. The lab PostgreSQL server uses port `5432`.
+
 
 **On DB (`suta-pgb-db`) — psql, `mattermost`, user `postgres`, port `5432`:**
 
@@ -136,11 +232,24 @@ FROM pg_stat_activity
 WHERE usename = 'mmuser';
 ```
 
+**What this means:**
+
+- `SELECT` chooses the process number (`pid`), state, wait information and query text.
+- `FROM pg_stat_activity` reads current database activity.
+- `WHERE usename = 'mmuser'` limits the display to Mattermost connections. This query does not change data.
+
+
 **On DB (`suta-pgb-db`) — psql, `mattermost`, user `postgres`, port `5432`:**
 
 ```psql
 \watch 1
 ```
+
+**What this means:**
+
+- `\watch` repeats the last query in this psql session.
+- `1` means repeat once every second. Press **Ctrl+C** to stop repeating and return to psql.
+
 
 Leave DB refreshing. The teacher will look for `pg_sleep(6)` during the hold.
 
@@ -152,17 +261,42 @@ Leave DB refreshing. The teacher will look for `pg_sleep(6)` during the hold.
 sudo -iu postgres
 ```
 
+**What this means:**
+
+- `sudo` lets you run as another Linux user.
+- `-i` starts that user’s login environment, including their home folder.
+- `-u postgres` selects the Linux user `postgres`. Here `-i` and `-u` are written together as `-iu`.
+- After this command, you are in a new Linux shell as `postgres`. You have not opened a database yet.
+
+
 **On POOLER (`suta-pgb-pooler`), tab A — Linux, as `postgres`:**
 
 ```bash
 psql -X -w -h 127.0.0.1 -p 6432 -U mmuser -d mattermost
 ```
 
+**What this means:**
+
+- `psql` opens the PostgreSQL command tool. It also connects to the PgBouncer admin console.
+- `-X` ignores personal psql startup settings.
+- `-w` never prompts for a password; the prepared password file supplies it for normal lab logins.
+- `-h 127.0.0.1` selects the server address. `127.0.0.1` means this POOLER server.
+- `-p 6432` selects the port.
+- `-U mmuser` selects the database login role.
+- `-d mattermost` selects the database.
+
+
 **On POOLER (`suta-pgb-pooler`), tab A — psql, `mattermost`, user `mmuser`, port `6432`:**
 
 ```sql
 SELECT current_database(), current_user;
 ```
+
+**What this means:**
+
+- `SELECT` asks for values.
+- `current_database()` returns the database name. `current_user` returns the database login role. This checks where you connected.
+
 
 **Expected:** `mattermost` and `mmuser`. Stop if different. Do not begin the hold yet.
 
@@ -173,6 +307,16 @@ SELECT current_database(), current_user;
 ```bash
 python3 traffic.py run --name long-transaction-01 --users 8 --concurrency 8 --seconds 20
 ```
+
+**What this means:**
+
+- `python3` runs a Python program. `traffic.py` is the prepared message generator.
+- `run` starts a workload using the existing test accounts.
+- `--name long-transaction-01` names the saved report folder. Choose a new name for every repeat.
+- `--users 8` logs in eight test users.
+- `--concurrency 8` allows at most eight requests to be in progress together.
+- `--seconds 20` starts requests for 20 seconds, then finishes pending work and verifies messages.
+
 
 Start this APP command first. After about five seconds, the teacher runs the whole
 block below in A. It must overlap the running traffic. Copy all three lines
@@ -185,6 +329,14 @@ BEGIN;
 SELECT pg_sleep(6);
 COMMIT;
 ```
+
+**What this means:**
+
+- `BEGIN` starts the transaction.
+- `SELECT pg_sleep(6)` makes PostgreSQL wait for six seconds while this transaction holds the connection.
+- `COMMIT` ends the transaction and releases the connection.
+- **Timing exception:** the teacher submits these three lines together so reading the guide does not accidentally leave the transaction open after the six-second hold.
+
 
 **During the six seconds:**
 
@@ -205,17 +357,34 @@ session before leaving it.
 \q
 ```
 
+**What this means:**
+
+- `\q` closes psql and returns you to the Linux prompt. It does not stop PostgreSQL or PgBouncer.
+
+
 **On POOLER (`suta-pgb-pooler`), tab A — Linux, as `postgres`:**
 
 ```bash
 exit
 ```
 
+**What this means:**
+
+- `exit` leaves the current Linux shell. After `sudo -iu postgres`, it returns you to `ubuntu`. It is not a SQL command.
+
+
 **On POOLER (`suta-pgb-pooler`), tab A — Linux, as `ubuntu`:**
 
 ```bash
 sudo -u postgres vi /etc/pgbouncer/pgbouncer.ini
 ```
+
+**What this means:**
+
+- `sudo -u postgres` runs this one command as the Linux user `postgres`.
+- `vi` opens a text editor.
+- `/etc/pgbouncer/pgbouncer.ini` is the file to edit. When you leave the editor, you are still `ubuntu`.
+
 
 Change `default_pool_size = 1` back to `default_pool_size = 4`.
 Save with **Esc**, `:wq`, **Enter**.
@@ -226,6 +395,14 @@ Save with **Esc**, `:wq`, **Enter**.
 sudo systemctl reload pgbouncer
 ```
 
+**What this means:**
+
+- `sudo` gives this command administrator permission.
+- `systemctl` manages background services.
+- `reload` asks the running service to reread its configuration.
+- `pgbouncer` is the service name.
+
+
 In C, press **Ctrl+C**.
 
 **On POOLER (`suta-pgb-pooler`), tab C — psql, `pgbouncer`, user `pooladmin`, port `6432`:**
@@ -234,6 +411,11 @@ In C, press **Ctrl+C**.
 SHOW CONFIG;
 ```
 
+**What this means:**
+
+- `SHOW CONFIG` lists the settings PgBouncer is currently using. Check this after reloading the configuration file.
+
+
 **Expected:** `default_pool_size` is `4`. Stop if it is not.
 
 **On APP (`suta-pgb-app`) — Linux, as `ubuntu`, in `/opt/suta/pgbouncer-lab`:**
@@ -241,6 +423,16 @@ SHOW CONFIG;
 ```bash
 python3 traffic.py run --name recovery-01 --users 8 --concurrency 8 --seconds 20
 ```
+
+**What this means:**
+
+- `python3` runs a Python program. `traffic.py` is the prepared message generator.
+- `run` starts a workload using the existing test accounts.
+- `--name recovery-01` names the saved report folder. Choose a new name for every repeat.
+- `--users 8` logs in eight test users.
+- `--concurrency 8` allows at most eight requests to be in progress together.
+- `--seconds 20` starts requests for 20 seconds, then finishes pending work and verifies messages.
+
 
 **Expected:** zero failures, matching positive message counts, successful search,
 and empty `verification_failures` and `verification_errors`.
@@ -256,11 +448,21 @@ On DB, press **Ctrl+C** first. C has already stopped watching.
 \q
 ```
 
+**What this means:**
+
+- `\q` closes psql and returns you to the Linux prompt. It does not stop PostgreSQL or PgBouncer.
+
+
 **On POOLER C (`suta-pgb-pooler`) and DB (`suta-pgb-db`) — Linux, as `postgres`:**
 
 ```bash
 exit
 ```
+
+**What this means:**
+
+- `exit` leaves the current Linux shell. After `sudo -iu postgres`, it returns you to `ubuntu`. It is not a SQL command.
+
 
 ## Checkpoint
 

@@ -16,6 +16,11 @@ or `.pgpass`; they contain credentials.
 hostname
 ```
 
+**What this means:**
+
+- `hostname` prints the name of the server you are logged into. Use it to check the tab before continuing.
+
+
 **Expected:** `suta-pgb-pooler`. Then check the file size.
 
 **On POOLER (`suta-pgb-pooler`) — Linux, as `ubuntu`:**
@@ -23,6 +28,15 @@ hostname
 ```bash
 sudo wc -c /etc/pgbouncer/pgbouncer.ini
 ```
+
+**What this means:**
+
+- `sudo` runs this command with administrator permission so it can read the protected file.
+- `wc` is a counting tool. Its name comes from “word count.”
+- `-c` tells `wc` to count **bytes**, not words.
+- `/etc/pgbouncer/pgbouncer.ini` is the file being measured.
+- A result of `0` means the file contains no bytes: it is empty. This command does not change the file.
+
 
 **Expected:** `0 /etc/pgbouncer/pgbouncer.ini` — the file is empty. If the file has contents, it is existing
 work: stop and ask which checkpoint to resume. Do not erase it.
@@ -34,6 +48,13 @@ work: stop and ask which checkpoint to resume. Do not erase it.
 ```bash
 sudo -u postgres vi /etc/pgbouncer/pgbouncer.ini
 ```
+
+**What this means:**
+
+- `sudo -u postgres` runs this one command as the Linux user `postgres`.
+- `vi` opens a text editor.
+- `/etc/pgbouncer/pgbouncer.ini` is the file to edit. When you leave the editor, you are still `ubuntu`.
+
 
 Press `i` to enter text. Write:
 
@@ -115,6 +136,14 @@ PgBouncer uses the restricted private lab network without TLS in this phase.
 sudo systemctl start pgbouncer
 ```
 
+**What this means:**
+
+- `sudo` gives this command administrator permission.
+- `systemctl` manages background services.
+- `start` starts the service.
+- `pgbouncer` is the service name.
+
+
 Now check that it started.
 
 **On POOLER (`suta-pgb-pooler`) — Linux, as `ubuntu`:**
@@ -122,6 +151,13 @@ Now check that it started.
 ```bash
 systemctl is-active pgbouncer
 ```
+
+**What this means:**
+
+- `systemctl` manages background services.
+- `is-active` checks whether the service is running; it does not change it.
+- `pgbouncer` is the service name.
+
 
 Expect `active`. If not, stop and inspect `sudo journalctl -u pgbouncer -n 30`.
 Do not disable authentication to fix a startup problem.
@@ -134,11 +170,30 @@ Do not disable authentication to fix a startup problem.
 sudo -iu postgres
 ```
 
+**What this means:**
+
+- `sudo` lets you run as another Linux user.
+- `-i` starts that user’s login environment, including their home folder.
+- `-u postgres` selects the Linux user `postgres`. Here `-i` and `-u` are written together as `-iu`.
+- After this command, you are in a new Linux shell as `postgres`. You have not opened a database yet.
+
+
 **On POOLER (`suta-pgb-pooler`) — Linux terminal, now as `postgres`:**
 
 ```bash
 psql -X -w -h 127.0.0.1 -p 6432 -U pooladmin -d pgbouncer
 ```
+
+**What this means:**
+
+- `psql` opens the PostgreSQL command tool. It also connects to the PgBouncer admin console.
+- `-X` ignores personal psql startup settings.
+- `-w` never prompts for a password; the prepared password file supplies it for normal lab logins.
+- `-h 127.0.0.1` selects the server address. `127.0.0.1` means this POOLER server.
+- `-p 6432` selects the port.
+- `-U pooladmin` selects the database login role.
+- `-d pgbouncer` selects the database.
+
 
 **Expected:** the `pgbouncer=#` prompt. No password prompt is needed.
 
@@ -152,6 +207,11 @@ file. Database `pgbouncer` is the admin console, not an application database.
 SHOW VERSION;
 ```
 
+**What this means:**
+
+- `SHOW VERSION` asks the PgBouncer admin console for its installed version.
+
+
 **Expected:** PgBouncer `1.22.0`.
 
 **On POOLER (`suta-pgb-pooler`) — same admin psql session, `pooladmin`, port `6432`:**
@@ -159,6 +219,11 @@ SHOW VERSION;
 ```sql
 SHOW DATABASES;
 ```
+
+**What this means:**
+
+- `SHOW DATABASES` lists the database names PgBouncer accepts and where it sends their connections.
+
 
 **Expected:** rows for `mattermost` and `pool_lab`.
 
@@ -168,6 +233,11 @@ SHOW DATABASES;
 SHOW CONFIG;
 ```
 
+**What this means:**
+
+- `SHOW CONFIG` lists the settings PgBouncer is currently using. Check this after reloading the configuration file.
+
+
 **Expected:** `pool_mode` is `session` and `default_pool_size` is `4`.
 If the output opens a page showing `(END)`, press **q** to return to the prompt.
 
@@ -176,6 +246,11 @@ If the output opens a page showing `(END)`, press **q** to return to the prompt.
 ```psql
 \q
 ```
+
+**What this means:**
+
+- `\q` closes psql and returns you to the Linux prompt. It does not stop PostgreSQL or PgBouncer.
+
 
 You are back in Linux as `postgres`.
 
@@ -187,11 +262,28 @@ You are back in Linux as `postgres`.
 psql -X -w -h 127.0.0.1 -p 6432 -U labuser -d pool_lab
 ```
 
+**What this means:**
+
+- `psql` opens the PostgreSQL command tool. It also connects to the PgBouncer admin console.
+- `-X` ignores personal psql startup settings.
+- `-w` never prompts for a password; the prepared password file supplies it for normal lab logins.
+- `-h 127.0.0.1` selects the server address. `127.0.0.1` means this POOLER server.
+- `-p 6432` selects the port.
+- `-U labuser` selects the database login role.
+- `-d pool_lab` selects the database.
+
+
 **Where to run:** POOLER server (`suta-pgb-pooler`), inside psql connected to `pool_lab` as `labuser`, port `6432`.
 
 ```sql
 SELECT current_database(), current_user;
 ```
+
+**What this means:**
+
+- `SELECT` asks for values.
+- `current_database()` returns the database name. `current_user` returns the database login role. This checks where you connected.
+
 
 **Expected:** `pool_lab` and `labuser`. Stop if different.
 
@@ -201,6 +293,12 @@ SELECT current_database(), current_user;
 SELECT name FROM lab_identity;
 ```
 
+**What this means:**
+
+- `SELECT name` asks for the `name` column.
+- `FROM lab_identity` reads it from the prepared identity table. The result confirms that you reached the lab database.
+
+
 **Expected:** `suta-pgbouncer-phase1`.
 
 **On POOLER (`suta-pgb-pooler`) — inside `pool_lab` psql:**
@@ -209,11 +307,21 @@ SELECT name FROM lab_identity;
 \q
 ```
 
+**What this means:**
+
+- `\q` closes psql and returns you to the Linux prompt. It does not stop PostgreSQL or PgBouncer.
+
+
 **On POOLER (`suta-pgb-pooler`) — Linux terminal, as `postgres`:**
 
 ```bash
 exit
 ```
+
+**What this means:**
+
+- `exit` leaves the current Linux shell. After `sudo -iu postgres`, it returns you to `ubuntu`. It is not a SQL command.
+
 
 You are back at `ubuntu`. If a connection check failed, stop here and use
 [Troubleshooting](TROUBLESHOOTING.md). Do not change the prepared passwords.

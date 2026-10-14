@@ -28,6 +28,11 @@ website password and database passwords are different from your SSH password.
 hostname
 ```
 
+**What this means:**
+
+- `hostname` prints the name of the server you are logged into. Use it to check the tab before continuing.
+
+
 **Expected:** the name for that tab in this table.
 
 | Tab | Expected name | Job |
@@ -44,6 +49,11 @@ If a name is wrong, stop. Reconnect using the correct IP from your login sheet.
 whoami
 ```
 
+**What this means:**
+
+- `whoami` prints your current Linux username. It tells you whether you are using `ubuntu` or `postgres`.
+
+
 **Expected:** `ubuntu`.
 
 ## Step 3: Check that Mattermost is running
@@ -54,6 +64,12 @@ whoami
 cd /opt/suta/pgbouncer-lab
 ```
 
+**What this means:**
+
+- `cd` means change directory (folder).
+- `/opt/suta/pgbouncer-lab` is the folder containing the lab scripts. This command only moves you into that folder.
+
+
 This is the folder containing the prepared lab scripts. Successful `cd` prints nothing.
 
 **On APP (`suta-pgb-app`) — Linux terminal, as `ubuntu`:**
@@ -61,6 +77,16 @@ This is the folder containing the prepared lab scripts. Successful `cd` prints n
 ```bash
 curl -fsS http://127.0.0.1:8065/api/v4/system/ping
 ```
+
+**What this means:**
+
+- `curl` makes a web request from the terminal.
+- `-f` reports an error if the web server returns an HTTP failure.
+- `-s` hides the download progress display.
+- `-S` still shows error messages when `-s` is used. These three options are grouped as `-fsS`.
+- `127.0.0.1` means **this server**, so run this on APP, not POOLER or DB.
+- `8065` is Mattermost’s web port. `/api/v4/system/ping` asks whether Mattermost is responding.
+
 
 **Expected:** a response containing `"status":"OK"` (spacing may differ).
 If you get an error, stop and show it to the teacher.
@@ -72,6 +98,12 @@ If you get an error, stop and show it to the teacher.
 ```bash
 cat .runtime/state.json
 ```
+
+**What this means:**
+
+- `cat` displays a file’s contents without changing it.
+- `.runtime/state.json` is the report or state file to read. The path is relative to your current lab folder.
+
 
 **Expected:** `"route": "direct"`.
 This means the helper last selected **Mattermost → PostgreSQL**, without PgBouncer.
@@ -112,11 +144,26 @@ Start recording after SSH login, before switching Linux users.
 mkdir -p ~/pgbouncer-evidence
 ```
 
+**What this means:**
+
+- `mkdir` creates a folder.
+- `-p` also creates missing parent folders and accepts an existing folder.
+- `~` means your current Linux user’s home folder. `pgbouncer-evidence` is the folder name.
+
+
 **On that same server — Linux terminal, as `ubuntu`:**
 
 ```bash
 script -q -a ~/pgbouncer-evidence/terminal.txt
 ```
+
+**What this means:**
+
+- `script` starts recording terminal output into a file.
+- `-q` hides its start and finish announcements.
+- `-a` adds to an existing file instead of replacing it.
+- `~/pgbouncer-evidence/terminal.txt` is the recording file. Keep passwords out of recordings.
+
 
 This adds output to a file. Do not display passwords or private configuration files
 while recording. To finish, leave psql with `\q`, return to `ubuntu` if needed,
