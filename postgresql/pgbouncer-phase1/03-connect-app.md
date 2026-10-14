@@ -1,6 +1,10 @@
 # Exercise 3: Send messages through PgBouncer
 
-**Goal:** change the connection path to **APP → POOLER → DB** and prove it works.
+## What you will achieve
+
+Change Mattermost to use **APP → POOLER → DB**.
+You will prove the new path with a passing message report, PgBouncer pool details,
+and database connections arriving from POOLER.
 **Before:** Exercise 2 passed. Keep your earlier reports and messages.
 
 ## Step 1: Point Mattermost at PgBouncer

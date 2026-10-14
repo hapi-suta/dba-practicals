@@ -1,10 +1,14 @@
 # Exercise 0: Connect to your servers
 
-**Goal:** log in and check that you are on the correct server.
-You will use these same three servers throughout the lab.
+## What you will achieve
+
+Log in to your three servers, check their names, and open your Mattermost website.
+You are ready to continue when the website opens, the app health check says `OK`,
+and the starting route is `direct`.
 
 **You need:** your private login sheet with three IP addresses, username `ubuntu`,
-and your server password. Ask the teacher if you do not have it.
+and your server password. You also need your Mattermost website username and
+password. Ask the teacher if either set of login details is missing.
 
 ## Step 1: Open three terminal tabs
 
@@ -112,6 +116,36 @@ The next exercise checks the actual connection too.
 If the route is already `pooled`, you may be returning to a partially completed lab.
 Ask where to resume. Do not reset it.
 
+## Step 5: Open your Mattermost website
+
+**Where:** on your own computer, in a web browser such as Chrome or Edge.
+This step is not a command to run in a server terminal.
+
+1. Find **APP (`suta-pgb-app`)** on your private login sheet.
+2. Copy its **Mattermost URL** into the browser address bar. If your sheet only
+   shows the APP public IP, type `http://`, then that IP, then `:8065`.
+   The format is `http://YOUR_APP_PUBLIC_IP:8065` — replace
+   `YOUR_APP_PUBLIC_IP` with your own APP IP; do not type those words literally.
+3. Press **Enter**. You should see the Mattermost sign-in page.
+4. Sign in with the **Mattermost username and password** from your private sheet.
+   Do not use the Linux username `ubuntu` or your SSH password.
+5. Open the **SUTA Pooling Lab** team, then the **Traffic Lab** channel.
+   Leave this browser tab open. Exercise 1 sends messages to this channel.
+
+**What the address means:** `http://` opens the lab website, the public IP selects
+APP, and `:8065` selects the port where Mattermost listens.
+Use APP's public IP, not the POOLER or DB IP. `127.0.0.1` in your laptop browser
+would mean your laptop, not APP.
+
+**Expected:** you can see the Traffic Lab channel. Earlier practice messages may
+already be there; keep them.
+
+**If it does not open:** check the APP IP and `:8065`, and make sure the address
+starts with `http://`. Repeat the health check in Step 3 on APP. If that says `OK`
+but the website still will not open, show the teacher the browser error and APP
+IP. If login fails or the team is missing, ask the teacher to check your assigned
+Mattermost account. Do not create a new account or change server settings.
+
 ## Know which prompt you are using
 
 | What you see (example) | Where you are | What to type here |
@@ -182,6 +216,7 @@ Use a new traffic run name each time; keep earlier reports.
 
 - [ ] My three tabs show the correct server names and `ubuntu`.
 - [ ] Mattermost reports `OK`.
+- [ ] I can open Mattermost in my browser and see the Traffic Lab channel.
 - [ ] The starting route is `direct`.
 
 **Tell the teacher:** which server runs the app? Which server stores its messages?

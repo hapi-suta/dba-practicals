@@ -1,8 +1,11 @@
 # Exercise 6: Tune and recover
 
-**The task:** change one limit at a time and recover from a rejected login.
-**Why:** a DBA must distinguish application pooling, PgBouncer pooling and authentication.
-**Success:** a measured comparison and a working application at the end.
+## What you will achieve
+
+Compare application and PgBouncer connection limits, then diagnose a rejected
+login. You will keep the comparison reports, restore working access, and verify
+that saved messages can still be read. This helps you tell a capacity problem
+from a login problem.
 
 **Before:** Exercise 5 is complete. PgBouncer uses transaction mode and a pool of 4.
 No deliberate sleep or open transaction remains. All tabs are back at Linux prompts

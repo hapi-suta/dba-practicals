@@ -1,6 +1,10 @@
 # Exercise 4: See when a connection is shared
 
-**Goal:** see the difference between session pooling and transaction pooling.
+## What you will achieve
+
+Compare session pooling with transaction pooling using two clients and one
+database connection. You will see when the second client waits and what releases
+the connection. Finish with transaction pooling selected and the practice sessions closed.
 **Before:** finish Exercise 3. Stop any traffic runs. PgBouncer should still use
 `pool_mode = session`. Do not change another student's server.
 

@@ -1,8 +1,11 @@
 # Exercise 2: Configure PgBouncer
 
-**The task:** tell PgBouncer where PostgreSQL is and how many connections to use.
-**Why:** an installed package does not know your database route or pooling policy.
-**Success:** you can log into the admin console and read the known lab identity.
+## What you will achieve
+
+Write the PgBouncer settings, start the service, and connect through it.
+The settings tell PgBouncer which database to use and how many connections to allow.
+You have succeeded when the admin console opens and the practice database returns
+the expected lab identity.
 
 **Before:** Exercise 1 passed. The teacher has installed PgBouncer, prepared the
 private credentials and supplied an empty configuration. Do not print `userlist.txt`

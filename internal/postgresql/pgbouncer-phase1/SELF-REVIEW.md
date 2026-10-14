@@ -93,3 +93,20 @@ INI remain unchanged when concatenated in order per page. Each command block
 retains its execution context. No server rehearsal was repeated for these prose
 changes. The deliberate six-second transaction remains an explained teacher-led
 three-line unit so reading pauses do not prolong the hold.
+
+## Mattermost browser access and outcomes — 2026-10-14
+
+Added a top-of-page outcome to all seven exercises, the overview and troubleshooting
+guide. Exercise 0 now explains browser location, APP public IP, HTTP port 8065,
+separate website credentials, team/channel selection, expected result and safe
+failure handling. Exercise 1 links back and explains how to see generated messages.
+Reviewed the learner path using the handouts and private-sheet prerequisite.
+Checked team/channel names and message text against traffic.py; corrected the
+initial draft to use generated run IDs instead of the report folder name.
+
+Validation: all 130 fenced blocks retain execution context; every command and
+configuration block is byte-for-byte unchanged; local links/anchors, INI parity,
+private-secret scan and git diff whitespace checks passed. Rendered HTML was
+generated, but this update received source-only layout review, not browser visual
+inspection. No new website sign-in trial, server rehearsal or student trial was
+performed for these documentation changes. Private login details stay off GitHub.

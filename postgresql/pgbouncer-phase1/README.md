@@ -1,6 +1,10 @@
 # PgBouncer with Mattermost
 
-Learn how PgBouncer lets applications reuse PostgreSQL connections.
+## What you will achieve
+
+Connect Mattermost to PostgreSQL through PgBouncer, send real test messages, and
+see how database connections are shared. You will also practise finding waiting
+clients and checking that messages remain readable.
 
 You have three servers. The teacher has already installed the software and created
 all accounts. You do not need to install packages or create databases.
@@ -13,6 +17,10 @@ all accounts. You do not need to install packages or create databases.
 
 Use the IP addresses and passwords on **your private login sheet**.
 The hostnames are the same for every student; the IP addresses are different.
+
+**To open Mattermost:** use a browser on your own computer and your APP server’s
+Mattermost URL from the private sheet. Follow the
+[browser sign-in steps](00-start.md#step-5-open-your-mattermost-website).
 
 ## First lesson: get the application working through PgBouncer
 

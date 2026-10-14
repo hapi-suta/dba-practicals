@@ -1,5 +1,13 @@
 # If your result differs
 
+## What you will achieve
+
+Identify the first failed check, collect its error, and choose the matching safe
+next step. Return to your exercise only when its expected result matches.
+
+For website access or sign-in problems, start with
+[the Mattermost browser steps](00-start.md#step-5-open-your-mattermost-website).
+
 Stop at the first unexpected result. Save the command and complete error.
 
 | Symptom | Where to run | First check | Safe next step |

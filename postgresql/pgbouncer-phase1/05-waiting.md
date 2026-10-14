@@ -1,7 +1,10 @@
 # Exercise 5: Find why requests wait
 
-**Goal:** see requests wait while one long transaction uses the available connection.
-Then restore normal access. We do not change any message rows.
+## What you will achieve
+
+Watch clients wait while a long transaction holds the only available connection.
+You will use PgBouncer and PostgreSQL to identify the cause, then restore the pool
+size to 4 and check that messages still pass verification. The hold itself does not change message rows.
 
 **Before:** finish Exercise 4. Transaction pooling is active, the pool size is 4,
 and the practice sessions are closed.

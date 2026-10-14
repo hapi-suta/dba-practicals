@@ -1,9 +1,15 @@
 # Exercise 1: Send messages before adding PgBouncer
 
-**Goal:** send test messages and see the app connect directly to PostgreSQL.
-This gives us a result to compare with after adding PgBouncer.
+## What you will achieve
+
+Send messages as eight test users and see APP connect directly to DB.
+You will save a passing traffic report and a screenshot of the database connections.
+This gives you a result to compare with after adding PgBouncer.
 
 **Before:** finish Exercise 0. Keep your APP and DB tabs open.
+Keep Mattermost open in your computer’s browser at **SUTA Pooling Lab → Traffic Lab**.
+If you closed it, follow [Exercise 0, Step 5](00-start.md#step-5-open-your-mattermost-website).
+
 The teacher has already created eight test users. The script logs in as those users.
 
 ## Step 1: Open the database
@@ -118,6 +124,13 @@ before running another command on APP.
 
 While it runs, look at your DB tab. Take a screenshot of the connection rows.
 Eight website users do not necessarily need eight database connections.
+
+**On your own computer — Mattermost browser tab:** open **Traffic Lab** and
+look for new messages starting with `SUTA run` and check their timestamps.
+The message text uses a generated run ID; `baseline-01` names the saved report
+folder and does not appear in the message text.
+The script sends these messages as the test users. You do not need to type them
+yourself. The report below verifies all accepted messages, including replies.
 
 **If you already used `baseline-01`:** replace it with `baseline-02` in the command
 and in the report path below. Never delete an earlier report to reuse its name.
